@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                                 selected = currentRoute == "settings",
                                 onClick = { navController.navigate("settings") },
                                 icon = { Icon(Icons.Default.Settings, null) },
-                                label = { Text("settings") }
+                                label = { Text("Settings") }
                             )
                         }
                     }
@@ -86,11 +86,11 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = "home",
-                        modifier = Modifier.padding(innerPadding) // ✅ correct place
+                        modifier = Modifier.padding(innerPadding)
                     ) {
 
                         composable("home") {
-                            HomeScreen(navController, taskBox, LastResetBox)
+                            HomeScreen(taskBox, LastResetBox, navController)
                         }
 
                         composable("add_task") {
@@ -98,10 +98,9 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("settings") {
-                            SettingsScreen(taskBox)
+                            SettingsScreen(taskBox, navController)
                         }
                     }
-
                 }
             }
         }
