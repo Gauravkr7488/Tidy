@@ -67,45 +67,11 @@ fun SettingsScreen(
 
             Button(
                 onClick = {
-                    exportData(taskBox, context)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Export Data")
             }
         }
-    }
-}
-@RequiresApi(Build.VERSION_CODES.Q)
-fun exportData(taskBox: Box<Task>, context: Context) {
-
-    val allTasks = taskBox.all
-    val gson = Gson()
-    val json = gson.toJson(allTasks)
-
-    val fileName = "backup_tasks.json"
-
-    val resolver = context.contentResolver
-    val contentValues = ContentValues().apply {
-        put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-        put(MediaStore.MediaColumns.MIME_TYPE, "application/json")
-        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
-    }
-
-    val uri = resolver.insert(
-        MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-        contentValues
-    )
-
-    uri?.let {
-        resolver.openOutputStream(it)?.use { outputStream ->
-            outputStream.write(json.toByteArray())
-        }
-
-        Toast.makeText(
-            context,
-            "Saved to Downloads",
-            Toast.LENGTH_LONG
-        ).show()
     }
 }
