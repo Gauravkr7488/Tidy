@@ -57,6 +57,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.Ace777.tidy.R
+import com.example.tidy.SettingOption
 import com.example.tidy.Task
 import com.google.gson.Gson
 import io.objectbox.Box
@@ -72,11 +73,10 @@ fun SettingsScreen(
 ) {
     val listState = rememberLazyListState()
     val settingOptions = listOf(
-        stringResource(R.string.Backup),
-        "this",
-        "again",
-        "hahahah",
-        "hehhehe",
+        SettingOption(
+            title = stringResource(R.string.Backup),
+            route = "backup_screen"
+        ),
     )
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -100,26 +100,26 @@ fun SettingsScreen(
             ) {
                 items(
                     items = settingOptions,
-                    key = { it }
-                ) { option ->
+                    key = { it.title }
+                ) { item ->
 
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding( vertical = 4.dp),
+                            .padding(vertical = 4.dp),
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { /* handle click */ }
+                                .clickable { navController.navigate(item.route) }
                                 .padding(20.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = option,
+                                text = item.title,
                                 style = MaterialTheme.typography.titleMedium
                             )
 

@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.navigation.compose.*
 import com.example.tidy.ui.screen.AddTaskScreen
+import com.example.tidy.ui.screen.BackupScreen
 import com.example.tidy.ui.screen.HomeScreen
 import com.example.tidy.ui.screen.SettingsScreen
 
@@ -99,6 +100,10 @@ class MainActivity : ComponentActivity() {
 
                         composable("settings") {
                             SettingsScreen(taskBox, navController)
+                        }
+
+                        composable("backup_screen") {
+                            BackupScreen(taskBox)
                         }
                     }
                 }
