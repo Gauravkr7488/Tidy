@@ -16,55 +16,26 @@
  */
 package com.example.tidy.ui.screen
 
-import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
-import android.os.Build
-import android.os.Environment
-import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.modifier.ModifierLocalReadScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.Ace777.tidy.R
-import com.example.tidy.SettingOption
 import com.example.tidy.Task
 import com.google.gson.Gson
 import io.objectbox.Box
-import io.objectbox.BoxStore
-import java.io.File
 
 @Composable
 fun BackupScreen(
@@ -73,13 +44,19 @@ fun BackupScreen(
 
     val context = LocalContext.current
 
-    val createLauncher =
+    val exportLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.CreateDocument("application/json")
         ) { uri ->
             uri?.let { createBackup(context, taskBox, it) }
         }
 
+    val importLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            uri?.let { importBackup(context, taskBox, it) }
+        }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -93,13 +70,20 @@ fun BackupScreen(
         )
 
         // Export Section
-        Button(
-            onClick = {
-                createLauncher.launch("backup.json")
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Export Backup")
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                text = "Export",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Button(
+                onClick = {
+                    exportLauncher.launch("backup.json")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Export Backup")
+            }
         }
 
         // Import Section
@@ -110,10 +94,12 @@ fun BackupScreen(
             )
 
             Button(
-                onClick = {},
+                onClick = {
+                    importLauncher.launch(arrayOf("application/json"))
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Import")
+                Text("Import Backup")
             }
         }
     }
@@ -138,6 +124,38 @@ fun createBackup(
 
     } catch (e: Exception) {
         Toast.makeText(context, "Backup failed", Toast.LENGTH_SHORT).show()
+        e.printStackTrace()
+    }
+}
+
+fun importBackup(
+    context: Context,
+    taskBox: Box<Task>,
+    uri: Uri
+) {
+    try {
+        val json = context.contentResolver
+            .openInputStream(uri)
+            ?.bufferedReader()
+            ?.readText()
+
+        if (json != null) {
+            val tasks = Gson().fromJson(
+                json,
+                Array<Task>::class.java
+            ).toList()
+
+            taskBox.removeAll()
+            val newTasks = tasks.map {
+                it.copy(id = 0)
+            }
+            taskBox.put(newTasks)
+
+            Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
+        }
+
+    } catch (e: Exception) {
+        Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
         e.printStackTrace()
     }
 }
