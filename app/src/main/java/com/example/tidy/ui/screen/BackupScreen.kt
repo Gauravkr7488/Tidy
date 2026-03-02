@@ -18,10 +18,13 @@ package com.example.tidy.ui.screen
 
 import android.content.ContentValues
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +70,16 @@ import java.io.File
 fun BackupScreen(
     taskBox: Box<Task>,
 ) {
+
+    val context = LocalContext.current
+
+    val createLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.CreateDocument("application/json")
+        ) { uri ->
+            uri?.let { createBackup(context, taskBox, it) }
+        }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -80,25 +93,13 @@ fun BackupScreen(
         )
 
         // Export Section
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(
-                text = "Export",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Button(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Choose Location")
-            }
-
-            Button(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Export")
-            }
+        Button(
+            onClick = {
+                createLauncher.launch("backup.json")
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Export Backup")
         }
 
         // Import Section
@@ -115,5 +116,28 @@ fun BackupScreen(
                 Text("Import")
             }
         }
+    }
+}
+
+fun createBackup(
+    context: Context,
+    taskBox: Box<Task>,
+    uri: Uri
+) {
+    try {
+        val tasks = taskBox.all
+        val json = Gson().toJson(tasks)
+
+        context.contentResolver
+            .openOutputStream(uri)
+            ?.use { stream ->
+                stream.write(json.toByteArray())
+            }
+
+        Toast.makeText(context, "Backup successful", Toast.LENGTH_SHORT).show()
+
+    } catch (e: Exception) {
+        Toast.makeText(context, "Backup failed", Toast.LENGTH_SHORT).show()
+        e.printStackTrace()
     }
 }
