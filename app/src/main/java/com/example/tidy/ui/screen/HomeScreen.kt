@@ -66,9 +66,10 @@ import java.util.Locale
 
 @Composable
 fun HomeScreen(
-    navController: NavController,
     taskBox: Box<Task>,
     lastResetBox: Box<LastReset>,
+    navController: NavController,
+
     modifier: Modifier = Modifier
 ) {
     var tasks by remember { mutableStateOf(taskBox.all) }
@@ -166,7 +167,7 @@ fun HomeScreen(
             )
             LazyColumn(
                 state = listState,
-                contentPadding = PaddingValues(bottom = 80.dp), // scrollable bottom space
+                contentPadding = PaddingValues(bottom = 80.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(tasks, key = { it.id }) { task ->
