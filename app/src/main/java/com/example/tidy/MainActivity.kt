@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("settings") {
-                            SettingsScreen(taskBox, navController)
+                            SettingsScreen( navController)
                         }
 
                         composable("backup_screen") {
