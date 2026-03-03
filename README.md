@@ -25,11 +25,8 @@ See the LICENSE file for full details.
 
 ## Inspiration
 
-This project was inspired by Grit
+This project was inspired by Grit (https://github.com/shub39/Grit)
 by shub39.
-
-Original project:
-https://github.com/shub39
 
 ## Author
 
