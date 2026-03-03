@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.*
 import com.example.tidy.LastReset
 import com.example.tidy.Task
+import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 
 @Composable
@@ -18,29 +19,29 @@ fun MainScreen(taskBox: Box<Task>, lastResetBox: Box<LastReset>) {
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in listOf("home", "settings")) {
+            if (currentRoute in listOf(Routes.HOME, Routes.SETTINGS)) {
                 BottomBar(navController, currentRoute)
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "home",
+            startDestination = Routes.HOME,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("home") {
+            composable(Routes.HOME) {
                 HomeScreen(taskBox, lastResetBox, navController)
             }
 
-            composable("add_task") {
+            composable(Routes.ADD_TASK) {
                 AddTaskScreen(taskBox, navController)
             }
 
-            composable("settings") {
+            composable(Routes.SETTINGS) {
                 SettingsScreen(navController)
             }
 
-            composable("backup_screen") {
+            composable(Routes.BACKUP) {
                 BackupScreen(taskBox)
             }
         }

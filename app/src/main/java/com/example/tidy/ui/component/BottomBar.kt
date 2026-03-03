@@ -12,14 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.tidy.constants.Routes
 
 @Composable
 fun BottomBar(navController: NavHostController, currentRoute: String?) {
     NavigationBar {
         NavigationBarItem(
-            selected = currentRoute == "home",
+            selected = currentRoute == Routes.HOME,
             onClick = {
-                navController.navigate("home") {
+                navController.navigate(Routes.HOME) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
                 }
@@ -35,9 +36,9 @@ fun BottomBar(navController: NavHostController, currentRoute: String?) {
         )
 
         NavigationBarItem(
-            selected = currentRoute == "settings",
+            selected = currentRoute == Routes.SETTINGS,
             onClick = {
-                navController.navigate("settings") {
+                navController.navigate(Routes.SETTINGS) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
                 }
