@@ -18,20 +18,15 @@
 package com.example.tidy.ui.screen
 
 import android.icu.util.Calendar
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -52,16 +47,12 @@ import com.example.tidy.ui.component.TaskItem
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.example.tidy.LastReset
-import com.example.tidy.MyObjectBox
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.util.Locale
 
 @Composable
