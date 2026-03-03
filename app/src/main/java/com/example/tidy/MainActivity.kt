@@ -69,14 +69,14 @@ class MainActivity : ComponentActivity() {
                             NavigationBarItem(
                                 selected = currentRoute == "home",
                                 onClick = { navController.navigate("home") },
-                                icon = { Icon(Icons.Default.Home, null) },
+                                icon = { Icon(Icons.Default.Home, null, modifier = Modifier.size(30.dp)) },
                                 label = { Text("Home") }
                             )
 
                             NavigationBarItem(
                                 selected = currentRoute == "settings",
                                 onClick = { navController.navigate("settings") },
-                                icon = { Icon(Icons.Default.Settings, null) },
+                                icon = { Icon(Icons.Default.Settings, null, modifier = Modifier.size(30.dp)) },
                                 label = { Text("Settings") }
                             )
                         }
