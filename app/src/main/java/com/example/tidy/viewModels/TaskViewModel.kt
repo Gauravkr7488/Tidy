@@ -34,7 +34,7 @@ import java.util.Locale
 
 class TaskViewModel(
     private val taskBox: Box<Task>,
-    private val lastResetBox: Box<LastReset>
+    private val lastBoxReset: Box<LastReset>
 ) {
     var tasks by mutableStateOf(taskBox.all.toList())
         private set
@@ -74,14 +74,14 @@ class TaskViewModel(
             SimpleDateFormat("dd", Locale.getDefault())
                 .format(Calendar.getInstance().time)
 
-        val existingReset = lastResetBox.get(1)
+        val existingReset = lastBoxReset.get(1)
 
         if (existingReset == null) {
-            lastResetBox.put(LastReset(id = 0, lastResetAt = todayDate))
+            lastBoxReset.put(LastReset(id = 0, lastResetAt = todayDate))
             unhideAllTasks()
         } else if (existingReset.lastResetAt != todayDate) {
             existingReset.lastResetAt = todayDate
-            lastResetBox.put(existingReset)
+            lastBoxReset.put(existingReset)
             unhideAllTasks()
         }
     }
