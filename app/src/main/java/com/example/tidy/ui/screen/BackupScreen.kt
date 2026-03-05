@@ -16,9 +16,6 @@
  */
 package com.example.tidy.ui.screen
 
-import android.content.Context
-import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -44,14 +41,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.tidy.Task
 import com.example.tidy.ui.component.SimpleCard
-import com.google.gson.Gson
-import io.objectbox.Box
+import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
 fun BackupScreen(
-    taskBox: Box<Task>,
+    viewModel: TaskViewModel,
     modifier: Modifier = Modifier
 ) {
 
@@ -61,14 +56,14 @@ fun BackupScreen(
         rememberLauncherForActivityResult(
             ActivityResultContracts.CreateDocument("application/json")
         ) { uri ->
-            uri?.let { createBackup(context, taskBox, it) }
+            uri?.let { viewModel.createBackup(context, it) }
         }
 
     val importLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocument()
         ) { uri ->
-            uri?.let { importBackup(context, taskBox, it) }
+            uri?.let { viewModel.importBackup(context, it) }
         }
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -156,60 +151,5 @@ fun BackupScreen(
                 }
             }
         }
-    }
-}
-
-fun createBackup(
-    context: Context,
-    taskBox: Box<Task>,
-    uri: Uri
-) {
-    try {
-        val tasks = taskBox.all
-        val json = Gson().toJson(tasks)
-
-        context.contentResolver
-            .openOutputStream(uri)
-            ?.use { stream ->
-                stream.write(json.toByteArray())
-            }
-
-        Toast.makeText(context, "Backup successful", Toast.LENGTH_SHORT).show()
-
-    } catch (e: Exception) {
-        Toast.makeText(context, "Backup failed", Toast.LENGTH_SHORT).show()
-        e.printStackTrace()
-    }
-}
-
-fun importBackup(
-    context: Context,
-    taskBox: Box<Task>,
-    uri: Uri
-) {
-    try {
-        val json = context.contentResolver
-            .openInputStream(uri)
-            ?.bufferedReader()
-            ?.readText()
-
-        if (json != null) {
-            val tasks = Gson().fromJson(
-                json,
-                Array<Task>::class.java
-            ).toList()
-
-            taskBox.removeAll()
-            val newTasks = tasks.map {
-                it.copy(id = 0)
-            }
-            taskBox.put(newTasks)
-
-            Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
-        }
-
-    } catch (e: Exception) {
-        Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
-        e.printStackTrace()
     }
 }

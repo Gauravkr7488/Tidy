@@ -20,16 +20,14 @@ package com.example.tidy.ui.screen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
-import io.objectbox.Box
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.*
-import com.example.tidy.LastReset
-import com.example.tidy.Task
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
+import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
-fun MainScreen(taskBox: Box<Task>, lastResetBox: Box<LastReset>) {
+fun MainScreen(viewModel: TaskViewModel) {
     val navController = rememberNavController()
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
@@ -47,11 +45,11 @@ fun MainScreen(taskBox: Box<Task>, lastResetBox: Box<LastReset>) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.HOME) {
-                HomeScreen(taskBox, lastResetBox, navController)
+                HomeScreen(viewModel, navController)
             }
 
             composable(Routes.ADD_TASK) {
-                AddTaskScreen(taskBox, navController)
+                AddTaskScreen(viewModel, navController)
             }
 
             composable(Routes.SETTINGS) {
@@ -59,7 +57,7 @@ fun MainScreen(taskBox: Box<Task>, lastResetBox: Box<LastReset>) {
             }
 
             composable(Routes.BACKUP) {
-                BackupScreen(taskBox)
+                BackupScreen(viewModel)
             }
         }
     }

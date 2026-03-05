@@ -21,26 +21,27 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.remember
 import com.example.tidy.ui.theme.TidyTheme
 import io.objectbox.Box
 import com.example.tidy.ui.screen.MainScreen
+import com.example.tidy.viewModels.TaskViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var taskBox: Box<Task>
-    private lateinit var lastResetBox: Box<LastReset>
+    private lateinit var lastBoxReset: Box<LastReset>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Initialize ObjectBox Box
         val app = application as App
         taskBox = app.boxStore.boxFor(Task::class.java)
-        lastResetBox = app.boxStore.boxFor(LastReset::class.java)
-
+        lastBoxReset = app.boxStore.boxFor(LastReset::class.java)
         enableEdgeToEdge()
         setContent {
+            val viewModel = remember { TaskViewModel(taskBox, lastBoxReset) }
+
             TidyTheme {
-                MainScreen(taskBox, lastResetBox)
+                MainScreen(viewModel)
             }
         }
     }

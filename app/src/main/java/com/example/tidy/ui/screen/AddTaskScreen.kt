@@ -20,12 +20,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,35 +28,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.tidy.Task
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.unit.dp
-import com.example.tidy.ui.theme.TidyTheme
-import io.objectbox.Box
-import com.example.tidy.ui.component.TaskItem
-import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.navigation.NavController
-import androidx.navigation.compose.*
-import com.example.tidy.App
-import com.example.tidy.ui.screen.HomeScreen
-import com.google.android.gms.tasks.Tasks
 import com.example.tidy.ui.component.KeyboardAwareFAB
+import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
 fun AddTaskScreen(
-    taskBox: Box<Task>,
+    viewModel: TaskViewModel,
     navController: NavController, // for navigation back if needed
     modifier: Modifier = Modifier
 ) {
@@ -83,7 +62,10 @@ fun AddTaskScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.End
             ) {
-                KeyboardAwareFAB({ saveTask(taskTitle, taskBox, navController, repeatDaily) })
+                KeyboardAwareFAB {
+                    val saveStatus = viewModel.tryTaskSave(taskTitle, repeatDaily)
+                    if (saveStatus) navController.popBackStack()
+                }
             }
         }
     )
@@ -119,18 +101,5 @@ fun AddTaskScreen(
                 )
             }
         }
-    }
-}
-
-private fun saveTask(
-    taskTitle: String,
-    taskBox: Box<Task>,
-    navController: NavController,
-    repeatDaily: Boolean
-) {
-    if (taskTitle.isNotBlank()) {
-        val newTask = Task(title = taskTitle, repeat = repeatDaily)
-        taskBox.put(newTask)   // save to DB
-        navController.popBackStack() // go back
     }
 }

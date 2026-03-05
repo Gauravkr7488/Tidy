@@ -30,38 +30,16 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Task
-import io.objectbox.Box
+import com.example.tidy.viewModels.TaskViewModel
 
 
 @Composable
 fun TaskItem(
     task: Task,
-    taskBox: Box<Task>,
-    onRefresh: () -> Unit,
+    viewModel: TaskViewModel,
 ) {
+    @Suppress("UNUSED_VALUE")
     var showDialog by remember { mutableStateOf(false) }
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Delete Task") },
-            text = { Text("Are you sure you want to delete '${task.title}'?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    taskBox.remove(task.id)
-                    showDialog = false
-                    onRefresh() // Refresh the list after deletion
-                }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
 
     Card(
         modifier = Modifier
@@ -95,11 +73,37 @@ fun TaskItem(
             Checkbox(
                 checked = task.done,
                 onCheckedChange = { isChecked ->
-                    // Update database directly and then refresh
-                    taskBox.put(task.copy(done = isChecked))
-                    onRefresh()
+                    viewModel.updateTaskDone(task, isChecked)
                 }
             )
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                @Suppress("AssignedValueIsNeverRead")
+                showDialog = false
+            },
+            title = { Text("Delete Task") },
+            text = { Text("Are you sure you want to delete '${task.title}'?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteTask(task.id)
+                    @Suppress("AssignedValueIsNeverRead")
+                    showDialog = false
+                }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    @Suppress("AssignedValueIsNeverRead")
+                    showDialog = false
+                }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
