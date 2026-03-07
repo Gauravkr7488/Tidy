@@ -30,8 +30,8 @@ data class Task(
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
 ){
-    lateinit var subTasks: ToMany<Task>
-    lateinit var parent: ToMany<Task>
+    lateinit var children: ToMany<Task>
+    lateinit var parents: ToMany<Task>
 }
 
 @Entity
