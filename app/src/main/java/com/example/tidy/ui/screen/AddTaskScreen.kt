@@ -64,8 +64,8 @@ fun AddTaskScreen(
                 horizontalAlignment = Alignment.End
             ) {
                 KeyboardAwareFAB {
-                    val saveStatus = taskViewModel.tryTaskSave(taskTitle, repeatDaily)
-                    if (saveStatus != null) navController.popBackStack()
+                    val id = taskViewModel.tryTaskSave(taskTitle, repeatDaily)
+                    if (id != null) navController.popBackStack()
                 }
             }
         }
