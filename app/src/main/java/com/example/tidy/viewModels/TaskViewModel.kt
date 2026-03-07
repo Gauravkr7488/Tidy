@@ -96,13 +96,10 @@ class TaskViewModel(
     fun tryTaskSave(
         taskTitle: String,
         repeatDaily: Boolean
-    ): Boolean {
-        if (taskTitle.isNotBlank()) {
-            val newTask = Task(title = taskTitle, repeat = repeatDaily)
-            taskBox.put(newTask)
-            return true
-        }
-        return false
+    ): Long? {
+        if (taskTitle.isBlank()) return null
+        val newTask = Task(title = taskTitle, repeat = repeatDaily)
+        return taskBox.put(newTask)
     }
 
     fun createBackup(
