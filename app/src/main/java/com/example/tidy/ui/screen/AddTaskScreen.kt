@@ -37,6 +37,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.navigation.NavController
 import com.example.tidy.ui.component.KeyboardAwareFAB
+import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
@@ -100,6 +101,9 @@ fun AddTaskScreen(
                     onCheckedChange = { repeatDaily = it }
                 )
             }
+            SubTaskMenu("Child Tasks")
+            SubTaskMenu("Parent Tasks")
+
         }
     }
 }
