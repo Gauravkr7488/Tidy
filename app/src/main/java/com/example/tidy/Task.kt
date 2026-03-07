@@ -17,9 +17,9 @@
 
 package com.example.tidy
 
-import android.R
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
+import io.objectbox.relation.ToMany
 
 @Entity
 data class Task(
@@ -29,7 +29,10 @@ data class Task(
     var repeat: Boolean = false,
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
-)
+){
+    lateinit var subTasks: ToMany<Task>
+    lateinit var parent: ToMany<Task>
+}
 
 @Entity
 data class LastReset(
