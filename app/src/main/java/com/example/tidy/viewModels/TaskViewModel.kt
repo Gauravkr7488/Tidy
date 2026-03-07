@@ -102,6 +102,22 @@ class TaskViewModel(
         return taskBox.put(newTask)
     }
 
+    fun updateTask(
+        taskId: Long,
+        taskTitle: String,
+        repeatDaily: Boolean
+    ): Long? {
+        if (taskTitle.isBlank()) return null
+
+        val task = taskBox.get(taskId) ?: return null
+
+        task.title = taskTitle
+        task.repeat = repeatDaily
+
+        return taskBox.put(task)
+
+    }
+
     fun createBackup(
         context: Context,
         uri: Uri
