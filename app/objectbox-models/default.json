@@ -40,7 +40,18 @@
           "type": 6
         }
       ],
-      "relations": []
+      "relations": [
+        {
+          "id": "1:2666408969235493687",
+          "name": "children",
+          "targetId": "1:96864919494569259"
+        },
+        {
+          "id": "2:7122720424098343887",
+          "name": "parents",
+          "targetId": "1:96864919494569259"
+        }
+      ]
     },
     {
       "id": "2:1828771871313724380",
@@ -64,7 +75,7 @@
   ],
   "lastEntityId": "2:1828771871313724380",
   "lastIndexId": "0:0",
-  "lastRelationId": "0:0",
+  "lastRelationId": "2:7122720424098343887",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,

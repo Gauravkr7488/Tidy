@@ -38,6 +38,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.navigation.NavController
 import com.example.tidy.ui.component.KeyboardAwareFAB
 import com.example.tidy.ui.component.SubTaskMenu
+import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
@@ -54,6 +55,7 @@ fun AddTaskScreen(
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         keyboardController?.show()
+        addTaskViewModel.startAdoption(taskViewModel)
     }
 
     Scaffold(
@@ -64,7 +66,7 @@ fun AddTaskScreen(
                 horizontalAlignment = Alignment.End
             ) {
                 KeyboardAwareFAB {
-                    val id = taskViewModel.tryTaskSave(taskTitle, repeatDaily)
+                    val id = addTaskViewModel.saveTask(taskTitle, repeatDaily, taskViewModel)
                     if (id != null) navController.popBackStack()
                 }
             }
@@ -101,8 +103,10 @@ fun AddTaskScreen(
                     onCheckedChange = { repeatDaily = it }
                 )
             }
-            SubTaskMenu("Child Tasks")
-            SubTaskMenu("Parent Tasks")
+            SubTaskMenu("Child Tasks", { addTaskViewModel.addNewChild(navController) },
+                { addTaskViewModel.addExistingChild() })
+
+//            SubTaskMenu("Parent Tasks", addNewParent(), addExistingParent())
 
         }
     }
