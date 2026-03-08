@@ -42,15 +42,15 @@ import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
 fun AddTaskScreen(
-    viewModel: TaskViewModel,
-    navController: NavController, // for navigation back if needed
+    taskViewModel: TaskViewModel,
+    addTaskViewModel: AddTaskViewModel,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     var taskTitle by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var repeatDaily by remember { mutableStateOf(false) }
-
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         keyboardController?.show()
