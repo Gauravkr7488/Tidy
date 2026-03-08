@@ -24,6 +24,8 @@ import com.example.tidy.toggleValue
 @Composable
 fun SubTaskMenu(
     label: String,
+    addNewTask: () -> Unit,
+    addExistingTask: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
@@ -63,7 +65,7 @@ fun SubTaskMenu(
             ) {
 
                 OutlinedButton(
-                    onClick = { /* create new */ },
+                    onClick = { addNewTask() },
                     modifier = Modifier.weight(1f)
                 ) {
                     Spacer(Modifier.width(6.dp))
@@ -71,7 +73,7 @@ fun SubTaskMenu(
                 }
 
                 OutlinedButton(
-                    onClick = { /* add existing */ },
+                    onClick = { addExistingTask() },
                     modifier = Modifier.weight(1f)
                 ) {
                     Spacer(Modifier.width(6.dp))
