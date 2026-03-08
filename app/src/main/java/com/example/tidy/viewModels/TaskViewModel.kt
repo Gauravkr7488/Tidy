@@ -171,13 +171,12 @@ class TaskViewModel(
             e.printStackTrace()
         }
     }
-    fun adoption(childId: Long, parentId: Long): Boolean {
+    fun addChild(childId: Long, parentId: Long): Boolean {
         val child = taskBox.get(childId) ?: return false
         val parent = taskBox.get(parentId) ?: return false
 
         // Guard against self-referencing
         if (childId == parentId) return false
-
 
         parent.children.add(child)
         taskBox.put(parent)

@@ -21,7 +21,6 @@ import androidx.navigation.NavController
 import com.example.tidy.constants.Routes
 
 class AddTaskViewModel{
-    private var flag: String? = null
     private var taskId: Long? = null
 
     private var hostTaskId: Long? = null
@@ -29,12 +28,6 @@ class AddTaskViewModel{
     private var updateThisTask: Boolean = false
 
     private var addChild: Boolean = false
-
-    fun getFlag(): String? {
-        val f = flag
-        flag = null
-        return f
-    }
 
     fun setId(id: Long) {
         taskId = id
@@ -45,18 +38,6 @@ class AddTaskViewModel{
         taskId = null
         return id
     }
-
-    fun setChildFlag() {
-        flag = "child"
-    }
-
-    fun setParentFlag() {
-        flag = "parent"
-    }
-//
-//    fun setUpdateFlag(){
-//        updateTask = true
-//    }
 
     fun addNewChild(
         navController: NavController,
@@ -76,9 +57,7 @@ class AddTaskViewModel{
             hostTaskId = null
             return taskViewModel.updateTask(id, taskTitle, repeatDaily)
         }
-        var id: Long? = null
-        id = taskViewModel.tryTaskSave(taskTitle, repeatDaily)
-        if (id == null) return null
+        val id = taskViewModel.tryTaskSave(taskTitle, repeatDaily) ?: return null
         setId(id)
         return id
     }
@@ -90,9 +69,8 @@ class AddTaskViewModel{
         val hostId = taskViewModel.tryTaskSave("placeHolder") ?: return
         if (addChild) {
             addChild = false
-            taskViewModel.adoption(id, hostId)
+            taskViewModel.addChild(id, hostId)
         }
-        if (flag == "parent") taskViewModel.adoption( hostId, id) // update this
         updateThisTask = true
         hostTaskId = hostId
     }
