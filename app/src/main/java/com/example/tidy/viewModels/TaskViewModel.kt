@@ -110,9 +110,9 @@ class TaskViewModel(
         if (taskTitle.isBlank()) return null
 
         val task = taskBox.get(taskId) ?: return null
-
         task.title = taskTitle
         task.repeat = repeatDaily
+        println(task)
 
         return taskBox.put(task)
 
@@ -175,11 +175,13 @@ class TaskViewModel(
         val child = taskBox.get(childId) ?: return false
         val parent = taskBox.get(parentId) ?: return false
 
-        child.parents.add(parent)
+//        child.parents.add(parent)
         parent.children.add(child)
 
-        taskBox.put(child)
         taskBox.put(parent)
+        parent.children.forEach { println(it.title) }
+        child.parents.forEach { println(it.title) }
+
         return true
     }
 }

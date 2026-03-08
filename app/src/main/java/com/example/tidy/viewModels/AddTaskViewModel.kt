@@ -24,9 +24,11 @@ class AddTaskViewModel{
     private var flag: String? = null
     private var taskId: Long? = null
 
-    private var hostTaskIdRun: Long? = null
+    private var hostTaskId: Long? = null
 
-    private var updateFlag: Boolean = false
+    private var updateThisTask: Boolean = false
+
+    private var addChild: Boolean = false
 
     fun getFlag(): String? {
         val f = flag
@@ -51,15 +53,15 @@ class AddTaskViewModel{
     fun setParentFlag() {
         flag = "parent"
     }
-
-    fun setUpdateFlag(){
-        updateFlag = true
-    }
+//
+//    fun setUpdateFlag(){
+//        updateTask = true
+//    }
 
     fun addNewChild(
         navController: NavController,
         ) {
-        setChildFlag()
+        addChild = true
         navController.navigate(Routes.ADD_TASK)
     }
 
@@ -68,11 +70,11 @@ class AddTaskViewModel{
         repeatDaily: Boolean,
         taskViewModel: TaskViewModel
     ): Long? {
-        val flag = updateFlag
-        updateFlag = false
-        if (flag){
-            val id = hostTaskIdRun ?: return null
-            taskViewModel.updateTask(id, taskTitle, repeatDaily)
+        if (updateThisTask){
+            updateThisTask = false
+            val id = hostTaskId ?: return null
+            hostTaskId = null
+            return taskViewModel.updateTask(id, taskTitle, repeatDaily)
         }
         var id: Long? = null
         id = taskViewModel.tryTaskSave(taskTitle, repeatDaily)
@@ -85,15 +87,14 @@ class AddTaskViewModel{
         taskViewModel: TaskViewModel
     ){
         val id = getId()?: return
-        val flag = getFlag() ?: return
-        val hostTaskId = taskViewModel.tryTaskSave("placeHolder") ?: return
-        if (flag == "child") {
-            taskViewModel.adoption(id, hostTaskId)
-            println("reaching here")
+        val hostId = taskViewModel.tryTaskSave("placeHolder") ?: return
+        if (addChild) {
+            addChild = false
+            taskViewModel.adoption(id, hostId)
         }
-        if (flag == "parent") taskViewModel.adoption( hostTaskId, id)
-        setUpdateFlag()
-        hostTaskIdRun = hostTaskId
+        if (flag == "parent") taskViewModel.adoption( hostId, id) // update this
+        updateThisTask = true
+        hostTaskId = hostId
     }
     fun addExistingChild(){
         /* later */

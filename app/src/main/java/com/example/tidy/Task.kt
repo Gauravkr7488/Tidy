@@ -17,6 +17,7 @@
 
 package com.example.tidy
 
+import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToMany
@@ -30,6 +31,7 @@ data class Task(
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
 ){
+//    @Backlink(to = "parents")
     lateinit var children: ToMany<Task>
     lateinit var parents: ToMany<Task>
 }
