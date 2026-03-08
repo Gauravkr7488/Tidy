@@ -178,8 +178,6 @@ class TaskViewModel(
         // Guard against self-referencing
         if (childId == parentId) return false
 
-        // Guard against reverse relationship (child becoming parent of its own parent)
-        if (parent.parents.any { it.id == childId }) return false
 
         parent.children.add(child)
         taskBox.put(parent)
