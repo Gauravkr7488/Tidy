@@ -175,12 +175,14 @@ class TaskViewModel(
         val child = taskBox.get(childId) ?: return false
         val parent = taskBox.get(parentId) ?: return false
 
-//        child.parents.add(parent)
-        parent.children.add(child)
+        // Guard against self-referencing
+        if (childId == parentId) return false
 
+        // Guard against reverse relationship (child becoming parent of its own parent)
+        if (parent.parents.any { it.id == childId }) return false
+
+        parent.children.add(child)
         taskBox.put(parent)
-        parent.children.forEach { println(it.title) }
-        child.parents.forEach { println(it.title) }
 
         return true
     }
