@@ -95,7 +95,7 @@ class TaskViewModel(
 
     fun tryTaskSave(
         taskTitle: String,
-        repeatDaily: Boolean
+        repeatDaily: Boolean = false,
     ): Long? {
         if (taskTitle.isBlank()) return null
         val newTask = Task(title = taskTitle, repeat = repeatDaily)
