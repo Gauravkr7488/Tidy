@@ -64,15 +64,16 @@ class AddTaskViewModel{
 
     fun startAdoption(
         taskViewModel: TaskViewModel
-    ){
-        val id = getId()?: return
-        val hostId = taskViewModel.tryTaskSave("placeHolder") ?: return
+    ): Boolean{
+        val id = getId()?: return false
+        val hostId = taskViewModel.tryTaskSave("placeHolder") ?: return false
         if (addChild) {
             addChild = false
             taskViewModel.addChild(id, hostId)
         }
         updateThisTask = true
         hostTaskId = hostId
+        return true
     }
     fun addExistingChild(){
         /* later */
