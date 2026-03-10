@@ -114,7 +114,8 @@ fun AddTaskScreen(
                 )
             }
             SubTaskMenu(
-                "Child Tasks", { addTaskViewModel.addNewChild(navController) },
+                "Child Tasks",
+                { addTaskViewModel.addNewChild(navController, taskViewModel) },
                 { addTaskViewModel.addExistingChild() },
                 taskChildren
             )
