@@ -153,7 +153,7 @@ fun HomeScreen(
             )
             LazyColumn(
                 state = listState,
-                contentPadding = PaddingValues(bottom = 80.dp),
+                contentPadding = PaddingValues(bottom = 150.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(tasks, key = { it.id }) { task ->
