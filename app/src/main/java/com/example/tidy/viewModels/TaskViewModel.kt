@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.tidy.Task_
 import com.google.gson.Gson
+import io.objectbox.relation.ToMany
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -118,6 +119,11 @@ class TaskViewModel(
 
     }
 
+    fun getTask(taskId: Long): Task? {
+        val task = taskBox.get(taskId) ?: return null
+        return task
+    }
+
     fun createBackup(
         context: Context,
         uri: Uri
@@ -171,6 +177,7 @@ class TaskViewModel(
             e.printStackTrace()
         }
     }
+
     fun addChild(childId: Long, parentId: Long): Boolean {
         val child = taskBox.get(childId) ?: return false
         val parent = taskBox.get(parentId) ?: return false

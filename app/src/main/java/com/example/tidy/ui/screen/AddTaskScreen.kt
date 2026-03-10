@@ -36,10 +36,12 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.navigation.NavController
+import com.example.tidy.Task
 import com.example.tidy.ui.component.KeyboardAwareFAB
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
+import io.objectbox.relation.ToMany
 
 @Composable
 fun AddTaskScreen(
@@ -52,10 +54,16 @@ fun AddTaskScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var repeatDaily by remember { mutableStateOf(false) }
+    var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         keyboardController?.show()
         addTaskViewModel.startAdoption(taskViewModel)
+//        taskChildren = addTaskViewModel.getHostChildren(taskViewModel)
+        taskChildren = addTaskViewModel
+            .getHostChildren(taskViewModel)
+            ?.toList()
+            ?: emptyList()
     }
 
     Scaffold(
@@ -103,8 +111,11 @@ fun AddTaskScreen(
                     onCheckedChange = { repeatDaily = it }
                 )
             }
-            SubTaskMenu("Child Tasks", { addTaskViewModel.addNewChild(navController) },
-                { addTaskViewModel.addExistingChild() })
+            SubTaskMenu(
+                "Child Tasks", { addTaskViewModel.addNewChild(navController) },
+                { addTaskViewModel.addExistingChild() },
+                taskChildren
+            )
 
 //            SubTaskMenu("Parent Tasks", addNewParent(), addExistingParent())
 

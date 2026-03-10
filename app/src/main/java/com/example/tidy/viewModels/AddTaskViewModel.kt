@@ -18,9 +18,11 @@
 package com.example.tidy.viewModels
 
 import androidx.navigation.NavController
+import com.example.tidy.Task
 import com.example.tidy.constants.Routes
+import io.objectbox.relation.ToMany
 
-class AddTaskViewModel{
+class AddTaskViewModel {
     private var taskId: Long? = null
 
     private var hostTaskId: Long? = null
@@ -33,6 +35,12 @@ class AddTaskViewModel{
         taskId = id
     }
 
+    fun getHostChildren(taskViewModel: TaskViewModel): ToMany<Task>? {
+        val id = this.hostTaskId ?: return null
+        val task = taskViewModel.getTask(id) ?: return null
+        return task.children
+    }
+
     fun getId(): Long? {
         val id = taskId
         taskId = null
@@ -41,7 +49,7 @@ class AddTaskViewModel{
 
     fun addNewChild(
         navController: NavController,
-        ) {
+    ) {
         addChild = true
         navController.navigate(Routes.ADD_TASK)
     }
@@ -51,7 +59,7 @@ class AddTaskViewModel{
         repeatDaily: Boolean,
         taskViewModel: TaskViewModel
     ): Long? {
-        if (updateThisTask){
+        if (updateThisTask) {
             updateThisTask = false
             val id = hostTaskId ?: return null
             hostTaskId = null
@@ -64,8 +72,8 @@ class AddTaskViewModel{
 
     fun startAdoption(
         taskViewModel: TaskViewModel
-    ): Boolean{
-        val id = getId()?: return false
+    ): Boolean {
+        val id = getId() ?: return false
         val hostId = taskViewModel.tryTaskSave("placeHolder") ?: return false
         if (addChild) {
             addChild = false
@@ -75,7 +83,8 @@ class AddTaskViewModel{
         hostTaskId = hostId
         return true
     }
-    fun addExistingChild(){
+
+    fun addExistingChild() {
         /* later */
     }
 }

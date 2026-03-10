@@ -77,7 +77,6 @@ fun SettingsScreen(
             )
             LazyColumn(
                 state = listState,
-                contentPadding = PaddingValues(bottom = 80.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(
