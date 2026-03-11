@@ -47,6 +47,7 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
+import com.example.tidy.constants.Routes
 import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 import kotlinx.coroutines.delay
@@ -129,7 +130,10 @@ fun HomeScreen(
 
 //                // Navigate FAB
                 FloatingActionButton(
-                    onClick = { navController.navigate("add_task") },
+                    onClick = {
+                        addTaskViewModel.resetFlags()
+                        navController.navigate(Routes.ADD_TASK)
+                    },
                     modifier = Modifier.size(80.dp)
                 ) {
                     Icon(

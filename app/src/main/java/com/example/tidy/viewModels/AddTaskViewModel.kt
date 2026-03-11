@@ -35,6 +35,13 @@ class AddTaskViewModel {
         taskId = id
     }
 
+    fun resetFlags() {
+        taskId = null
+        hostTaskId = null
+        updateThisTask = false
+        addChild = false
+    }
+
     fun getHostChildren(taskViewModel: TaskViewModel): ToMany<Task>? {
         if (addChild) return null // TODO child or child
         val id = this.hostTaskId ?: return null
@@ -105,7 +112,7 @@ class AddTaskViewModel {
         /* TODO after task list view */
     }
 
-    fun setUpdateState(id: Long){
+    fun setUpdateState(id: Long) {
         this.updateThisTask = true
         hostTaskId = id
     }
