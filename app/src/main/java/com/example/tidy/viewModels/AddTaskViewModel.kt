@@ -36,10 +36,17 @@ class AddTaskViewModel {
     }
 
     fun getHostChildren(taskViewModel: TaskViewModel): ToMany<Task>? {
-        if (addChild) return  null // TODO child or child
+        if (addChild) return null // TODO child or child
         val id = this.hostTaskId ?: return null
         val task = taskViewModel.getTask(id) ?: return null
         return task.children
+    }
+
+    fun getTaskDetails(taskViewModel: TaskViewModel): Pair<String, Boolean>? {
+        if (addChild) return null // TODO child or child
+        val id = this.hostTaskId ?: return null
+        val task = taskViewModel.getTask(id) ?: return null
+        return Pair(task.title, task.repeat)
     }
 
     fun getId(): Long? {
@@ -50,10 +57,16 @@ class AddTaskViewModel {
 
     fun addNewChild(
         navController: NavController,
+        taskTitle: String,
+        repeatDaily: Boolean,
         taskViewModel: TaskViewModel
     ) {
         if (this.hostTaskId == null) {
-            this.hostTaskId = taskViewModel.tryTaskSave("placeHolder") ?: return // TODO add err
+            this.hostTaskId =
+                taskViewModel.tryTaskSave(taskTitle, repeatDaily) ?: return // TODO add err
+        } else {
+            val i = this.hostTaskId ?: return
+            taskViewModel.updateTask(i, taskTitle, repeatDaily) ?: return
         }
         addChild = true
         navController.navigate(Routes.ADD_TASK)

@@ -95,7 +95,7 @@ class TaskViewModel(
     }
 
     fun tryTaskSave(
-        taskTitle: String,
+        taskTitle: String = "no name",
         repeatDaily: Boolean = false,
     ): Long? {
         if (taskTitle.isBlank()) return null

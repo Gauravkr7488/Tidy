@@ -66,6 +66,12 @@ fun AddTaskScreen(
             .getHostChildren(taskViewModel)
             ?.toList()
             ?: emptyList()
+        val details = addTaskViewModel.getTaskDetails(taskViewModel)
+        if (details != null) {
+            val (title, repeat) = details
+            taskTitle = title
+            repeatDaily = repeat
+        }
     }
 
     Scaffold(
@@ -115,7 +121,14 @@ fun AddTaskScreen(
             }
             SubTaskMenu(
                 "Child Tasks",
-                { addTaskViewModel.addNewChild(navController, taskViewModel) },
+                {
+                    addTaskViewModel.addNewChild(
+                        navController,
+                        taskTitle,
+                        repeatDaily,
+                        taskViewModel
+                    )
+                },
                 { addTaskViewModel.addExistingChild() },
                 taskChildren
             )
