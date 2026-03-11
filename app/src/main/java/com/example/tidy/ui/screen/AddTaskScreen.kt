@@ -59,8 +59,6 @@ fun AddTaskScreen(
     var repeatDaily by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
         addTaskViewModel.startAdoption(taskViewModel)
         taskChildren = addTaskViewModel
             .getHostChildren(taskViewModel)
@@ -71,6 +69,10 @@ fun AddTaskScreen(
             val (title, repeat) = details
             taskTitle = title
             repeatDaily = repeat
+        }
+        if (taskTitle.isEmpty()) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
