@@ -40,6 +40,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,6 +60,10 @@ fun SubTaskMenu(
     taskChildren: List<Task>,
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(taskChildren) {
+        if (taskChildren.isNotEmpty()) expanded = true
+    }
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
         label = "iconRotation"
