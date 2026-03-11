@@ -49,7 +49,7 @@ fun MainScreen(taskViewModel: TaskViewModel) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.HOME) {
-                HomeScreen(taskViewModel, navController)
+                HomeScreen(taskViewModel, addTaskViewModel, navController)
             }
 
             composable(Routes.ADD_TASK) {

@@ -104,4 +104,9 @@ class AddTaskViewModel {
     fun addExistingChild() {
         /* TODO after task list view */
     }
+
+    fun setUpdateState(id: Long){
+        this.updateThisTask = true
+        hostTaskId = id
+    }
 }

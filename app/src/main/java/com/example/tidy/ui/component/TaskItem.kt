@@ -29,7 +29,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.tidy.Task
+import com.example.tidy.constants.Routes
+import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 
 
@@ -37,6 +40,8 @@ import com.example.tidy.viewModels.TaskViewModel
 fun TaskItem(
     task: Task,
     viewModel: TaskViewModel,
+    addTaskViewModel: AddTaskViewModel,
+    navController: NavController
 ) {
     @Suppress("UNUSED_VALUE")
     var showDialog by remember { mutableStateOf(false) }
@@ -65,6 +70,10 @@ fun TaskItem(
                             detectTapGestures(
                                 onLongPress = {
                                     showDialog = true
+                                },
+                                onTap = {
+                                    addTaskViewModel.setUpdateState(task.id)
+                                    navController.navigate(Routes.ADD_TASK)
                                 }
                             )
                         }
