@@ -35,6 +35,7 @@ import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
+@Suppress( "AssignedValueIsNeverRead")
 fun TaskItem(
     task: Task,
     viewModel: TaskViewModel,
