@@ -26,7 +26,10 @@ import com.example.tidy.Task
 import io.objectbox.Box
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.tidy.TaskDto
 import com.example.tidy.Task_
+import com.example.tidy.toDto
+import com.example.tidy.toTasks
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -94,15 +97,33 @@ class TaskViewModel(
     }
 
     fun tryTaskSave(
+        taskTitle: String = "no name",
+        repeatDaily: Boolean = false,
+    ): Long? {
+        if (taskTitle.isBlank()) return null
+        val newTask = Task(title = taskTitle, repeat = repeatDaily)
+        return taskBox.put(newTask)
+    }
+
+    fun updateTask(
+        taskId: Long,
         taskTitle: String,
         repeatDaily: Boolean
-    ): Boolean {
-        if (taskTitle.isNotBlank()) {
-            val newTask = Task(title = taskTitle, repeat = repeatDaily)
-            taskBox.put(newTask)
-            return true
-        }
-        return false
+    ): Long? {
+        if (taskTitle.isBlank()) return null
+
+        val task = taskBox.get(taskId) ?: return null
+        task.title = taskTitle
+        task.repeat = repeatDaily
+        println(task)
+
+        return taskBox.put(task)
+
+    }
+
+    fun getTask(taskId: Long): Task? {
+        val task = taskBox.get(taskId) ?: return null
+        return task
     }
 
     fun createBackup(
@@ -111,7 +132,8 @@ class TaskViewModel(
     ) {
         try {
             val tasks = taskBox.all
-            val json = Gson().toJson(tasks)
+            val dtoTasks = tasks.map { it.toDto() }
+            val json = Gson().toJson(dtoTasks)
 
             context.contentResolver
                 .openOutputStream(uri)
@@ -141,14 +163,23 @@ class TaskViewModel(
             if (json != null) {
                 val tasks = Gson().fromJson(
                     json,
-                    Array<Task>::class.java
+                    Array<TaskDto>::class.java
                 ).toList()
 
                 taskBox.removeAll()
-                val newTasks = tasks.map {
-                    it.copy(id = 0)
-                }
+
+                val newTasks = tasks.map { it.toTasks() }
                 taskBox.put(newTasks)
+
+
+                tasks.forEachIndexed { index, dto ->
+                    val task = newTasks[index]
+                    if (dto.childTasks.isNotEmpty()) {
+                        val children = dto.childTasks.mapNotNull { childId -> taskBox.get(childId) }
+                        task.children.addAll(children)
+                        taskBox.put(task)
+                    }
+                }
 
                 Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
             }
@@ -157,5 +188,18 @@ class TaskViewModel(
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
         }
+    }
+
+    fun addChild(childId: Long, parentId: Long): Boolean {
+        val child = taskBox.get(childId) ?: return false
+        val parent = taskBox.get(parentId) ?: return false
+
+        // Guard against self-referencing
+        if (childId == parentId) return false
+
+        parent.children.add(child)
+        taskBox.put(parent)
+
+        return true
     }
 }

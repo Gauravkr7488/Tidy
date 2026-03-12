@@ -47,17 +47,20 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
+import com.example.tidy.constants.Routes
+import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
-    viewModel: TaskViewModel,
+    taskViewModel: TaskViewModel,
+    addTaskViewModel: AddTaskViewModel,
     navController: NavController,
 
     modifier: Modifier = Modifier
 ) {
-    val tasks = viewModel.tasks
+    val tasks = taskViewModel.tasks
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val listState = rememberLazyListState()
     var previousOffset by remember { mutableIntStateOf(0) }
@@ -96,7 +99,7 @@ fun HomeScreen(
     )
     // This will run whenever HomeScreen is visible again
     LaunchedEffect(currentBackStackEntry) {
-        viewModel.refreshTasks()
+        taskViewModel.refreshTasks()
     }
     val hasDoneTask = tasks.any { it.done }
     Scaffold(
@@ -112,8 +115,8 @@ fun HomeScreen(
                 if (hasDoneTask) {
                     FloatingActionButton(
                         onClick = {
-                            viewModel.cleanCompletedTasks()
-                            viewModel.refreshTasks()
+                            taskViewModel.cleanCompletedTasks()
+                            taskViewModel.refreshTasks()
                         },
                         modifier = Modifier.size(80.dp)
                     ) {
@@ -127,7 +130,10 @@ fun HomeScreen(
 
 //                // Navigate FAB
                 FloatingActionButton(
-                    onClick = { navController.navigate("add_task") },
+                    onClick = {
+                        addTaskViewModel.resetFlags()
+                        navController.navigate(Routes.ADD_TASK)
+                    },
                     modifier = Modifier.size(80.dp)
                 ) {
                     Icon(
@@ -153,13 +159,15 @@ fun HomeScreen(
             )
             LazyColumn(
                 state = listState,
-                contentPadding = PaddingValues(bottom = 80.dp),
+                contentPadding = PaddingValues(bottom = 150.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(tasks, key = { it.id }) { task ->
                     TaskItem(
                         task = task,
-                        viewModel
+                        taskViewModel,
+                        addTaskViewModel,
+                        navController
                     )
                 }
             }

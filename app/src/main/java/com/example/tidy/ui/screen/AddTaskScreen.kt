@@ -18,41 +18,62 @@ package com.example.tidy.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.tidy.Task
 import com.example.tidy.ui.component.KeyboardAwareFAB
+import com.example.tidy.ui.component.SubTaskMenu
+import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
 fun AddTaskScreen(
-    viewModel: TaskViewModel,
-    navController: NavController, // for navigation back if needed
+    taskViewModel: TaskViewModel,
+    addTaskViewModel: AddTaskViewModel,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     var taskTitle by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var repeatDaily by remember { mutableStateOf(false) }
-
+    var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
+        addTaskViewModel.startAdoption(taskViewModel)
+        taskChildren = addTaskViewModel
+            .getHostChildren(taskViewModel)
+            ?.toList()
+            ?: emptyList()
+        val details = addTaskViewModel.getTaskDetails(taskViewModel)
+        if (details != null) {
+            val (title, repeat) = details
+            taskTitle = title
+            repeatDaily = repeat
+        }
+        if (taskTitle.isEmpty()) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
 
     Scaffold(
@@ -63,8 +84,8 @@ fun AddTaskScreen(
                 horizontalAlignment = Alignment.End
             ) {
                 KeyboardAwareFAB {
-                    val saveStatus = viewModel.tryTaskSave(taskTitle, repeatDaily)
-                    if (saveStatus) navController.popBackStack()
+                    val id = addTaskViewModel.saveTask(taskTitle, repeatDaily, taskViewModel)
+                    if (id != null) navController.popBackStack()
                 }
             }
         }
@@ -100,6 +121,19 @@ fun AddTaskScreen(
                     onCheckedChange = { repeatDaily = it }
                 )
             }
+            SubTaskMenu(
+                "Child Tasks",
+                {
+                    addTaskViewModel.addNewChild(
+                        navController,
+                        taskTitle,
+                        repeatDaily,
+                        taskViewModel
+                    )
+                },
+                { addTaskViewModel.addExistingChild() },
+                taskChildren
+            )
         }
     }
 }

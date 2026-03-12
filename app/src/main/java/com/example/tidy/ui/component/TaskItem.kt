@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package com.example.tidy.ui.component
 
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -29,80 +28,115 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.tidy.Task
+import com.example.tidy.constants.Routes
+import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 
-
 @Composable
+@Suppress( "AssignedValueIsNeverRead")
 fun TaskItem(
     task: Task,
     viewModel: TaskViewModel,
+    addTaskViewModel: AddTaskViewModel,
+    navController: NavController
 ) {
-    @Suppress("UNUSED_VALUE")
     var showDialog by remember { mutableStateOf(false) }
+    if (task.parents.isNotEmpty()) return
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    textDecoration = if (task.done) TextDecoration.LineThrough else TextDecoration.None,
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .fillMaxWidth()
-                        .pointerInput(Unit) {
-                            detectTapGestures(
-                                onLongPress = {
-                                    showDialog = true
-                                }
-                            )
-                        }
-                )
-            }
-            Checkbox(
-                checked = task.done,
-                onCheckedChange = { isChecked ->
-                    viewModel.updateTaskDone(task, isChecked)
-                }
+        Column {
+            // Parent task row
+            TaskRow(
+                task = task,
+                viewModel = viewModel,
+                addTaskViewModel = addTaskViewModel,
+                navController = navController,
+                onLongPress = { showDialog = true }
             )
+
+            // Children
+            if (task.children.isNotEmpty()) {
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
+                task.children.forEach { child ->
+                    TaskRow(
+                        task = child,
+                        viewModel = viewModel,
+                        addTaskViewModel = addTaskViewModel,
+                        navController = navController,
+                        onLongPress = { showDialog = true },
+                        modifier = Modifier.padding(start = 24.dp) // indent children
+                    )
+                }
+            }
         }
     }
 
     if (showDialog) {
         AlertDialog(
-            onDismissRequest = {
-                @Suppress("AssignedValueIsNeverRead")
-                showDialog = false
-            },
+
+            onDismissRequest = { showDialog = false },
             title = { Text("Delete Task") },
             text = { Text("Are you sure you want to delete '${task.title}'?") },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteTask(task.id)
-                    @Suppress("AssignedValueIsNeverRead")
                     showDialog = false
                 }) {
                     Text("Delete", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    @Suppress("AssignedValueIsNeverRead")
-                    showDialog = false
-                }) {
+                TextButton(onClick = { showDialog = false }) {
                     Text("Cancel")
                 }
+            }
+        )
+    }
+}
+@Composable
+fun TaskRow(
+    task: Task,
+    viewModel: TaskViewModel,
+    addTaskViewModel: AddTaskViewModel,
+    navController: NavController,
+    onLongPress: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = task.title,
+                style = MaterialTheme.typography.bodyLarge,
+                textDecoration = if (task.done) TextDecoration.LineThrough else TextDecoration.None,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .fillMaxWidth()
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onLongPress = { onLongPress() },
+                            onTap = {
+                                addTaskViewModel.setUpdateState(task.id)
+                                navController.navigate(Routes.ADD_TASK)
+                            }
+                        )
+                    }
+            )
+        }
+        Checkbox(
+            checked = task.done,
+            onCheckedChange = { isChecked ->
+                viewModel.updateTaskDone(task, isChecked)
             }
         )
     }
