@@ -45,6 +45,9 @@ import com.example.tidy.ui.component.KeyboardAwareFAB
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun AddTaskScreen(
@@ -58,6 +61,7 @@ fun AddTaskScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     var repeatDaily by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
+    var createdAt = ""
     LaunchedEffect(Unit) {
         addTaskViewModel.startAdoption(taskViewModel)
         taskChildren = addTaskViewModel
@@ -73,6 +77,14 @@ fun AddTaskScreen(
         if (taskTitle.isEmpty()) {
             focusRequester.requestFocus()
             keyboardController?.show()
+        }
+        val t = addTaskViewModel.getTask(taskViewModel)
+        if (t != null) {
+            val readable = SimpleDateFormat(
+                "MMM dd, yyyy hh:mm a",
+                Locale.getDefault()
+            ).format(Date(t.createdAt))
+            createdAt = readable
         }
     }
 
@@ -134,6 +146,14 @@ fun AddTaskScreen(
                 { addTaskViewModel.addExistingChild() },
                 taskChildren
             )
+            if (createdAt != "") {
+                Text(
+                    text = "Created $createdAt",
+                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
         }
     }
 }

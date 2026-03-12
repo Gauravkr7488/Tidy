@@ -116,4 +116,10 @@ class AddTaskViewModel {
         this.updateThisTask = true
         hostTaskId = id
     }
+
+    fun getTask(taskViewModel: TaskViewModel): Task? {
+        val id = this.hostTaskId ?: return null
+        val task = taskViewModel.getTask(id) ?: return null
+        return task
+    }
 }
