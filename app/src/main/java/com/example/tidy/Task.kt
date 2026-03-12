@@ -30,11 +30,10 @@ data class Task(
     var repeat: Boolean = false,
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
-){
+) {
     lateinit var children: ToMany<Task>
 
     @Backlink(to = "children")
-    @Transient
     lateinit var parents: ToMany<Task>
 }
 
@@ -43,3 +42,39 @@ data class LastReset(
     @Id var id: Long = 1,
     var lastResetAt: String
 )
+
+data class TaskDto(
+    var id: Long = 0,
+    var title: String,
+    var done: Boolean = false,
+    var repeat: Boolean = false,
+    var hide: Boolean = false,
+    var parentTasks: List<Long> = emptyList(),
+    var childTasks: List<Long> = emptyList(),
+    var createdAt: Long = System.currentTimeMillis(),
+
+    )
+
+fun Task.toDto(): TaskDto {
+    return TaskDto(
+        id = id,
+        title = title,
+        done = done,
+        repeat = repeat,
+        hide = hide,
+        createdAt = createdAt,
+//        parentTasks = parents.map { it.id },
+        childTasks = children.map { it.id }
+    )
+}
+
+fun TaskDto.toTasks(): Task {
+    return Task(
+        id = id,
+        title = title,
+        done = done,
+        repeat = repeat,
+        hide = hide,
+        createdAt = createdAt
+    )
+}
