@@ -21,6 +21,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.UnfoldLess
+import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +38,7 @@ import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
-@Suppress( "AssignedValueIsNeverRead")
+@Suppress("AssignedValueIsNeverRead")
 fun TaskItem(
     task: Task,
     viewModel: TaskViewModel,
@@ -44,7 +47,7 @@ fun TaskItem(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     if (task.parents.isNotEmpty()) return
-
+    var expanded by remember { mutableStateOf(false) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -57,11 +60,13 @@ fun TaskItem(
                 viewModel = viewModel,
                 addTaskViewModel = addTaskViewModel,
                 navController = navController,
-                onLongPress = { showDialog = true }
+                onLongPress = { showDialog = true },
+                onExpandClick = { expanded = !expanded },
+                expanded = expanded
             )
 
             // Children
-            if (task.children.isNotEmpty()) {
+            if (task.children.isNotEmpty() && expanded) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
                 task.children.forEach { child ->
                     TaskRow(
@@ -72,6 +77,7 @@ fun TaskItem(
                         onLongPress = { showDialog = true },
                         modifier = Modifier.padding(start = 24.dp) // indent children
                     )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 4.dp))
                 }
             }
         }
@@ -99,6 +105,7 @@ fun TaskItem(
         )
     }
 }
+
 @Composable
 fun TaskRow(
     task: Task,
@@ -106,8 +113,11 @@ fun TaskRow(
     addTaskViewModel: AddTaskViewModel,
     navController: NavController,
     onLongPress: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onExpandClick: () -> Unit = {},
+    expanded: Boolean = false,
 ) {
+
     Row(
         modifier = modifier
             .padding(8.dp)
@@ -133,11 +143,23 @@ fun TaskRow(
                     }
             )
         }
-        Checkbox(
-            checked = task.done,
-            onCheckedChange = { isChecked ->
-                viewModel.updateTaskDone(task, isChecked)
+        if (task.children.isNotEmpty()) {
+            IconButton(
+                onClick = { onExpandClick() }
+            ) {
+                Icon(
+                    imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
+                    contentDescription = null
+                )
             }
-        )
+        } else {
+            Checkbox(
+                checked = task.done,
+                onCheckedChange = { isChecked ->
+                    viewModel.updateTaskDone(task, isChecked)
+                }
+            )
+        }
+
     }
 }
