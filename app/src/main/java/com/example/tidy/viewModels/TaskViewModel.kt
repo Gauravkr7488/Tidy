@@ -49,7 +49,7 @@ class TaskViewModel(
 
     fun cleanCompletedTasks() {
         taskBox.all
-            .filter { it.done }
+            .filter { it.done && it.parents.all { parent -> parent.done }}
             .forEach { task ->
                 if (task.repeat) {
                     task.done = false
