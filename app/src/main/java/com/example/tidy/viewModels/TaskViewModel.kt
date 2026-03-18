@@ -49,7 +49,7 @@ class TaskViewModel(
 
     fun cleanCompletedTasks() {
         taskBox.all
-            .filter { it.done && it.parents.all { parent -> parent.done }}
+            .filter { it.done && it.parents.all { parent -> parent.done } }
             .forEach { task ->
                 if (task.repeat) {
                     task.done = false
@@ -69,6 +69,16 @@ class TaskViewModel(
 
     fun updateTaskDone(task: Task, isChecked: Boolean) {
         taskBox.put(task.copy(done = isChecked))
+        task.parents.forEach { parent ->
+            val allChildrenDone = parent.children.all { it.done }
+
+            if (allChildrenDone) {
+                taskBox.put(parent.copy(done = true))
+            }else{
+                taskBox.put(parent.copy(done = false))
+
+            }
+        }
         refreshTasks()
     }
 
