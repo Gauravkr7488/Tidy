@@ -183,9 +183,9 @@ class TaskViewModel(
                     Array<TaskDto>::class.java
                 ).toList()
 
-                taskBox.removeAll()
 
                 val newTasks = tasks.map { it.toTasks() }
+                taskBox.removeAll()
                 taskBox.put(newTasks)
 
 
