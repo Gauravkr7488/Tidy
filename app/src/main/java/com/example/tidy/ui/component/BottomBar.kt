@@ -39,6 +39,7 @@ fun BottomBar(navController: NavHostController, currentRoute: String?) {
         NavigationBarItem(
             selected = currentRoute == Routes.HOME,
             onClick = {
+                if (currentRoute == Routes.HOME) return@NavigationBarItem
                 navController.navigate(Routes.HOME) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
@@ -56,6 +57,7 @@ fun BottomBar(navController: NavHostController, currentRoute: String?) {
         NavigationBarItem(
             selected = currentRoute == Routes.NOTE,
             onClick = {
+                if (currentRoute == Routes.NOTE) return@NavigationBarItem
                 navController.navigate(Routes.NOTE) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
@@ -73,6 +75,7 @@ fun BottomBar(navController: NavHostController, currentRoute: String?) {
         NavigationBarItem(
             selected = currentRoute == Routes.SETTINGS,
             onClick = {
+                if (currentRoute == Routes.SETTINGS) return@NavigationBarItem
                 navController.navigate(Routes.SETTINGS) {
                     popUpTo(navController.graph.startDestinationId)
                     launchSingleTop = true
