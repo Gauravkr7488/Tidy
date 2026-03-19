@@ -28,6 +28,7 @@ data class Task(
     var title: String,
     var done: Boolean = false,
     var repeat: Boolean = false,
+    var description: String = "",
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
 ) {
@@ -48,6 +49,7 @@ data class TaskDto(
     var title: String,
     var done: Boolean = false,
     var repeat: Boolean = false,
+    var description: String = "",
     var hide: Boolean = false,
     var parentTasks: List<Long> = emptyList(),
     var childTasks: List<Long> = emptyList(),
@@ -61,6 +63,7 @@ fun Task.toDto(): TaskDto {
         title = title,
         done = done,
         repeat = repeat,
+        description = description,
         hide = hide,
         createdAt = createdAt,
 //        parentTasks = parents.map { it.id },
@@ -74,6 +77,7 @@ fun TaskDto.toTasks(): Task {
         title = title,
         done = done,
         repeat = repeat,
+        description = description,
         hide = hide,
         createdAt = createdAt
     )
