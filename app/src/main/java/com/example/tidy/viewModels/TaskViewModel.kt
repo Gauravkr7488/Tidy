@@ -74,7 +74,7 @@ class TaskViewModel(
 
             if (allChildrenDone) {
                 taskBox.put(parent.copy(done = true))
-            }else{
+            } else {
                 taskBox.put(parent.copy(done = false))
 
             }
@@ -108,17 +108,20 @@ class TaskViewModel(
 
     fun tryTaskSave(
         taskTitle: String = "no name",
+        note: Boolean = false,
         repeatDaily: Boolean = false,
         description: String = "",
     ): Long? {
         if (taskTitle.isBlank()) return null
-        val newTask = Task(title = taskTitle, repeat = repeatDaily, description = description)
+        val newTask =
+            Task(title = taskTitle, note = note, repeat = repeatDaily, description = description)
         return taskBox.put(newTask)
     }
 
     fun updateTask(
         taskId: Long,
         taskTitle: String,
+        note: Boolean = false,
         repeatDaily: Boolean = false,
         description: String = "",
     ): Long? {
@@ -126,6 +129,7 @@ class TaskViewModel(
 
         val task = taskBox.get(taskId) ?: return null
         task.title = taskTitle
+        task.note = note
         task.repeat = repeatDaily
         task.description = description
         println(task)

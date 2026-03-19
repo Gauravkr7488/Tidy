@@ -86,3 +86,10 @@ fun TaskDto.toTasks(): Task {
         createdAt = createdAt
     )
 }
+
+data class TaskInfo(
+    val title: String,
+    val description: String,
+    val note: Boolean,
+    val repeat: Boolean,
+)

@@ -73,10 +73,11 @@ fun AddTaskScreen(
             ?: emptyList()
         val details = addTaskViewModel.getTaskDetails(taskViewModel)
         if (details != null) {
-            val (title, repeat, desc) = details
+            val (title, desc, noteStat, repeat) = details
             taskTitle = title
-            repeatDaily = repeat
             description = desc
+            note = noteStat
+            repeatDaily = repeat
         }
         if (taskTitle.isEmpty()) {
             focusRequester.requestFocus()
@@ -102,6 +103,7 @@ fun AddTaskScreen(
                 KeyboardAwareFAB {
                     val id = addTaskViewModel.saveTask(
                         taskTitle,
+                        note,
                         repeatDaily,
                         description,
                         taskViewModel
@@ -170,6 +172,7 @@ fun AddTaskScreen(
                         addTaskViewModel.addNewChild(
                             navController,
                             taskTitle,
+                            note,
                             repeatDaily,
                             description,
                             taskViewModel
