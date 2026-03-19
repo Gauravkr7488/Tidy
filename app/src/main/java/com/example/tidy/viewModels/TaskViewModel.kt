@@ -171,6 +171,7 @@ class TaskViewModel(
         context: Context,
         uri: Uri
     ) {
+        val oldTasks = taskBox.all
         try {
             val json = context.contentResolver
                 .openInputStream(uri)
@@ -202,6 +203,7 @@ class TaskViewModel(
             }
 
         } catch (e: Exception) {
+            taskBox.put(oldTasks)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
         }
