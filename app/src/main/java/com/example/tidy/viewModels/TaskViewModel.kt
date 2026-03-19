@@ -109,22 +109,25 @@ class TaskViewModel(
     fun tryTaskSave(
         taskTitle: String = "no name",
         repeatDaily: Boolean = false,
+        description: String = "",
     ): Long? {
         if (taskTitle.isBlank()) return null
-        val newTask = Task(title = taskTitle, repeat = repeatDaily)
+        val newTask = Task(title = taskTitle, repeat = repeatDaily, description = description)
         return taskBox.put(newTask)
     }
 
     fun updateTask(
         taskId: Long,
         taskTitle: String,
-        repeatDaily: Boolean
+        repeatDaily: Boolean = false,
+        description: String = "",
     ): Long? {
         if (taskTitle.isBlank()) return null
 
         val task = taskBox.get(taskId) ?: return null
         task.title = taskTitle
         task.repeat = repeatDaily
+        task.description = description
         println(task)
 
         return taskBox.put(task)

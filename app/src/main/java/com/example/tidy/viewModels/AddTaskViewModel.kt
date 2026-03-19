@@ -49,11 +49,11 @@ class AddTaskViewModel {
         return task.children
     }
 
-    fun getTaskDetails(taskViewModel: TaskViewModel): Pair<String, Boolean>? {
+    fun getTaskDetails(taskViewModel: TaskViewModel): Triple<String, Boolean, String>? {
         if (addChild) return null // TODO child or child
         val id = this.hostTaskId ?: return null
         val task = taskViewModel.getTask(id) ?: return null
-        return Pair(task.title, task.repeat)
+        return Triple(task.title, task.repeat, task.description)
     }
 
     fun getId(): Long? {
@@ -66,14 +66,15 @@ class AddTaskViewModel {
         navController: NavController,
         taskTitle: String,
         repeatDaily: Boolean,
+        description: String,
         taskViewModel: TaskViewModel
     ) {
         if (this.hostTaskId == null) {
             this.hostTaskId =
-                taskViewModel.tryTaskSave(taskTitle, repeatDaily) ?: return // TODO add err
+                taskViewModel.tryTaskSave(taskTitle, repeatDaily, description = description) ?: return // TODO add err
         } else {
             val i = this.hostTaskId ?: return
-            taskViewModel.updateTask(i, taskTitle, repeatDaily) ?: return
+            taskViewModel.updateTask(i, taskTitle, repeatDaily, description = description) ?: return
         }
         addChild = true
         navController.navigate(Routes.ADD_TASK)
@@ -82,15 +83,16 @@ class AddTaskViewModel {
     fun saveTask(
         taskTitle: String,
         repeatDaily: Boolean,
+        description: String,
         taskViewModel: TaskViewModel
     ): Long? {
         if (updateThisTask && !addChild) { // TODO when child of child
             updateThisTask = false
             val id = hostTaskId ?: return null
             hostTaskId = null
-            return taskViewModel.updateTask(id, taskTitle, repeatDaily)
+            return taskViewModel.updateTask(id, taskTitle, repeatDaily, description)
         }
-        val id = taskViewModel.tryTaskSave(taskTitle, repeatDaily) ?: return null
+        val id = taskViewModel.tryTaskSave(taskTitle, repeatDaily, description) ?: return null
         setId(id)
         return id
     }

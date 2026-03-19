@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -57,6 +58,7 @@ fun AddTaskScreen(
     modifier: Modifier = Modifier
 ) {
     var taskTitle by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var repeatDaily by remember { mutableStateOf(false) }
@@ -70,9 +72,10 @@ fun AddTaskScreen(
             ?: emptyList()
         val details = addTaskViewModel.getTaskDetails(taskViewModel)
         if (details != null) {
-            val (title, repeat) = details
+            val (title, repeat, desc) = details
             taskTitle = title
             repeatDaily = repeat
+            description = desc
         }
         if (taskTitle.isEmpty()) {
             focusRequester.requestFocus()
@@ -96,7 +99,12 @@ fun AddTaskScreen(
                 horizontalAlignment = Alignment.End
             ) {
                 KeyboardAwareFAB {
-                    val id = addTaskViewModel.saveTask(taskTitle, repeatDaily, taskViewModel)
+                    val id = addTaskViewModel.saveTask(
+                        taskTitle,
+                        repeatDaily,
+                        description,
+                        taskViewModel
+                    )
                     if (id != null) navController.popBackStack()
                 }
             }
@@ -120,6 +128,14 @@ fun AddTaskScreen(
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
+            Spacer(modifier = Modifier.size(10.dp))
+            TextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description") },
+                singleLine = false,
+                modifier = Modifier.fillMaxWidth()
+            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
@@ -140,6 +156,7 @@ fun AddTaskScreen(
                         navController,
                         taskTitle,
                         repeatDaily,
+                        description,
                         taskViewModel
                     )
                 },
