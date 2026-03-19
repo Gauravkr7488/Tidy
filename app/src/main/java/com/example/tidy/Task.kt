@@ -27,6 +27,7 @@ data class Task(
     @Id var id: Long = 0,
     var title: String,
     var done: Boolean = false,
+    var note: Boolean = false,
     var repeat: Boolean = false,
     var description: String = "",
     var hide: Boolean = false,
@@ -48,6 +49,7 @@ data class TaskDto(
     var id: Long = 0,
     var title: String,
     var done: Boolean = false,
+    var note: Boolean = false,
     var repeat: Boolean = false,
     var description: String = "",
     var hide: Boolean = false,
@@ -62,6 +64,7 @@ fun Task.toDto(): TaskDto {
         id = id,
         title = title,
         done = done,
+        note = note,
         repeat = repeat,
         description = description,
         hide = hide,
@@ -76,9 +79,17 @@ fun TaskDto.toTasks(): Task {
         id = id,
         title = title,
         done = done,
+        note = note,
         repeat = repeat,
         description = description,
         hide = hide,
         createdAt = createdAt
     )
 }
+
+data class TaskInfo(
+    val title: String,
+    val description: String,
+    val note: Boolean,
+    val repeat: Boolean,
+)

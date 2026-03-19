@@ -19,6 +19,7 @@ package com.example.tidy.viewModels
 
 import androidx.navigation.NavController
 import com.example.tidy.Task
+import com.example.tidy.TaskInfo
 import com.example.tidy.constants.Routes
 import io.objectbox.relation.ToMany
 
@@ -49,11 +50,16 @@ class AddTaskViewModel {
         return task.children
     }
 
-    fun getTaskDetails(taskViewModel: TaskViewModel): Triple<String, Boolean, String>? {
+    fun getTaskDetails(taskViewModel: TaskViewModel): TaskInfo? {
         if (addChild) return null // TODO child or child
         val id = this.hostTaskId ?: return null
         val task = taskViewModel.getTask(id) ?: return null
-        return Triple(task.title, task.repeat, task.description)
+        return TaskInfo(
+            title = task.title,
+            description = task.description,
+            note = task.note,
+            repeat = task.repeat
+        )
     }
 
     fun getId(): Long? {
@@ -65,16 +71,19 @@ class AddTaskViewModel {
     fun addNewChild(
         navController: NavController,
         taskTitle: String,
+        note: Boolean,
         repeatDaily: Boolean,
         description: String,
         taskViewModel: TaskViewModel
     ) {
         if (this.hostTaskId == null) {
             this.hostTaskId =
-                taskViewModel.tryTaskSave(taskTitle, repeatDaily, description = description) ?: return // TODO add err
+                taskViewModel.tryTaskSave(taskTitle, note, repeatDaily, description = description)
+                    ?: return // TODO add err
         } else {
             val i = this.hostTaskId ?: return
-            taskViewModel.updateTask(i, taskTitle, repeatDaily, description = description) ?: return
+            taskViewModel.updateTask(i, taskTitle, note, repeatDaily, description = description)
+                ?: return
         }
         addChild = true
         navController.navigate(Routes.ADD_TASK)
@@ -82,6 +91,7 @@ class AddTaskViewModel {
 
     fun saveTask(
         taskTitle: String,
+        note: Boolean,
         repeatDaily: Boolean,
         description: String,
         taskViewModel: TaskViewModel
@@ -90,9 +100,9 @@ class AddTaskViewModel {
             updateThisTask = false
             val id = hostTaskId ?: return null
             hostTaskId = null
-            return taskViewModel.updateTask(id, taskTitle, repeatDaily, description)
+            return taskViewModel.updateTask(id, taskTitle, note, repeatDaily, description)
         }
-        val id = taskViewModel.tryTaskSave(taskTitle, repeatDaily, description) ?: return null
+        val id = taskViewModel.tryTaskSave(taskTitle, note, repeatDaily, description) ?: return null
         setId(id)
         return id
     }

@@ -60,7 +60,7 @@ fun HomeScreen(
 
     modifier: Modifier = Modifier
 ) {
-    val tasks = taskViewModel.tasks
+    val tasks = taskViewModel.tasks.filter { task -> !task.note }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val listState = rememberLazyListState()
     var previousOffset by remember { mutableIntStateOf(0) }

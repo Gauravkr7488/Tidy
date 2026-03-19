@@ -61,6 +61,7 @@ fun AddTaskScreen(
     var description by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    var note by remember { mutableStateOf(false) }
     var repeatDaily by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
@@ -72,10 +73,11 @@ fun AddTaskScreen(
             ?: emptyList()
         val details = addTaskViewModel.getTaskDetails(taskViewModel)
         if (details != null) {
-            val (title, repeat, desc) = details
+            val (title, desc, noteStat, repeat) = details
             taskTitle = title
-            repeatDaily = repeat
             description = desc
+            note = noteStat
+            repeatDaily = repeat
         }
         if (taskTitle.isEmpty()) {
             focusRequester.requestFocus()
@@ -101,6 +103,7 @@ fun AddTaskScreen(
                 KeyboardAwareFAB {
                     val id = addTaskViewModel.saveTask(
                         taskTitle,
+                        note,
                         repeatDaily,
                         description,
                         taskViewModel
@@ -122,7 +125,7 @@ fun AddTaskScreen(
             TextField(
                 value = taskTitle,
                 onValueChange = { taskTitle = it },
-                label = { Text("Task Title") },
+                label = { Text("Title") },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -142,27 +145,43 @@ fun AddTaskScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             ) {
-                Text("Repeat Daily")
+                Text("Note")
                 Spacer(modifier = Modifier.weight(1f))
                 Switch(
-                    checked = repeatDaily,
-                    onCheckedChange = { repeatDaily = it }
+                    checked = note,
+                    onCheckedChange = { note = it }
                 )
             }
-            SubTaskMenu(
-                "Child Tasks",
-                {
-                    addTaskViewModel.addNewChild(
-                        navController,
-                        taskTitle,
-                        repeatDaily,
-                        description,
-                        taskViewModel
+            if (!note) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text("Repeat Daily")
+                    Spacer(modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = repeatDaily,
+                        onCheckedChange = { repeatDaily = it }
                     )
-                },
-                { addTaskViewModel.addExistingChild() },
-                taskChildren
-            )
+                }
+                SubTaskMenu(
+                    "Child Tasks",
+                    {
+                        addTaskViewModel.addNewChild(
+                            navController,
+                            taskTitle,
+                            note,
+                            repeatDaily,
+                            description,
+                            taskViewModel
+                        )
+                    },
+                    { addTaskViewModel.addExistingChild() },
+                    taskChildren
+                )
+            }
             if (createdAt != "") {
                 Text(
                     text = "Created $createdAt",

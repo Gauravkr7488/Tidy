@@ -22,4 +22,6 @@ object Routes {
     const val SETTINGS = "settings"
     const val ADD_TASK = "add_task"
     const val BACKUP = "backup_screen"
+
+    const val NOTE = "note_screen"
 }

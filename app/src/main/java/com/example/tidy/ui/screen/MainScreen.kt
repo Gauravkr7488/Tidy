@@ -38,7 +38,7 @@ fun MainScreen(taskViewModel: TaskViewModel) {
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in listOf(Routes.HOME, Routes.SETTINGS)) {
+            if (currentRoute in listOf(Routes.HOME, Routes.NOTE, Routes.SETTINGS)) {
                 BottomBar(navController, currentRoute)
             }
         }
@@ -51,7 +51,13 @@ fun MainScreen(taskViewModel: TaskViewModel) {
             composable(Routes.HOME) {
                 HomeScreen(taskViewModel, addTaskViewModel, navController)
             }
-
+            composable(Routes.NOTE) {
+                NoteScreen(
+                    taskViewModel = taskViewModel,
+                    addTaskViewModel = addTaskViewModel,
+                    navController = navController
+                )
+            }
             composable(Routes.ADD_TASK) {
                 AddTaskScreen(taskViewModel, addTaskViewModel, navController)
             }
