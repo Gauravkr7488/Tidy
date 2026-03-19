@@ -49,15 +49,14 @@ data class TaskDto(
     var id: Long = 0,
     var title: String,
     var done: Boolean = false,
-    var note: Boolean = false,
+    var note: Boolean? = null,
     var repeat: Boolean = false,
-    var description: String = "",
+    var description: String? = null,
     var hide: Boolean = false,
-    var parentTasks: List<Long> = emptyList(),
-    var childTasks: List<Long> = emptyList(),
+    var parentTasks: List<Long>? = emptyList(),
+    var childTasks: List<Long>? = emptyList(),
     var createdAt: Long = System.currentTimeMillis(),
-
-    )
+)
 
 fun Task.toDto(): TaskDto {
     return TaskDto(
@@ -74,14 +73,14 @@ fun Task.toDto(): TaskDto {
     )
 }
 
-fun TaskDto.toTasks(): Task {
+fun TaskDto.toTask(): Task {
     return Task(
-        id = id,
+        id = 0,
         title = title,
         done = done,
-        note = note,
+        note = note ?: false,
         repeat = repeat,
-        description = description,
+        description = description ?: "",
         hide = hide,
         createdAt = createdAt
     )

@@ -29,7 +29,7 @@ import androidx.compose.runtime.setValue
 import com.example.tidy.TaskDto
 import com.example.tidy.Task_
 import com.example.tidy.toDto
-import com.example.tidy.toTasks
+import com.example.tidy.toTask
 import com.google.gson.Gson
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -172,6 +172,7 @@ class TaskViewModel(
         uri: Uri
     ) {
         val oldTasks = taskBox.all
+
         try {
             val json = context.contentResolver
                 .openInputStream(uri)
@@ -179,30 +180,40 @@ class TaskViewModel(
                 ?.readText()
 
             if (json != null) {
-                val tasks = Gson().fromJson(
+                val dtos = Gson().fromJson(
                     json,
                     Array<TaskDto>::class.java
                 ).toList()
 
 
-                val newTasks = tasks.map { it.toTasks() }
-                taskBox.removeAll()
-                taskBox.put(newTasks)
+                val idMap = mutableMapOf<Long, Task>()
 
-
-                tasks.forEachIndexed { index, dto ->
-                    val task = newTasks[index]
-                    if (dto.childTasks.isNotEmpty()) {
-                        val children = dto.childTasks.mapNotNull { childId -> taskBox.get(childId) }
-                        task.children.addAll(children)
-                        taskBox.put(task)
-                    }
+                val newTasks = dtos.map { dto ->
+                    val task = dto.toTask()
+                    idMap[dto.id] = task
+                    task
                 }
+
+                taskBox.removeAll()
+                taskBox.put(newTasks) // to get new ids
+
+//              relation work
+                dtos.forEach { dto ->
+                    val task = idMap[dto.id] ?: return@forEach
+
+                    val children = dto.childTasks?.mapNotNull { oldChildId ->
+                        idMap[oldChildId]
+                    } ?: emptyList()
+
+                    task.children.addAll(children)
+                }
+                taskBox.put(newTasks) // to update relation
 
                 Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
             }
 
         } catch (e: Exception) {
+            taskBox.removeAll()
             taskBox.put(oldTasks)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
