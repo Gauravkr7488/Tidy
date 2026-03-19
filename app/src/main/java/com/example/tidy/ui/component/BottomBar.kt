@@ -20,6 +20,8 @@ package com.example.tidy.ui.component
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -52,7 +54,23 @@ fun BottomBar(navController: NavHostController, currentRoute: String?) {
             },
             label = { Text("Home") }
         )
-
+        NavigationBarItem(
+            selected = currentRoute == Routes.NOTE,
+            onClick = {
+                navController.navigate(Routes.NOTE) {
+                    popUpTo(navController.graph.startDestinationId)
+                    launchSingleTop = true
+                }
+            },
+            icon = {
+                Icon(
+                    Icons.AutoMirrored.Filled.Article,
+                    null,
+                    modifier = Modifier.size(30.dp)
+                )
+            },
+            label = { Text("Notes") }
+        )
         NavigationBarItem(
             selected = currentRoute == Routes.SETTINGS,
             onClick = {

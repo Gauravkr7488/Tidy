@@ -20,6 +20,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.UnfoldLess
@@ -121,6 +123,7 @@ fun TaskRow(
     Row(
         modifier = modifier
             .padding(8.dp)
+            .heightIn(min = 35.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -153,12 +156,14 @@ fun TaskRow(
                 )
             }
         } else {
-            Checkbox(
-                checked = task.done,
-                onCheckedChange = { isChecked ->
-                    viewModel.updateTaskDone(task, isChecked)
-                }
-            )
+            if (!task.note) {
+                Checkbox(
+                    checked = task.done,
+                    onCheckedChange = { isChecked ->
+                        viewModel.updateTaskDone(task, isChecked)
+                    }
+                )
+            }
         }
 
     }
