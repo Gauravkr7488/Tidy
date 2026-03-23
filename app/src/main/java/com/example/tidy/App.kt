@@ -18,15 +18,55 @@
 package com.example.tidy
 
 import android.app.Application
+import android.content.Context
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import io.objectbox.BoxStore
+import java.util.concurrent.TimeUnit
 
 class App: Application() {
     lateinit var boxStore: BoxStore
         private set
+
+    lateinit var exportManager: ExportManager
+        private set
+
     override fun onCreate() {
         super.onCreate()
         // initialize ObjectBox
         boxStore = MyObjectBox.builder().androidContext(this).build()
+
+        exportManager = ExportManager(
+            context = this,
+            taskBox = boxStore.boxFor(Task::class.java)
+        )
+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(
+            AppLifecycleObserver(exportManager)
+        )
+
+        schedulePeriodicBackup(this)
+    }
+
+    private fun schedulePeriodicBackup(context: Context) {
+        val request = PeriodicWorkRequestBuilder<BackupWorker>(6, TimeUnit.HOURS)
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiresBatteryNotLow(true)
+                    .build()
+            )
+            .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.MINUTES)
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "auto_backup",
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
     }
 }
 

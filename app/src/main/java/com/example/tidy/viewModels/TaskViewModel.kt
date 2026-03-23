@@ -26,19 +26,27 @@ import com.example.tidy.Task
 import io.objectbox.Box
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.documentfile.provider.DocumentFile
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.example.tidy.ExportManager
 import com.example.tidy.TaskDto
 import com.example.tidy.Task_
 import com.example.tidy.toDto
 import com.example.tidy.toTask
 import com.google.gson.Gson
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import androidx.core.content.edit
 
 class TaskViewModel(
     private val taskBox: Box<Task>,
-    private val lastBoxReset: Box<LastReset>
-) {
+    private val lastBoxReset: Box<LastReset>,
+    private val exportManager: ExportManager
+) : ViewModel(){
     var tasks by mutableStateOf(taskBox.all.toList())
         private set
 
@@ -231,5 +239,40 @@ class TaskViewModel(
         taskBox.put(parent)
 
         return true
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        GlobalScope.launch {
+            exportManager.exportSilently()
+        }
+    }
+
+    fun setAutoBackupUri(context: Context, uri: Uri) {
+        context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
+            .edit {
+                putString("backup_uri", uri.toString())
+            }
+    }
+
+    // Returns a display-friendly folder name for the UI
+    fun getAutoBackupPath(context: Context): String? {
+        val uriString = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
+            .getString("backup_uri", null) ?: return null
+
+        val uri = Uri.parse(uriString)
+        // Extract just the folder name from the URI for display
+        return DocumentFile.fromTreeUri(context, uri)?.name
+    }
+}
+
+class TaskViewModelFactory(
+    private val taskBox: Box<Task>,
+    private val lastBoxReset: Box<LastReset>,
+    private val exportManager: ExportManager
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        @Suppress("UNCHECKED_CAST")
+        return TaskViewModel(taskBox, lastBoxReset, exportManager) as T
     }
 }

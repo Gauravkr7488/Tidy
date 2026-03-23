@@ -22,10 +22,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tidy.ui.theme.TidyTheme
 import io.objectbox.Box
 import com.example.tidy.ui.screen.MainScreen
 import com.example.tidy.viewModels.TaskViewModel
+import com.example.tidy.viewModels.TaskViewModelFactory
 
 class MainActivity : ComponentActivity() {
     private lateinit var taskBox: Box<Task>
@@ -38,8 +40,13 @@ class MainActivity : ComponentActivity() {
         lastBoxReset = app.boxStore.boxFor(LastReset::class.java)
         enableEdgeToEdge()
         setContent {
-            val viewModel = remember { TaskViewModel(taskBox, lastBoxReset) }
-
+            val viewModel: TaskViewModel = viewModel(
+                factory = TaskViewModelFactory(
+                    taskBox = taskBox,           // your existing ObjectBox reference
+                    lastBoxReset = lastBoxReset, // your existing ObjectBox reference
+                    exportManager = app.exportManager
+                )
+            )
             TidyTheme {
                 MainScreen(viewModel)
             }
