@@ -30,7 +30,7 @@ class AppLifecycleObserver(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    override fun onStop(owner: LifecycleOwner) { // TODO this should not just work on Onstop
+    override fun onStop(owner: LifecycleOwner) {
         // Triggered when app goes to background
         scope.launch {
             exportManager.exportSilently()

@@ -18,7 +18,6 @@
 package com.example.tidy
 
 import android.content.Context
-import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.google.gson.Gson
 import io.objectbox.Box
@@ -28,6 +27,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.core.net.toUri
+
 class ExportManager(
     private val context: Context,
     private val taskBox: Box<Task>
@@ -44,7 +45,7 @@ class ExportManager(
 
             if (savedUri != null) {
                 // Write to user-picked folder
-                val treeUri = Uri.parse(savedUri)
+                val treeUri = savedUri.toUri()
                 val docTree = DocumentFile.fromTreeUri(context, treeUri)
                 val file = docTree?.createFile("application/json", fileName)
                 file?.uri?.let { fileUri ->

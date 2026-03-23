@@ -31,7 +31,7 @@ class BackupWorker(
             val exportManager = (applicationContext as App).exportManager
             exportManager.exportSilently()
             Result.success()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.retry()
         }
     }
