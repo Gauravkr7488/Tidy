@@ -26,6 +26,7 @@ import com.example.tidy.Task
 import io.objectbox.Box
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.tidy.ExportManager
@@ -39,6 +40,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import androidx.core.content.edit
 
 class TaskViewModel(
     private val taskBox: Box<Task>,
@@ -244,6 +246,23 @@ class TaskViewModel(
         GlobalScope.launch {
             exportManager.exportSilently()
         }
+    }
+
+    fun setAutoBackupUri(context: Context, uri: Uri) {
+        context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
+            .edit {
+                putString("backup_uri", uri.toString())
+            }
+    }
+
+    // Returns a display-friendly folder name for the UI
+    fun getAutoBackupPath(context: Context): String? {
+        val uriString = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
+            .getString("backup_uri", null) ?: return null
+
+        val uri = Uri.parse(uriString)
+        // Extract just the folder name from the URI for display
+        return DocumentFile.fromTreeUri(context, uri)?.name
     }
 }
 

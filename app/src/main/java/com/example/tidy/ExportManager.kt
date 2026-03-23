@@ -18,7 +18,7 @@ class ExportManager(
         return@withContext try {
             val json = Gson().toJson(taskBox.all.map { it.toDto() })
 
-            val backupDir = File(context.filesDir, "backups").also { it.mkdirs() }
+            val backupDir = File(context.getExternalFilesDir(null), "backups").also { it.mkdirs() }
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             val file = File(backupDir, "backup_$timestamp.json")
 
