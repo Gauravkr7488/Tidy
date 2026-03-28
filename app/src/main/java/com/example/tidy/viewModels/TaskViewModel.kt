@@ -46,7 +46,7 @@ class TaskViewModel(
     private val taskBox: Box<Task>,
     private val lastBoxReset: Box<LastReset>,
     private val exportManager: ExportManager
-) : ViewModel(){
+) : ViewModel() {
     var tasks by mutableStateOf(taskBox.all.toList())
         private set
 
@@ -72,6 +72,12 @@ class TaskViewModel(
 
     fun deleteTask(id: Long) {
         taskBox.remove(id)
+        refreshTasks()
+    }
+
+    fun skipTask(id: Long) {
+        val task = getTask(id) ?: return
+        taskBox.put(task.copy(hide = true))
         refreshTasks()
     }
 
@@ -147,7 +153,7 @@ class TaskViewModel(
     }
 
     fun getTask(taskId: Long): Task? {
-        val task = taskBox.get(taskId) ?: return null
+        val task = taskBox.get(taskId) ?: return null // TODO add error
         return task
     }
 
