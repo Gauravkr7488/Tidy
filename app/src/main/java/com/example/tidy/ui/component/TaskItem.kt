@@ -32,8 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.DpOffset
@@ -66,7 +64,7 @@ fun TaskItem(
                 addTaskViewModel = addTaskViewModel,
                 navController = navController,
                 onDeleteConfirmed = { viewModel.deleteTask(task.id) },
-                onSkip = {viewModel.skipTask(task.id)},
+                onSkip = { viewModel.skipTask(task.id) },
                 onExpandClick = { expanded = !expanded },
                 expanded = expanded
             )
@@ -80,7 +78,7 @@ fun TaskItem(
                         addTaskViewModel = addTaskViewModel,
                         navController = navController,
                         onDeleteConfirmed = { viewModel.deleteTask(child.id) },
-                        onSkip = {viewModel.skipTask(task.id)},
+                        onSkip = { viewModel.skipTask(task.id) },
                         modifier = Modifier.padding(start = 24.dp)
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 4.dp))
@@ -89,6 +87,7 @@ fun TaskItem(
         }
     }
 }
+
 @Suppress("AssignedValueIsNeverRead")
 @Composable
 fun TaskRow(
@@ -105,7 +104,6 @@ fun TaskRow(
     var showContextMenu by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var tapOffset by remember { mutableStateOf(Offset.Zero) }
-    var rowPosition by remember { mutableStateOf(Offset.Zero) }
     val density = LocalDensity.current
 
     Box {
@@ -113,10 +111,7 @@ fun TaskRow(
             modifier = modifier
                 .padding(8.dp)
                 .heightIn(min = 35.dp)
-                .fillMaxWidth()
-                .onGloballyPositioned { coords ->
-                    rowPosition = coords.positionInWindow()
-                },
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
