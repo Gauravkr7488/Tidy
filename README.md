@@ -1,13 +1,6 @@
 # Tidy
 
-Tidy is an open-source Android app built with Kotlin and Jetpack Compose.
-
-## Features
-
-- Clean and minimal UI
-- Fast and lightweight
-- Offline-first design
-- Open-source under GPL-3.0
+A TODO app made for my own use.
 
 ## Installation
 
