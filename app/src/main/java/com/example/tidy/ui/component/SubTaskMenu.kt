@@ -56,7 +56,7 @@ import com.example.tidy.toggleValue
 fun SubTaskMenu(
     label: String,
     addNewTask: () -> Unit,
-    addExistingTask: () -> Unit,
+//    addExistingTask: () -> Unit,
     taskChildren: List<Task>,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -151,13 +151,13 @@ fun SubTaskMenu(
                         Text("Add a New Task")
                     }
 
-                    OutlinedButton(
-                        onClick = { addExistingTask() },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Spacer(Modifier.width(6.dp))
-                        Text("Add From Existing")
-                    }
+//                    OutlinedButton(
+//                        onClick = { addExistingTask() },
+//                        modifier = Modifier.weight(1f)
+//                    ) {
+//                        Spacer(Modifier.width(6.dp))
+//                        Text("Add From Existing")
+//                    }
                 }
             }
         }
