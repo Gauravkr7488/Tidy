@@ -23,16 +23,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
@@ -152,41 +159,89 @@ fun TaskRow(
                 }
             }
         }
-
-        // Convert the tap offset (relative to the composable) into a DpOffset for DropdownMenu
         DropdownMenu(
             expanded = showContextMenu,
             onDismissRequest = { showContextMenu = false },
             offset = with(density) {
                 DpOffset(tapOffset.x.toDp(), tapOffset.y.toDp())
-            }
+            },
+            shape = RoundedCornerShape(16.dp),
+            tonalElevation = 4.dp,
+            shadowElevation = 8.dp
         ) {
+            // Edit — placed first (most common, non-destructive)
             DropdownMenuItem(
                 text = {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(
+                        "Edit",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
                 },
                 onClick = {
                     showContextMenu = false
-                    showDeleteDialog = true
+                    addTaskViewModel.setUpdateState(task.id)
+                    navController.navigate(Routes.ADD_TASK)
                 }
             )
+
+            // Skip
             DropdownMenuItem(
                 text = {
-                    Text("Skip")
+                    Text(
+                        "Skip",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.SkipNext,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(18.dp)
+                    )
                 },
                 onClick = {
                     showContextMenu = false
                     onSkip()
                 }
             )
+
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outlineVariant
+            )
+
+            // Delete — last, separated by divider, colored red
             DropdownMenuItem(
                 text = {
-                    Text("Edit")
+                    Text(
+                        "Delete",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.Delete,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp)
+                    )
                 },
                 onClick = {
                     showContextMenu = false
-                    addTaskViewModel.setUpdateState(task.id)
-                    navController.navigate(Routes.ADD_TASK)
+                    showDeleteDialog = true
                 }
             )
         }
