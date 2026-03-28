@@ -192,27 +192,29 @@ fun TaskRow(
             )
 
             // Skip
-            DropdownMenuItem(
-                text = {
-                    Text(
-                        "Skip",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Outlined.SkipNext,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(18.dp)
-                    )
-                },
-                onClick = {
-                    showContextMenu = false
-                    onSkip()
-                }
-            )
+            if (!task.note) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            "Skip",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Outlined.SkipNext,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(18.dp)
+                        )
+                    },
+                    onClick = {
+                        showContextMenu = false
+                        onSkip()
+                    }
+                )
+            }
 
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 8.dp),
