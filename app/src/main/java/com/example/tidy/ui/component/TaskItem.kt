@@ -17,6 +17,7 @@
 package com.example.tidy.ui.component
 
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,8 +30,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
@@ -39,34 +43,32 @@ import com.example.tidy.viewModels.AddTaskViewModel
 import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
-@Suppress("AssignedValueIsNeverRead")
 fun TaskItem(
     task: Task,
     viewModel: TaskViewModel,
     addTaskViewModel: AddTaskViewModel,
     navController: NavController
 ) {
-    var showDialog by remember { mutableStateOf(false) }
     if (task.parents.isNotEmpty()) return
     var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
     ) {
         Column {
-            // Parent task row
             TaskRow(
                 task = task,
                 viewModel = viewModel,
                 addTaskViewModel = addTaskViewModel,
                 navController = navController,
-                onLongPress = { showDialog = true },
+                onDeleteConfirmed = { viewModel.deleteTask(task.id) },
+                onSkip = { viewModel.skipTask(task.id) },
                 onExpandClick = { expanded = !expanded },
                 expanded = expanded
             )
 
-            // Children
             if (task.children.isNotEmpty() && expanded) {
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
                 task.children.forEach { child ->
@@ -75,95 +77,132 @@ fun TaskItem(
                         viewModel = viewModel,
                         addTaskViewModel = addTaskViewModel,
                         navController = navController,
-                        onLongPress = { showDialog = true },
-                        modifier = Modifier.padding(start = 24.dp) // indent children
+                        onDeleteConfirmed = { viewModel.deleteTask(child.id) },
+                        onSkip = { viewModel.skipTask(task.id) },
+                        modifier = Modifier.padding(start = 24.dp)
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = 4.dp))
                 }
             }
         }
     }
-
-    if (showDialog) {
-        AlertDialog(
-
-            onDismissRequest = { showDialog = false },
-            title = { Text("Delete Task") },
-            text = { Text("Are you sure you want to delete '${task.title}'?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.deleteTask(task.id)
-                    showDialog = false
-                }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
 }
 
+@Suppress("AssignedValueIsNeverRead")
 @Composable
 fun TaskRow(
     task: Task,
     viewModel: TaskViewModel,
     addTaskViewModel: AddTaskViewModel,
     navController: NavController,
-    onLongPress: () -> Unit,
+    onDeleteConfirmed: () -> Unit,
+    onSkip: () -> Unit,
     modifier: Modifier = Modifier,
     onExpandClick: () -> Unit = {},
     expanded: Boolean = false,
 ) {
+    var showContextMenu by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var tapOffset by remember { mutableStateOf(Offset.Zero) }
+    val density = LocalDensity.current
 
-    Row(
-        modifier = modifier
-            .padding(8.dp)
-            .heightIn(min = 35.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = task.title,
-                style = MaterialTheme.typography.bodyLarge,
-                textDecoration = if (task.done) TextDecoration.LineThrough else TextDecoration.None,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .fillMaxWidth()
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onLongPress = { onLongPress() },
-                            onTap = {
-                                addTaskViewModel.setUpdateState(task.id)
-                                navController.navigate(Routes.ADD_TASK)
-                            }
-                        )
-                    }
+    Box {
+        Row(
+            modifier = modifier
+                .padding(8.dp)
+                .heightIn(min = 35.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    textDecoration = if (task.done) TextDecoration.LineThrough else TextDecoration.None,
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .fillMaxWidth()
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onLongPress = { offset ->
+                                    tapOffset = offset
+                                    showContextMenu = true
+                                },
+                                onTap = {
+                                    addTaskViewModel.setUpdateState(task.id)
+                                    navController.navigate(Routes.ADD_TASK)
+                                }
+                            )
+                        }
+                )
+            }
+
+            if (task.children.isNotEmpty()) {
+                IconButton(onClick = { onExpandClick() }) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
+                        contentDescription = null
+                    )
+                }
+            } else {
+                if (!task.note) {
+                    Checkbox(
+                        checked = task.done,
+                        onCheckedChange = { isChecked ->
+                            viewModel.updateTaskDone(task, isChecked)
+                        }
+                    )
+                }
+            }
+        }
+
+        // Convert the tap offset (relative to the composable) into a DpOffset for DropdownMenu
+        DropdownMenu(
+            expanded = showContextMenu,
+            onDismissRequest = { showContextMenu = false },
+            offset = with(density) {
+                DpOffset(tapOffset.x.toDp(), tapOffset.y.toDp())
+            }
+        ) {
+            DropdownMenuItem(
+                text = {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                },
+                onClick = {
+                    showContextMenu = false
+                    showDeleteDialog = true
+                }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text("Skip")
+                },
+                onClick = {
+                    showContextMenu = false
+                    onSkip()
+                }
             )
         }
-        if (task.children.isNotEmpty()) {
-            IconButton(
-                onClick = { onExpandClick() }
-            ) {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
-                    contentDescription = null
-                )
-            }
-        } else {
-            if (!task.note) {
-                Checkbox(
-                    checked = task.done,
-                    onCheckedChange = { isChecked ->
-                        viewModel.updateTaskDone(task, isChecked)
-                    }
-                )
-            }
-        }
+    }
 
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Task") },
+            text = { Text("Are you sure you want to delete '${task.title}'?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDeleteConfirmed()
+                    showDeleteDialog = false
+                }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
