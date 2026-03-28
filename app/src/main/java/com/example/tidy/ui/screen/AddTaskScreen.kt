@@ -178,7 +178,6 @@ fun AddTaskScreen(
                             taskViewModel
                         )
                     },
-//                    { addTaskViewModel.addExistingChild() },
                     taskChildren
                 )
             }
