@@ -69,7 +69,6 @@ class AddTaskViewModel {
     }
 
     fun addNewChild(
-        navController: NavController,
         taskTitle: String,
         note: Boolean,
         repeatDaily: Boolean,
@@ -86,9 +85,7 @@ class AddTaskViewModel {
                 ?: return
         }
         addChild = true
-        navController.navigate(Routes.ADD_TASK)
     }
-
     fun saveTask(
         taskTitle: String,
         note: Boolean,

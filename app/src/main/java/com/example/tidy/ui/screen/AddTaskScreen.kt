@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
+import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.KeyboardAwareFAB
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskViewModel
@@ -170,13 +171,14 @@ fun AddTaskScreen(
                     "Child Tasks",
                     {
                         addTaskViewModel.addNewChild(
-                            navController,
                             taskTitle,
                             note,
                             repeatDaily,
                             description,
                             taskViewModel
                         )
+                        navController.navigate(Routes.ADD_TASK)
+
                     },
                     taskChildren
                 )
