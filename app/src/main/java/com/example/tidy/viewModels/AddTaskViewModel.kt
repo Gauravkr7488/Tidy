@@ -17,10 +17,8 @@
 
 package com.example.tidy.viewModels
 
-import androidx.navigation.NavController
 import com.example.tidy.Task
 import com.example.tidy.TaskInfo
-import com.example.tidy.constants.Routes
 import io.objectbox.relation.ToMany
 
 class AddTaskViewModel {
@@ -115,10 +113,6 @@ class AddTaskViewModel {
         }
         updateThisTask = true
         return true
-    }
-
-    fun addExistingChild() {
-        /* TODO after task list view */
     }
 
     fun setUpdateState(id: Long) {
