@@ -128,10 +128,7 @@ fun TaskRow(
                                     tapOffset = offset
                                     showContextMenu = true
                                 },
-                                onTap = {
-                                    addTaskViewModel.setUpdateState(task.id)
-                                    navController.navigate(Routes.ADD_TASK)
-                                }
+                                onTap = { }
                             )
                         }
                 )
@@ -180,6 +177,16 @@ fun TaskRow(
                 onClick = {
                     showContextMenu = false
                     onSkip()
+                }
+            )
+            DropdownMenuItem(
+                text = {
+                    Text("Edit")
+                },
+                onClick = {
+                    showContextMenu = false
+                    addTaskViewModel.setUpdateState(task.id)
+                    navController.navigate(Routes.ADD_TASK)
                 }
             )
         }
