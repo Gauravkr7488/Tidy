@@ -17,24 +17,26 @@
 package com.example.tidy
 
 import io.objectbox.Box
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DbOperation(
     private val taskBox: Box<Task>,
     private val lastBoxReset: Box<LastReset>,
 ) {
-    fun saveTask(task: Task): Long {
-        return taskBox.put(task)
+    suspend fun saveTask(task: Task): Long = withContext(Dispatchers.IO) {
+        return@withContext taskBox.put(task)
     }
 
-    fun getTask(id: Long): Task {
+    suspend fun getTask(id: Long): Task = withContext(Dispatchers.IO){
         val task = taskBox.get(id)
-        return task
+        return@withContext task
     }
 
-    fun updateTask(task: Task, id: Long): Long {
+    suspend fun updateTask(task: Task, id: Long): Long = withContext(Dispatchers.IO){
         val oldTask = getTask(id)
         task.id = oldTask.id
-        return saveTask(task)
+        return@withContext saveTask(task)
     }
 
 }
