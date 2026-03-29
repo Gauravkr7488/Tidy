@@ -38,7 +38,8 @@ class DbOperation(
         return@withContext saveTask(task)
     }
 
-    suspend fun addChild(childId: Long, parentId: Long): Long = withContext(Dispatchers.IO) {
+    suspend fun addChild(childId: Long, parentId: Long): Long? = withContext(Dispatchers.IO) {
+        if (childId == parentId) return@withContext null
         val childTask = getTask(childId)
         val parentTask = getTask(parentId)
         parentTask.children.add(childTask)

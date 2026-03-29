@@ -25,7 +25,7 @@ class AddTaskViewModel(
 ) {
     private var parentTaskList: MutableList<Long> = mutableListOf()
     private var currentTaskId: Long? = null
-    private var addChildFlag: Boolean = false
+    private var childFlag: Boolean = false
     fun setCurrentTaskId(id: Long) {
         currentTaskId = id
     }
@@ -38,8 +38,9 @@ class AddTaskViewModel(
 
     suspend fun getCurrentTask(): Task? {
         var id: Long?
-        if (parentTaskList.isNotEmpty() && !addChildFlag) {
+        if (parentTaskList.isNotEmpty() && !childFlag) {
             id = parentTaskList.last()
+            parentTaskList.removeAt(parentTaskList.size - 1)
             return dbOperation.getTask(id)
         }
         id = getCurrentTaskId()
@@ -49,7 +50,7 @@ class AddTaskViewModel(
 
     suspend fun startAddNewChild(task: Task) {
         val id = dbOperation.saveTask(task)
-        addChildFlag = true
+        childFlag = true
         if (parentTaskList.lastOrNull() != id) parentTaskList.add(id)
     }
 
@@ -57,13 +58,9 @@ class AddTaskViewModel(
         var i: Long
         i = dbOperation.saveTask(task)
         if (parentTaskList.isNotEmpty()) {
-            if (addChildFlag) {
-                i = task.id
-                val id = dbOperation.addChild(childId = i, parentId = parentTaskList.last())
-                addChildFlag = false
-                return id
-            }
-            if (parentTaskList.last() == task.id) parentTaskList.removeAt(parentTaskList.size - 1)
+            i = task.id
+            dbOperation.addChild(childId = i, parentId = parentTaskList.last())
+            childFlag = false
         }
         return i
     }
