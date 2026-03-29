@@ -22,21 +22,26 @@ import kotlinx.coroutines.withContext
 
 class DbOperation(
     private val taskBox: Box<Task>,
-    private val lastBoxReset: Box<LastReset>,
 ) {
     suspend fun saveTask(task: Task): Long = withContext(Dispatchers.IO) {
         return@withContext taskBox.put(task)
     }
 
-    suspend fun getTask(id: Long): Task = withContext(Dispatchers.IO){
+    suspend fun getTask(id: Long): Task = withContext(Dispatchers.IO) {
         val task = taskBox.get(id)
         return@withContext task
     }
 
-    suspend fun updateTask(task: Task, id: Long): Long = withContext(Dispatchers.IO){
+    suspend fun updateTask(task: Task, id: Long): Long = withContext(Dispatchers.IO) {
         val oldTask = getTask(id)
         task.id = oldTask.id
         return@withContext saveTask(task)
     }
 
+    suspend fun addChild(childId: Long, parentId: Long): Long = withContext(Dispatchers.IO) {
+        val childTask = getTask(childId)
+        val parentTask = getTask(parentId)
+        parentTask.children.add(childTask)
+        return@withContext saveTask(parentTask)
+    }
 }
