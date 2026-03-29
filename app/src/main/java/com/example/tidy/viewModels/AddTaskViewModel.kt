@@ -17,112 +17,54 @@
 
 package com.example.tidy.viewModels
 
+import com.example.tidy.DbOperation
 import com.example.tidy.Task
-import com.example.tidy.TaskInfo
-import io.objectbox.relation.ToMany
 
-class AddTaskViewModel {
-    private var taskId: Long? = null
-
-    private var hostTaskId: Long? = null
-
-    private var updateThisTask: Boolean = false
-
-    private var addChild: Boolean = false
-
-    fun setId(id: Long) {
-        taskId = id
+class AddTaskViewModel(
+    private val dbOperation: DbOperation
+) {
+    private var parentTaskList: MutableList<Long> = mutableListOf()
+    private var currentTaskId: Long? = null
+    private var addChildFlag: Boolean = false
+    fun setCurrentTaskId(id: Long) {
+        currentTaskId = id
     }
 
-    fun resetFlags() {
-        taskId = null
-        hostTaskId = null
-        updateThisTask = false
-        addChild = false
-    }
-
-    fun getHostChildren(taskViewModel: TaskViewModel): ToMany<Task>? {
-        if (addChild) return null // TODO child or child
-        val id = this.hostTaskId ?: return null
-        val task = taskViewModel.getTask(id) ?: return null
-        return task.children
-    }
-
-    fun getTaskDetails(taskViewModel: TaskViewModel): TaskInfo? {
-        if (addChild) return null // TODO child or child
-        val id = this.hostTaskId ?: return null
-        val task = taskViewModel.getTask(id) ?: return null
-        return TaskInfo(
-            title = task.title,
-            description = task.description,
-            note = task.note,
-            repeat = task.repeat
-        )
-    }
-
-    fun getId(): Long? {
-        val id = taskId
-        taskId = null
+    fun getCurrentTaskId(): Long? {
+        val id = currentTaskId
+        currentTaskId = null
         return id
     }
 
-    fun addNewChild(
-        taskTitle: String,
-        note: Boolean,
-        repeatDaily: Boolean,
-        description: String,
-        taskViewModel: TaskViewModel
-    ) {
-        if (this.hostTaskId == null) {
-            this.hostTaskId =
-                taskViewModel.tryTaskSave(taskTitle, note, repeatDaily, description = description)
-                    ?: return // TODO add err
-        } else {
-            val i = this.hostTaskId ?: return
-            taskViewModel.updateTask(i, taskTitle, note, repeatDaily, description = description)
-                ?: return
+    suspend fun getCurrentTask(): Task? {
+        var id: Long?
+        if (parentTaskList.isNotEmpty() && !addChildFlag) {
+            id = parentTaskList.last()
+            return dbOperation.getTask(id)
         }
-        addChild = true
-    }
-    fun saveTask(
-        taskTitle: String,
-        note: Boolean,
-        repeatDaily: Boolean,
-        description: String,
-        taskViewModel: TaskViewModel
-    ): Long? {
-        if (updateThisTask && !addChild) { // TODO when child of child
-            updateThisTask = false
-            val id = hostTaskId ?: return null
-            hostTaskId = null
-            return taskViewModel.updateTask(id, taskTitle, note, repeatDaily, description)
-        }
-        val id = taskViewModel.tryTaskSave(taskTitle, note, repeatDaily, description) ?: return null
-        setId(id)
-        return id
+        id = getCurrentTaskId()
+        if (id == null) return null
+        return dbOperation.getTask(id)
     }
 
-    fun startAdoption(
-        taskViewModel: TaskViewModel
-    ): Boolean {
-        val id = getId() ?: return false
-        val hostId = this.hostTaskId ?: return false
-        if (addChild) {
-            addChild = false
-            taskViewModel.addChild(id, hostId)
+    suspend fun startAddNewChild(task: Task) {
+        val id = dbOperation.saveTask(task)
+        addChildFlag = true
+        if (parentTaskList.lastOrNull() != id) parentTaskList.add(id)
+    }
+
+    suspend fun addTask(task: Task): Long {
+        var i: Long
+        i = dbOperation.saveTask(task)
+        if (parentTaskList.isNotEmpty()) {
+            if (addChildFlag) {
+                i = task.id
+                val id = dbOperation.addChild(childId = i, parentId = parentTaskList.last())
+                addChildFlag = false
+                return id
+            }
+            if (parentTaskList.last() == task.id) parentTaskList.removeAt(parentTaskList.size - 1)
         }
-        updateThisTask = true
-        return true
-    }
-
-    fun setUpdateState(id: Long) {
-        this.updateThisTask = true
-        hostTaskId = id
-    }
-
-    fun getTask(taskViewModel: TaskViewModel): Task? {
-        val id = this.hostTaskId ?: return null
-        val task = taskViewModel.getTask(id) ?: return null
-        return task
+        return i
     }
 }

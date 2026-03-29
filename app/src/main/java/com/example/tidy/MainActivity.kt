@@ -46,8 +46,9 @@ class MainActivity : ComponentActivity() {
                     exportManager = app.exportManager
                 )
             )
+            val dbOperation = DbOperation(taskBox)
             TidyTheme {
-                MainScreen(viewModel)
+                MainScreen(viewModel, dbOperation)
             }
         }
     }

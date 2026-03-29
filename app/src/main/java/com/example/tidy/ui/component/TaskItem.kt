@@ -186,7 +186,7 @@ fun TaskRow(
                 },
                 onClick = {
                     showContextMenu = false
-                    addTaskViewModel.setUpdateState(task.id)
+                    addTaskViewModel.setCurrentTaskId(task.id)
                     navController.navigate(Routes.ADD_TASK)
                 }
             )

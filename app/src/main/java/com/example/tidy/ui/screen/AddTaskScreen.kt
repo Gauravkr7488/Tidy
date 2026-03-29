@@ -33,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,18 +47,18 @@ import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.KeyboardAwareFAB
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskViewModel
-import com.example.tidy.viewModels.TaskViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
 fun AddTaskScreen(
-    taskViewModel: TaskViewModel,
     addTaskViewModel: AddTaskViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
+    var taskId: Long = 0
     var taskTitle by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
@@ -66,31 +67,28 @@ fun AddTaskScreen(
     var repeatDaily by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
+    val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
-        addTaskViewModel.startAdoption(taskViewModel)
-        taskChildren = addTaskViewModel
-            .getHostChildren(taskViewModel)
-            ?.toList()
-            ?: emptyList()
-        val details = addTaskViewModel.getTaskDetails(taskViewModel)
-        if (details != null) {
-            val (title, desc, noteStat, repeat) = details
-            taskTitle = title
-            description = desc
-            note = noteStat
-            repeatDaily = repeat
-        }
-        if (taskTitle.isEmpty()) {
-            focusRequester.requestFocus()
-            keyboardController?.show()
-        }
-        val t = addTaskViewModel.getTask(taskViewModel)
-        if (t != null) {
-            val readable = SimpleDateFormat(
-                "MMM dd, yyyy hh:mm a",
-                Locale.getDefault()
-            ).format(Date(t.createdAt))
-            createdAt = readable
+        coroutineScope.launch {
+            val task = addTaskViewModel.getCurrentTask()
+            if (task != null) {
+                taskId = task.id
+                taskChildren = task.children.toList()
+                taskTitle = task.title
+                description = task.description
+                note = task.note
+                repeatDaily = task.repeat
+
+                val readable = SimpleDateFormat(
+                    "MMM dd, yyyy hh:mm a",
+                    Locale.getDefault()
+                ).format(Date(task.createdAt))
+                createdAt = readable
+            }
+            if (taskTitle.isEmpty()) {
+                focusRequester.requestFocus()
+                keyboardController?.show()
+            }
         }
     }
 
@@ -102,14 +100,18 @@ fun AddTaskScreen(
                 horizontalAlignment = Alignment.End
             ) {
                 KeyboardAwareFAB {
-                    val id = addTaskViewModel.saveTask(
-                        taskTitle,
-                        note,
-                        repeatDaily,
-                        description,
-                        taskViewModel
-                    )
-                    if (id != null) navController.popBackStack()
+                    coroutineScope.launch {
+                        addTaskViewModel.addTask(
+                            Task(
+                                id = taskId,
+                                title = taskTitle,
+                                note = note,
+                                repeat = repeatDaily,
+                                description = description,
+                            )
+                        )
+                        navController.popBackStack()
+                    }
                 }
             }
         }
@@ -170,15 +172,18 @@ fun AddTaskScreen(
                 SubTaskMenu(
                     "Child Tasks",
                     {
-                        addTaskViewModel.addNewChild(
-                            taskTitle,
-                            note,
-                            repeatDaily,
-                            description,
-                            taskViewModel
-                        )
-                        navController.navigate(Routes.ADD_TASK)
-
+                        coroutineScope.launch {
+                            addTaskViewModel.startAddNewChild(
+                                Task(
+                                    id = taskId,
+                                    title = taskTitle,
+                                    note = note,
+                                    repeat = repeatDaily,
+                                    description = description
+                                )
+                            )
+                            navController.navigate(Routes.ADD_TASK)
+                        }
                     },
                     taskChildren
                 )

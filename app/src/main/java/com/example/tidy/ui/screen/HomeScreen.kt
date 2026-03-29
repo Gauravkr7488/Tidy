@@ -128,7 +128,6 @@ fun HomeScreen(
 
                 FloatingActionButton(
                     onClick = {
-                        addTaskViewModel.resetFlags()
                         navController.navigate(Routes.ADD_TASK)
                     },
                     modifier = Modifier.size(80.dp)
