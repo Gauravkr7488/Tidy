@@ -41,6 +41,8 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import androidx.core.content.edit
+import kotlinx.coroutines.DelicateCoroutinesApi
+import androidx.core.net.toUri
 
 class TaskViewModel(
     private val taskBox: Box<Task>,
@@ -83,19 +85,17 @@ class TaskViewModel(
 
     fun updateTaskDone(task: Task, isChecked: Boolean) {
         taskBox.put(task.copy(done = isChecked))
-        task.parents.forEach { parent ->
-            val allChildrenDone = parent.children.all { it.done }
-
-            if (allChildrenDone) {
-                taskBox.put(parent.copy(done = true))
-            } else {
-                taskBox.put(parent.copy(done = false))
-
-            }
-        }
+        updateParents(task)
         refreshTasks()
     }
 
+    fun updateParents(task: Task) {
+        task.parents.forEach { parent ->
+            val allChildrenDone = parent.children.all { it.done }
+            taskBox.put(parent.copy(done = allChildrenDone))
+            updateParents(parent)
+        }
+    }
     private fun resetTasksForToday() {
         val todayDate =
             SimpleDateFormat("dd", Locale.getDefault())
@@ -118,38 +118,6 @@ class TaskViewModel(
             task.hide = false
             taskBox.put(task)
         }
-    }
-
-    fun tryTaskSave(
-        taskTitle: String = "no name",
-        note: Boolean = false,
-        repeatDaily: Boolean = false,
-        description: String = "",
-    ): Long? {
-        if (taskTitle.isBlank()) return null
-        val newTask =
-            Task(title = taskTitle, note = note, repeat = repeatDaily, description = description)
-        return taskBox.put(newTask)
-    }
-
-    fun updateTask(
-        taskId: Long,
-        taskTitle: String,
-        note: Boolean = false,
-        repeatDaily: Boolean = false,
-        description: String = "",
-    ): Long? {
-        if (taskTitle.isBlank()) return null
-
-        val task = taskBox.get(taskId) ?: return null
-        task.title = taskTitle
-        task.note = note
-        task.repeat = repeatDaily
-        task.description = description
-        println(task)
-
-        return taskBox.put(task)
-
     }
 
     fun getTask(taskId: Long): Task? {
@@ -234,19 +202,7 @@ class TaskViewModel(
         }
     }
 
-    fun addChild(childId: Long, parentId: Long): Boolean {
-        val child = taskBox.get(childId) ?: return false
-        val parent = taskBox.get(parentId) ?: return false
-
-        // Guard against self-referencing
-        if (childId == parentId) return false
-
-        parent.children.add(child)
-        taskBox.put(parent)
-
-        return true
-    }
-
+    @OptIn(DelicateCoroutinesApi::class)
     override fun onCleared() {
         super.onCleared()
         GlobalScope.launch {
@@ -266,7 +222,7 @@ class TaskViewModel(
         val uriString = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
             .getString("backup_uri", null) ?: return null
 
-        val uri = Uri.parse(uriString)
+        val uri = uriString.toUri()
         // Extract just the folder name from the URI for display
         return DocumentFile.fromTreeUri(context, uri)?.name
     }
