@@ -53,13 +53,15 @@ fun TaskItem(
     task: Task,
     viewModel: TaskViewModel,
     addTaskViewModel: AddTaskViewModel,
-    navController: NavController
+    navController: NavController,
+    modifier: Modifier = Modifier,
+    isChild: Boolean = false,
 ) {
-    if (task.parents.isNotEmpty()) return
+    if (task.parents.isNotEmpty() && !isChild) return
     var expanded by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
     ) {
@@ -72,22 +74,19 @@ fun TaskItem(
                 onDeleteConfirmed = { viewModel.deleteTask(task.id) },
                 onSkip = { viewModel.skipTask(task.id) },
                 onExpandClick = { expanded = !expanded },
-                expanded = expanded
+                expanded = expanded,
             )
-
             if (task.children.isNotEmpty() && expanded) {
-                HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp))
+                HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
                 task.children.forEach { child ->
-                    TaskRow(
+                    TaskItem(
                         task = child,
                         viewModel = viewModel,
                         addTaskViewModel = addTaskViewModel,
                         navController = navController,
-                        onDeleteConfirmed = { viewModel.deleteTask(child.id) },
-                        onSkip = { viewModel.skipTask(task.id) },
+                        isChild = true,
                         modifier = Modifier.padding(start = 24.dp)
                     )
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = 4.dp))
                 }
             }
         }
