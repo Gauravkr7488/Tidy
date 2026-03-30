@@ -56,7 +56,6 @@ import com.example.tidy.toggleValue
 fun SubTaskMenu(
     label: String,
     addNewTask: () -> Unit,
-//    addExistingTask: () -> Unit,
     taskChildren: List<Task>,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -86,7 +85,7 @@ fun SubTaskMenu(
                 onClick = { expanded = toggleValue(expanded) }
             ) {
                 Icon(
-                    imageVector = Icons.Default.Add,   // change icon if needed
+                    imageVector = Icons.Default.Add,
                     contentDescription = null,
                     modifier = Modifier.rotate(rotation)
                 )
@@ -117,7 +116,6 @@ fun SubTaskMenu(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-//                                    .clickable { navController.navigate(item.route) } // TODO: activate after making the task detail screen
                                         .padding(20.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
@@ -150,14 +148,6 @@ fun SubTaskMenu(
                         Spacer(Modifier.width(6.dp))
                         Text("Add a New Task")
                     }
-
-//                    OutlinedButton(
-//                        onClick = { addExistingTask() },
-//                        modifier = Modifier.weight(1f)
-//                    ) {
-//                        Spacer(Modifier.width(6.dp))
-//                        Text("Add From Existing")
-//                    }
                 }
             }
         }

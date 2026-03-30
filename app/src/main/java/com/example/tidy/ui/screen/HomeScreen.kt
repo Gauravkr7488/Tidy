@@ -97,7 +97,6 @@ fun HomeScreen(
     val offsetY by animateDpAsState(
         targetValue = if (showFab) 0.dp else 300.dp
     )
-    // This will run whenever HomeScreen is visible again
     LaunchedEffect(currentBackStackEntry) {
         taskViewModel.refreshTasks()
     }
@@ -111,7 +110,6 @@ fun HomeScreen(
                 modifier = Modifier.offset(y = offsetY)
             ) {
 
-                // Delete FAB
                 if (hasDoneTask) {
                     FloatingActionButton(
                         onClick = {
@@ -128,10 +126,8 @@ fun HomeScreen(
                     }
                 }
 
-//                // Navigate FAB
                 FloatingActionButton(
                     onClick = {
-                        addTaskViewModel.resetFlags()
                         navController.navigate(Routes.ADD_TASK)
                     },
                     modifier = Modifier.size(80.dp)
