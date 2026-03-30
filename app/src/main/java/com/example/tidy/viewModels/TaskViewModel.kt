@@ -83,19 +83,17 @@ class TaskViewModel(
 
     fun updateTaskDone(task: Task, isChecked: Boolean) {
         taskBox.put(task.copy(done = isChecked))
-        task.parents.forEach { parent ->
-            val allChildrenDone = parent.children.all { it.done }
-
-            if (allChildrenDone) {
-                taskBox.put(parent.copy(done = true))
-            } else {
-                taskBox.put(parent.copy(done = false))
-
-            }
-        }
+        updateParents(task)
         refreshTasks()
     }
 
+    fun updateParents(task: Task) {
+        task.parents.forEach { parent ->
+            val allChildrenDone = parent.children.all { it.done }
+            taskBox.put(parent.copy(done = allChildrenDone))
+            updateParents(parent)
+        }
+    }
     private fun resetTasksForToday() {
         val todayDate =
             SimpleDateFormat("dd", Locale.getDefault())
