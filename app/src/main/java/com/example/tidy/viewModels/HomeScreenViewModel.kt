@@ -29,10 +29,13 @@ class HomeScreenViewModel(
     private val dbOperation: DbOperation,
     private val addTaskViewModel: AddTaskViewModel,
     private val navController: NavController,
+    private  val taskViewModel: TaskViewModel, // TODO remove this
 ) : ViewModel() {
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
             dbOperation.updateDoneStatus(task)
+            dbOperation.updateParentDoneStatus(task)
+            taskViewModel.refreshTasks()
         }
     }
 
@@ -44,12 +47,14 @@ class HomeScreenViewModel(
     fun skipTask(task: Task){
         viewModelScope.launch {
             dbOperation.skipTask(task)
+            taskViewModel.refreshTasks()
         }
     }
 
     fun deleteTask(task: Task){
         viewModelScope.launch {
             dbOperation.deleteTask(task)
+            taskViewModel.refreshTasks()
         }
     }
 }
