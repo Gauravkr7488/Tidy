@@ -40,7 +40,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.*
-import com.example.tidy.ui.component.TaskItem
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Create
@@ -48,19 +47,20 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
 import com.example.tidy.constants.Routes
-import com.example.tidy.viewModels.AddTaskViewModel
+import com.example.tidy.ui.component.TaskCard
+import com.example.tidy.viewModels.HomeScreenViewModel
 import com.example.tidy.viewModels.TaskViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
     taskViewModel: TaskViewModel,
-    addTaskViewModel: AddTaskViewModel,
+    homeScreenViewModel: HomeScreenViewModel,
     navController: NavController,
 
     modifier: Modifier = Modifier
 ) {
-    val tasks = taskViewModel.tasks.filter { task -> !task.note }
+    val tasks = taskViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val listState = rememberLazyListState()
     var previousOffset by remember { mutableIntStateOf(0) }
@@ -159,11 +159,13 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(tasks, key = { it.id }) { task ->
-                    TaskItem(
+                    TaskCard(
                         task = task,
-                        taskViewModel,
-                        addTaskViewModel,
-                        navController
+                        onClick = homeScreenViewModel::toggleDoneStatus,
+                        onEditClick = homeScreenViewModel::editTask,
+                        onSkipClick = homeScreenViewModel::skipTask,
+                        onDeleteClick = homeScreenViewModel::deleteTask,
+                        modifier = Modifier
                     )
                 }
             }

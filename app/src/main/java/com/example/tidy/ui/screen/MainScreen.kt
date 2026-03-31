@@ -27,6 +27,7 @@ import com.example.tidy.DbOperation
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 import com.example.tidy.viewModels.AddTaskViewModel
+import com.example.tidy.viewModels.HomeScreenViewModel
 import com.example.tidy.viewModels.TaskViewModel
 
 @Composable
@@ -35,7 +36,14 @@ fun MainScreen(taskViewModel: TaskViewModel, dbOperation: DbOperation) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
     val addTaskViewModel = remember { AddTaskViewModel(dbOperation) }
-
+    val homeScreenViewModel = remember {
+        HomeScreenViewModel(
+            taskViewModel = taskViewModel,
+            addTaskViewModel = addTaskViewModel,
+            navController = navController,
+            dbOperation = dbOperation
+        )
+    }
 
     Scaffold(
         bottomBar = {
@@ -50,7 +58,7 @@ fun MainScreen(taskViewModel: TaskViewModel, dbOperation: DbOperation) {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.HOME) {
-                HomeScreen(taskViewModel, addTaskViewModel, navController)
+                HomeScreen(taskViewModel, homeScreenViewModel, navController)
             }
             composable(Routes.NOTE) {
                 NoteScreen(
@@ -60,7 +68,7 @@ fun MainScreen(taskViewModel: TaskViewModel, dbOperation: DbOperation) {
                 )
             }
             composable(Routes.ADD_TASK) {
-                AddTaskScreen( addTaskViewModel, navController)
+                AddTaskScreen(addTaskViewModel, navController)
             }
 
             composable(Routes.SETTINGS) {
