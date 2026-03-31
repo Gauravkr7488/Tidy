@@ -34,6 +34,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -158,10 +159,12 @@ fun TaskCard(
                 }
             )
             if (task.children.isNotEmpty()) {
-                Icon(
-                    imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
-                    contentDescription = null
-                )
+                IconButton(onClick = {expanded = !expanded}) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
+                        contentDescription = null
+                    )
+                }
             }
         }
         if (task.children.isNotEmpty() && expanded) {
