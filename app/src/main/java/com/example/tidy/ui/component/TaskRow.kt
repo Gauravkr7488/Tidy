@@ -18,8 +18,6 @@
 package com.example.tidy.ui.component
 
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
@@ -30,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
@@ -46,37 +43,32 @@ fun TaskRow(
     onOpenMenu: () -> Unit,
     menuContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    onTap: () -> Unit = {},
 ) {
     var tapOffset by remember { mutableStateOf(Offset.Zero) }
-
     Card(
         modifier = modifier
+            .padding(8.dp)
+            .heightIn(min = 35.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onLongPress = { offset ->
                         tapOffset = offset
                         onOpenMenu()
                     },
+                    onTap = {
+                        onTap()
+                    }
                 )
-            }
+            },
     ) {
-        Row(
-            modifier = modifier
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            textDecoration = if (doneStatus) TextDecoration.LineThrough else TextDecoration.None,
+            modifier = Modifier
                 .padding(8.dp)
-                .heightIn(min = 35.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                textDecoration = if (doneStatus) TextDecoration.LineThrough else TextDecoration.None,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .fillMaxWidth()
-
-            )
-        }
+        )
         TaskRowMenu(
             showMenu = showMenu,
             tapOffset = tapOffset,
