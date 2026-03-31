@@ -66,7 +66,7 @@ fun TaskItem(
             .padding(vertical = 4.dp)
     ) {
         Column {
-            TaskRow(
+            TaskRow3(
                 task = task,
                 viewModel = viewModel,
                 addTaskViewModel = addTaskViewModel,
@@ -95,7 +95,7 @@ fun TaskItem(
 
 @Suppress("AssignedValueIsNeverRead")
 @Composable
-fun TaskRow(
+fun TaskRow3(
     task: Task,
     viewModel: TaskViewModel,
     addTaskViewModel: AddTaskViewModel,
