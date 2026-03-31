@@ -33,8 +33,8 @@ class HomeScreenViewModel(
 ) : ViewModel() {
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
-            dbOperation.updateDoneStatus(task)
-            dbOperation.updateParentDoneStatus(task)
+            dbOperation.updateDoneStatus(task.id)
+            dbOperation.updateParentDoneStatus(task.id)
             taskViewModel.refreshTasks()
         }
     }
@@ -46,14 +46,14 @@ class HomeScreenViewModel(
 
     fun skipTask(task: Task){
         viewModelScope.launch {
-            dbOperation.skipTask(task)
+            dbOperation.skipTask(task.id)
             taskViewModel.refreshTasks()
         }
     }
 
     fun deleteTask(task: Task){
         viewModelScope.launch {
-            dbOperation.deleteTask(task)
+            dbOperation.deleteTask(task.id)
             taskViewModel.refreshTasks()
         }
     }
