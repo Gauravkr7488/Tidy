@@ -32,9 +32,9 @@ import androidx.compose.ui.unit.dp
 fun TaskRow(
     title: String,
     doneStatus: Boolean,
-    onTap: () -> Unit,
     onLongTap: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onTap: () -> Unit = {},
 ) {
     Text(
         text = title,
