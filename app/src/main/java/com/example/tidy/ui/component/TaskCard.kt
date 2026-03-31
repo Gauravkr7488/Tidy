@@ -19,9 +19,6 @@
 
 package com.example.tidy.ui.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,6 +30,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.SkipNext
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,8 +42,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Task
@@ -59,31 +57,34 @@ fun TaskCard(
     onDeleteClick: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val title = task.title
-    val doneStatus = task.done
-    val isParent = task.children.isNotEmpty()
-    val children = task.children
-    var expanded by remember { mutableStateOf(false) }
-    var showMenu by remember { mutableStateOf(false) }
+    var expanded by remember(task.id) { mutableStateOf(false) }
+    var showMenu by remember(task.id) { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    Column(
+    Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clickable(onClick = {
-                expanded = !expanded
-                onClick(task)
-            })
     ) {
-        Row {
+        Row(
+            modifier = Modifier
+                .padding(start = 8.dp, end = 8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+
+        ) {
             TaskRow(
-                title = title,
-                doneStatus = doneStatus,
+                title = task.title,
+                doneStatus = task.done,
                 showMenu = showMenu,
                 onCloseMenu = { showMenu = false },
                 onOpenMenu = { showMenu = true },
-                modifier = if (doneStatus) Modifier.background(Color.Green) else Modifier,
+                modifier = Modifier
+                    .weight(1f),
+                onTap = {
+                    if (task.children.isNotEmpty()) expanded = !expanded
+                    else onClick(task)
+                },
                 menuContent = {
                     DropdownMenuItem(
                         text = {
@@ -156,22 +157,22 @@ fun TaskCard(
                     )
                 }
             )
-            if (isParent) {
+            if (task.children.isNotEmpty()) {
                 Icon(
                     imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
                     contentDescription = null
                 )
             }
         }
-        if (isParent && expanded) {
-            children.forEach { child ->
+        if (task.children.isNotEmpty() && expanded) {
+            task.children.forEach { child ->
                 TaskCard(
                     task = child,
                     onClick = onClick,
                     onEditClick = onEditClick,
                     onSkipClick = onSkipClick,
                     onDeleteClick = onDeleteClick,
-                    modifier = Modifier
+                    modifier = Modifier.padding(start = 24.dp)
                 )
             }
         }
@@ -180,7 +181,7 @@ fun TaskCard(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text("Delete Task") },
-            text = { Text("Are you sure you want to delete '${title}'?") },
+            text = { Text("Are you sure you want to delete '${task.title}'?") },
             confirmButton = {
                 TextButton(onClick = {
                     onDeleteClick(task)
