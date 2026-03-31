@@ -40,17 +40,27 @@ class DbOperation(
         return@withContext saveTask(parentTask)
     }
 
-    suspend fun updateDoneStatus(task: Task) = withContext(Dispatchers.IO){
+    suspend fun updateDoneStatus(task: Task) = withContext(Dispatchers.IO) {
         task.done = !task.done
         return@withContext saveTask(task)
     }
 
-    suspend fun skipTask(task: Task) = withContext(Dispatchers.IO){
+    suspend fun skipTask(task: Task) = withContext(Dispatchers.IO) {
         task.hide = true
         return@withContext saveTask(task)
     }
 
-    suspend fun deleteTask(task: Task) = withContext(Dispatchers.IO){
+    suspend fun deleteTask(task: Task) = withContext(Dispatchers.IO) {
         return@withContext taskBox.remove(task.id)
+    }
+
+    suspend fun updateParentDoneStatus(task: Task): Unit = withContext(Dispatchers.IO) {
+        task.parents.forEach { parent ->
+            val freshParent = getTask(parent.id)
+            val allChildrenDone = freshParent.children.all { it.done }
+            freshParent.done = allChildrenDone
+            saveTask(freshParent)
+            updateParentDoneStatus(freshParent)
+        }
     }
 }
