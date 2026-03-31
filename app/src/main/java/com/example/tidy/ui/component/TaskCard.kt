@@ -15,17 +15,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("AssignedValueIsNeverRead")
+
 package com.example.tidy.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
-import androidx.compose.material3.Card
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,38 +46,154 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.tidy.Task
 
 @Composable
 fun TaskCard(
-    title: String,
-    doneStatus: Boolean,
-    isParent: Boolean,
-    onCLick: () -> Unit,
-    onLongClick: () -> Unit,
+    task: Task,
+    onClick: (Task) -> Unit,
+    onEditClick: (Task) -> Unit,
+    onSkipClick: (Task) -> Unit,
+    onDeleteClick: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val title = task.title
+    val doneStatus = task.done
+    val isParent = task.children.isNotEmpty()
+    val children = task.children
     var expanded by remember { mutableStateOf(false) }
-    Card(
+    var showMenu by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable(onClick = {
                 expanded = !expanded
-                onCLick()
+                onClick(task)
             })
     ) {
-        TaskRow(
-            title = title,
-            doneStatus = doneStatus,
-            onLongTap = { onLongClick() },
-            modifier = if (doneStatus) Modifier.background(Color.Green) else Modifier
-        )
-        if (isParent) {
-            Icon(
-                imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
-                contentDescription = null
+        Row {
+            TaskRow(
+                title = title,
+                doneStatus = doneStatus,
+                showMenu = showMenu,
+                onCloseMenu = { showMenu = false },
+                onOpenMenu = { showMenu = true },
+                modifier = if (doneStatus) Modifier.background(Color.Green) else Modifier,
+                menuContent = {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "Edit",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Edit,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            onEditClick(task)
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "Skip",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.SkipNext,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(18.dp)
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            onSkipClick(task)
+                        }
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "Delete",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        },
+                        onClick = {
+                            showMenu = false
+                            showDeleteDialog = true
+                        }
+                    )
+                }
             )
+            if (isParent) {
+                Icon(
+                    imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
+                    contentDescription = null
+                )
+            }
         }
+        if (isParent && expanded) {
+            children.forEach { child ->
+                TaskCard(
+                    task = child,
+                    onClick = onClick,
+                    onEditClick = onEditClick,
+                    onSkipClick = onSkipClick,
+                    onDeleteClick = onDeleteClick,
+                    modifier = Modifier
+                )
+            }
+        }
+    }
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Task") },
+            text = { Text("Are you sure you want to delete '${title}'?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDeleteClick(task)
+                    showDeleteDialog = false
+                }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
