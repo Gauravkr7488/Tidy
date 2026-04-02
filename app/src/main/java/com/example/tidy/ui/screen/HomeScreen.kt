@@ -62,6 +62,7 @@ fun HomeScreen(
 ) {
     val tasks = taskViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
     val listState = rememberLazyListState()
     var previousOffset by remember { mutableIntStateOf(0) }
     var previousIndex by remember { mutableIntStateOf(0) }
@@ -97,8 +98,11 @@ fun HomeScreen(
     val offsetY by animateDpAsState(
         targetValue = if (showFab) 0.dp else 300.dp
     )
-    LaunchedEffect(currentBackStackEntry) {
-        taskViewModel.refreshTasks()
+    LaunchedEffect(isOnTop) {
+        if (isOnTop) {
+            @Suppress("AssignedValueIsNeverRead")
+            showFab = true
+        }
     }
     val hasDoneTask = tasks.any { it.done }
     Scaffold(
