@@ -102,6 +102,7 @@ fun HomeScreen(
         if (isOnTop) {
             @Suppress("AssignedValueIsNeverRead")
             showFab = true
+            taskViewModel.refreshTasks()
         }
     }
     val hasDoneTask = tasks.any { it.done }
