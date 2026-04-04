@@ -19,6 +19,7 @@
 
 package com.example.tidy.ui.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -40,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,8 +60,8 @@ fun TaskCard(
     onSkipClick: (Task) -> Unit = {},
     onDeleteClick: (Task) -> Unit = {},
 ) {
-    var expanded by remember(task.id) { mutableStateOf(false) }
-    var showMenu by remember(task.id) { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Card(
@@ -159,7 +161,7 @@ fun TaskCard(
                 }
             )
             if (task.children.isNotEmpty()) {
-                IconButton(onClick = {expanded = !expanded}) {
+                IconButton(onClick = { expanded = !expanded }) {
                     Icon(
                         imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
                         contentDescription = null
@@ -167,16 +169,21 @@ fun TaskCard(
                 }
             }
         }
+
         if (task.children.isNotEmpty() && expanded) {
-            task.children.forEach { child ->
-                TaskCard(
-                    task = child,
-                    onClick = onClick,
-                    onEditClick = onEditClick,
-                    onSkipClick = onSkipClick,
-                    onDeleteClick = onDeleteClick,
-                    modifier = Modifier.padding(start = 24.dp)
-                )
+            Column {
+                task.children.forEach { child ->
+                    key(child.id) {
+                        TaskCard(
+                            task = child,
+                            onClick = onClick,
+                            onEditClick = onEditClick,
+                            onSkipClick = onSkipClick,
+                            onDeleteClick = onDeleteClick,
+                            modifier = Modifier.padding(start = 24.dp)
+                        )
+                    }
+                }
             }
         }
     }
