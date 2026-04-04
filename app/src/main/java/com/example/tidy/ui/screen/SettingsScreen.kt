@@ -45,10 +45,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.Ace777.tidy.R
 import com.example.tidy.SettingOption
+import com.example.tidy.viewModels.SettingsScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    settingsScreenViewModel: SettingsScreenViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
 ) {
