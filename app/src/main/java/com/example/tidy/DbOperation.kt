@@ -22,6 +22,7 @@ import kotlinx.coroutines.withContext
 
 class DbOperation(
     private val taskBox: Box<Task>,
+    private val lastBoxReset: Box<LastReset>,
 ) {
     suspend fun saveTask(task: Task): Long = withContext(Dispatchers.IO) {
         return@withContext taskBox.put(task)
@@ -30,6 +31,10 @@ class DbOperation(
     suspend fun getTask(id: Long): Task = withContext(Dispatchers.IO) {
         val task = taskBox.get(id)
         return@withContext task
+    }
+
+    suspend fun taskGetAll(): List<Task> = withContext(Dispatchers.IO) {
+        return@withContext taskBox.all
     }
 
     suspend fun addChild(childId: Long, parentId: Long): Long? = withContext(Dispatchers.IO) {
@@ -64,6 +69,29 @@ class DbOperation(
             freshParent.done = allChildrenDone
             saveTask(freshParent)
             updateParentDoneStatus(freshParent.id)
+        }
+    }
+
+    suspend fun taskDeleteALl() = withContext(Dispatchers.IO) {
+        return@withContext taskBox.removeAll()
+    }
+
+    suspend fun taskSaveList(tasks: List<Task>) = withContext(Dispatchers.IO) {
+        return@withContext taskBox.put(tasks)
+    }
+
+    suspend fun getLastReset(): LastReset? = withContext(Dispatchers.IO) {
+        return@withContext lastBoxReset.get(1)
+    }
+
+    suspend fun setLastResetToday(todayDate: String): Long = withContext(Dispatchers.IO) {
+        return@withContext lastBoxReset.put(LastReset(id = 0, lastResetAt = todayDate))
+    }
+
+    suspend fun tasksUnhideAll() = withContext(Dispatchers.IO) {
+        return@withContext taskBox.all.forEach { task ->
+            task.hide = false
+            taskBox.put(task)
         }
     }
 }
