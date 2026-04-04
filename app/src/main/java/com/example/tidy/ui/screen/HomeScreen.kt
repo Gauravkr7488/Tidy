@@ -39,8 +39,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.runtime.setValue
@@ -49,18 +49,16 @@ import androidx.navigation.compose.*
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.TaskCard
 import com.example.tidy.viewModels.HomeScreenViewModel
-import com.example.tidy.viewModels.TaskViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
-    taskViewModel: TaskViewModel,
     homeScreenViewModel: HomeScreenViewModel,
     navController: NavController,
 
     modifier: Modifier = Modifier
 ) {
-    val tasks = taskViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() }
+    val tasks = homeScreenViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
     val listState = rememberLazyListState()
@@ -102,7 +100,6 @@ fun HomeScreen(
         if (isOnTop) {
             @Suppress("AssignedValueIsNeverRead")
             showFab = true
-            taskViewModel.refreshTasks()
         }
     }
     val hasDoneTask = tasks.any { it.done }
@@ -117,10 +114,8 @@ fun HomeScreen(
 
                 if (hasDoneTask) {
                     FloatingActionButton(
-                        onClick = {
-                            taskViewModel.cleanCompletedTasks()
-                            taskViewModel.refreshTasks()
-                        },
+                        onClick =
+                            { homeScreenViewModel.cleanCompletedTasks() },
                         modifier = Modifier.size(80.dp)
                     ) {
 
