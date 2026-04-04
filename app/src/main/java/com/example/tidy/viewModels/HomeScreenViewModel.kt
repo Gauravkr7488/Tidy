@@ -23,11 +23,19 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
+import com.example.tidy.ExportManager
 import com.example.tidy.Task
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class HomeScreenViewModel(
     private val dbOperation: DbOperation,
+    private val exportManager: ExportManager
+
 ) : ViewModel() {
 
     var tasks by mutableStateOf<List<Task>>(emptyList())
@@ -35,11 +43,12 @@ class HomeScreenViewModel(
 
     init {
         viewModelScope.launch {
+            resetTasksForToday()
             tasks = dbOperation.taskGetAll()
         }
     }
 
-    private suspend fun refreshTasks() {
+    suspend fun refreshTasks() {
         tasks = dbOperation.taskGetAll()
     }
 
@@ -79,6 +88,32 @@ class HomeScreenViewModel(
         viewModelScope.launch {
             dbOperation.deleteTask(task.id)
             refreshTasks()
+        }
+    }
+
+    fun resetTasksForToday() {
+        val todayDate =
+            SimpleDateFormat("dd", Locale.getDefault())
+                .format(Calendar.getInstance().time)
+        viewModelScope.launch {
+            val existingReset = dbOperation.getLastReset()
+
+            if (existingReset == null) {
+
+                dbOperation.setLastResetToday(todayDate = todayDate)
+                dbOperation.tasksUnhideAll()
+            } else if (existingReset.lastResetAt != todayDate) {
+                dbOperation.setLastResetToday(todayDate = todayDate)
+                dbOperation.tasksUnhideAll()
+            }
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun onCleared() {
+        super.onCleared()
+        GlobalScope.launch {
+            exportManager.exportSilently()
         }
     }
 }

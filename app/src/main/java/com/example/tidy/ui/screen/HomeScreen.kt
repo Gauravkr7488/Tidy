@@ -98,6 +98,7 @@ fun HomeScreen(
     )
     LaunchedEffect(isOnTop) {
         if (isOnTop) {
+            homeScreenViewModel.refreshTasks()
             @Suppress("AssignedValueIsNeverRead")
             showFab = true
         }
@@ -128,7 +129,7 @@ fun HomeScreen(
 
                 FloatingActionButton(
                     onClick = {
-                        navController.navigate(Routes.ADD_TASK)
+                        navController.navigate("${Routes.ADD_TASK}/${0}")
                     },
                     modifier = Modifier.size(80.dp)
                 ) {

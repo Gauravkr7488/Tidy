@@ -39,10 +39,12 @@ class MainActivity : ComponentActivity() {
             val dbOperation = DbOperation(
                 taskBox = taskBox,
                 lastBoxReset = lastBoxReset,
-                exportManager = app.exportManager
             )
             TidyTheme {
-                MainScreen(dbOperation)
+                MainScreen(
+                    dbOperation,
+                    exportManager = app.exportManager
+                )
             }
         }
     }
