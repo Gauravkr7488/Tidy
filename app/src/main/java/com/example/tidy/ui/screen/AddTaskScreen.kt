@@ -71,7 +71,7 @@ fun AddTaskScreen(
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         coroutineScope.launch {
-            val task = addTaskScreenViewModel.getCurrentTask()
+            val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
             if (task != null) {
                 taskId = task.id
                 taskChildren = task.children.toList()

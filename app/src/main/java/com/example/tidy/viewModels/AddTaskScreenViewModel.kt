@@ -24,24 +24,18 @@ class AddTaskScreenViewModel(
     private val dbOperation: DbOperation
 ) {
     private var parentTaskList: MutableList<Long> = mutableListOf()
-    private var currentTaskId: Long? = null
     private var childFlag: Boolean = false
 
-    fun getCurrentTaskId(): Long? {
-        val id = currentTaskId
-        currentTaskId = null
-        return id
-    }
 
-    suspend fun getCurrentTask(): Task? {
+    suspend fun getCurrentTask(taskId: Long): Task? {
         var id: Long?
         if (parentTaskList.isNotEmpty() && !childFlag) {
             id = parentTaskList.last()
             parentTaskList.removeAt(parentTaskList.size - 1)
             return dbOperation.getTask(id)
         }
-        id = getCurrentTaskId()
-        if (id == null) return null
+        id = taskId
+        if (id == 0L) return null
         return dbOperation.getTask(id)
     }
 
