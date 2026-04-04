@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
+import com.example.tidy.Task
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.TaskCard
 import com.example.tidy.viewModels.HomeScreenViewModel
@@ -163,7 +164,7 @@ fun HomeScreen(
                     TaskCard(
                         task = task,
                         onClick = homeScreenViewModel::toggleDoneStatus,
-                        onEditClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
+                        onEditClick = homeScreenViewModel::editTask,
                         onSkipClick = homeScreenViewModel::skipTask,
                         onDeleteClick = homeScreenViewModel::deleteTask,
                         modifier = Modifier
