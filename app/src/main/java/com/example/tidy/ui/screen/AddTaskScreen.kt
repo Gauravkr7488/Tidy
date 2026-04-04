@@ -46,7 +46,7 @@ import com.example.tidy.Task
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.KeyboardAwareFAB
 import com.example.tidy.ui.component.SubTaskMenu
-import com.example.tidy.viewModels.AddTaskViewModel
+import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -54,11 +54,12 @@ import java.util.Locale
 
 @Composable
 fun AddTaskScreen(
-    addTaskViewModel: AddTaskViewModel,
+    addTaskScreenViewModel: AddTaskScreenViewModel,
     navController: NavController,
-    modifier: Modifier = Modifier
-) {
-    var taskId: Long = 0
+    modifier: Modifier = Modifier,
+    taskId: Long = 0,
+    ) {
+    var taskId: Long = taskId
     var taskTitle by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
@@ -70,7 +71,7 @@ fun AddTaskScreen(
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         coroutineScope.launch {
-            val task = addTaskViewModel.getCurrentTask()
+            val task = addTaskScreenViewModel.getCurrentTask()
             if (task != null) {
                 taskId = task.id
                 taskChildren = task.children.toList()
@@ -101,7 +102,7 @@ fun AddTaskScreen(
             ) {
                 KeyboardAwareFAB {
                     coroutineScope.launch {
-                        addTaskViewModel.addTask(
+                        addTaskScreenViewModel.addTask(
                             Task(
                                 id = taskId,
                                 title = taskTitle,
@@ -173,7 +174,7 @@ fun AddTaskScreen(
                     "Child Tasks",
                     {
                         coroutineScope.launch {
-                            addTaskViewModel.startAddNewChild(
+                            addTaskScreenViewModel.startAddNewChild(
                                 Task(
                                     id = taskId,
                                     title = taskTitle,

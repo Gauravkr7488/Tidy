@@ -31,19 +31,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.tidy.ui.component.TaskItem
-import com.example.tidy.viewModels.AddTaskViewModel
-import com.example.tidy.viewModels.TaskViewModel
+import com.example.tidy.constants.Routes
+import com.example.tidy.ui.component.TaskCard
+import com.example.tidy.viewModels.NoteScreenViewModel
 
 @Composable
 fun NoteScreen(
-    taskViewModel: TaskViewModel,
-    addTaskViewModel: AddTaskViewModel,
+    noteScreenViewModel: NoteScreenViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
 
 ) {
-    val tasks = taskViewModel.tasks.filter { task -> task.note }
+    val tasks = noteScreenViewModel.tasks.filter { task -> task.note }
     val listState = rememberLazyListState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -68,11 +67,10 @@ fun NoteScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(tasks, key = { it.id }) { task ->
-                    TaskItem(
+                    TaskCard(
                         task = task,
-                        taskViewModel,
-                        addTaskViewModel,
-                        navController
+                        onEditClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
+                        onDeleteClick = noteScreenViewModel:: deleteTask
                     )
                 }
             }

@@ -17,44 +17,103 @@
 
 package com.example.tidy.viewModels
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.example.tidy.DbOperation
+import com.example.tidy.ExportManager
 import com.example.tidy.Task
-import com.example.tidy.constants.Routes
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class HomeScreenViewModel(
     private val dbOperation: DbOperation,
-    private val addTaskViewModel: AddTaskViewModel,
-    private val navController: NavController,
-    private  val taskViewModel: TaskViewModel, // TODO remove this
+    private val exportManager: ExportManager
+
 ) : ViewModel() {
+
+    var tasks by mutableStateOf<List<Task>>(emptyList())
+        private set
+
+    init {
+        viewModelScope.launch {
+            resetTasksForToday()
+            tasks = dbOperation.taskGetAll()
+        }
+    }
+
+    suspend fun refreshTasks() {
+        tasks = dbOperation.taskGetAll()
+    }
+
+    fun cleanCompletedTasks() {
+        viewModelScope.launch {
+            tasks
+                .filter { it.done && it.parents.all { parent -> parent.done } }
+                .forEach { task ->
+                    if (task.repeat) {
+                        task.done = false
+                        task.hide = true
+                        dbOperation.saveTask(task)
+                    } else {
+                        dbOperation.deleteTask(task.id) // delete one time tasks
+                    }
+                }
+            refreshTasks()
+        }
+    }
+
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
             dbOperation.updateDoneStatus(task.id)
             dbOperation.updateParentDoneStatus(task.id)
-            taskViewModel.refreshTasks()
+            refreshTasks()
         }
     }
 
-    fun editTask(task: Task) {
-        addTaskViewModel.setCurrentTaskId(task.id)
-        navController.navigate(Routes.ADD_TASK)
-    }
-
-    fun skipTask(task: Task){
+    fun skipTask(task: Task) {
         viewModelScope.launch {
             dbOperation.skipTask(task.id)
-            taskViewModel.refreshTasks()
+            refreshTasks()
         }
     }
 
-    fun deleteTask(task: Task){
+    fun deleteTask(task: Task) {
         viewModelScope.launch {
             dbOperation.deleteTask(task.id)
-            taskViewModel.refreshTasks()
+            refreshTasks()
+        }
+    }
+
+    fun resetTasksForToday() {
+        val todayDate =
+            SimpleDateFormat("dd", Locale.getDefault())
+                .format(Calendar.getInstance().time)
+        viewModelScope.launch {
+            val existingReset = dbOperation.getLastReset()
+
+            if (existingReset == null) {
+
+                dbOperation.setLastResetToday(todayDate = todayDate)
+                dbOperation.tasksUnhideAll()
+            } else if (existingReset.lastResetAt != todayDate) {
+                dbOperation.setLastResetToday(todayDate = todayDate)
+                dbOperation.tasksUnhideAll()
+            }
+        }
+    }
+
+    @OptIn(DelicateCoroutinesApi::class)
+    override fun onCleared() {
+        super.onCleared()
+        GlobalScope.launch {
+            exportManager.exportSilently()
         }
     }
 }

@@ -17,33 +17,36 @@
 
 package com.example.tidy.ui.screen
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.navigation.compose.*
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.example.tidy.DbOperation
+import com.example.tidy.ExportManager
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
-import com.example.tidy.viewModels.AddTaskViewModel
+import com.example.tidy.viewModels.AddTaskScreenViewModel
+import com.example.tidy.viewModels.BackupScreenViewModel
 import com.example.tidy.viewModels.HomeScreenViewModel
-import com.example.tidy.viewModels.TaskViewModel
+import com.example.tidy.viewModels.NoteScreenViewModel
+import com.example.tidy.viewModels.SettingsScreenViewModel
 
 @Composable
-fun MainScreen(taskViewModel: TaskViewModel, dbOperation: DbOperation) {
+fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val navController = rememberNavController()
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
-    val addTaskViewModel = remember { AddTaskViewModel(dbOperation) }
-    val homeScreenViewModel = remember {
-        HomeScreenViewModel(
-            taskViewModel = taskViewModel,
-            addTaskViewModel = addTaskViewModel,
-            navController = navController,
-            dbOperation = dbOperation
-        )
-    }
+
+    val addTaskScreenViewModel = remember { AddTaskScreenViewModel(dbOperation) }
+    val homeScreenViewModel = remember { HomeScreenViewModel(dbOperation, exportManager) }
+    val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
+    val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
+    val settingsScreenViewModel = remember { SettingsScreenViewModel(dbOperation) }
 
     Scaffold(
         bottomBar = {
@@ -57,26 +60,34 @@ fun MainScreen(taskViewModel: TaskViewModel, dbOperation: DbOperation) {
             startDestination = Routes.HOME,
             modifier = Modifier.padding(innerPadding)
         ) {
+
             composable(Routes.HOME) {
-                HomeScreen(taskViewModel, homeScreenViewModel, navController)
+                HomeScreen(homeScreenViewModel, navController)
             }
+
             composable(Routes.NOTE) {
-                NoteScreen(
-                    taskViewModel = taskViewModel,
-                    addTaskViewModel = addTaskViewModel,
-                    navController = navController
-                )
+                NoteScreen(noteScreenViewModel, navController)
             }
+
+            composable("${Routes.ADD_TASK}/{taskId}") { backStackEntry ->
+                val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
+                if (taskId == null){
+                    AddTaskScreen(addTaskScreenViewModel, navController)
+                }else{
+                    AddTaskScreen(addTaskScreenViewModel, navController, taskId = taskId)
+                }
+            }
+
             composable(Routes.ADD_TASK) {
-                AddTaskScreen(addTaskViewModel, navController)
+                AddTaskScreen(addTaskScreenViewModel, navController)
             }
 
             composable(Routes.SETTINGS) {
-                SettingsScreen(navController)
+                SettingsScreen(settingsScreenViewModel, navController)
             }
 
             composable(Routes.BACKUP) {
-                BackupScreen(taskViewModel)
+                BackupScreen(backupScreenViewModel, navController)
             }
         }
     }

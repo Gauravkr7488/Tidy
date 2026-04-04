@@ -52,11 +52,11 @@ import com.example.tidy.Task
 @Composable
 fun TaskCard(
     task: Task,
-    onClick: (Task) -> Unit,
-    onEditClick: (Task) -> Unit,
-    onSkipClick: (Task) -> Unit,
-    onDeleteClick: (Task) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (Task) -> Unit = {},
+    onEditClick: (Task) -> Unit = {},
+    onSkipClick: (Task) -> Unit = {},
+    onDeleteClick: (Task) -> Unit = {},
 ) {
     var expanded by remember(task.id) { mutableStateOf(false) }
     var showMenu by remember(task.id) { mutableStateOf(false) }
