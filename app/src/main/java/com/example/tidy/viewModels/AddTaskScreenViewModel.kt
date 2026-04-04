@@ -20,15 +20,12 @@ package com.example.tidy.viewModels
 import com.example.tidy.DbOperation
 import com.example.tidy.Task
 
-class AddTaskViewModel(
+class AddTaskScreenViewModel(
     private val dbOperation: DbOperation
 ) {
     private var parentTaskList: MutableList<Long> = mutableListOf()
     private var currentTaskId: Long? = null
     private var childFlag: Boolean = false
-    fun setCurrentTaskId(id: Long) {
-        currentTaskId = id
-    }
 
     fun getCurrentTaskId(): Long? {
         val id = currentTaskId

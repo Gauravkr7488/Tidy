@@ -29,7 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.tidy.DbOperation
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
-import com.example.tidy.viewModels.AddTaskViewModel
+import com.example.tidy.viewModels.AddTaskScreenViewModel
 import com.example.tidy.viewModels.BackupScreenViewModel
 import com.example.tidy.viewModels.HomeScreenViewModel
 import com.example.tidy.viewModels.NoteScreenViewModel
@@ -41,7 +41,7 @@ fun MainScreen(dbOperation: DbOperation) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val addTaskViewModel = remember { AddTaskViewModel(dbOperation) }
+    val addTaskScreenViewModel = remember { AddTaskScreenViewModel(dbOperation) }
     val homeScreenViewModel = remember { HomeScreenViewModel(dbOperation) }
     val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
@@ -59,14 +59,22 @@ fun MainScreen(dbOperation: DbOperation) {
             startDestination = Routes.HOME,
             modifier = Modifier.padding(innerPadding)
         ) {
+
             composable(Routes.HOME) {
                 HomeScreen(homeScreenViewModel, navController)
             }
+
             composable(Routes.NOTE) {
                 NoteScreen(noteScreenViewModel, navController)
             }
-            composable(Routes.ADD_TASK) {
-                AddTaskScreen(addTaskViewModel, navController)
+
+            composable("${Routes.ADD_TASK}/{taskId}") { backStackEntry ->
+                val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
+                if (taskId == null){
+                    AddTaskScreen(addTaskScreenViewModel, navController)
+                }else{
+                    AddTaskScreen(addTaskScreenViewModel, navController, taskId = taskId)
+                }
             }
 
             composable(Routes.SETTINGS) {
