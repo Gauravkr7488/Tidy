@@ -166,7 +166,6 @@ fun HomeScreen(
                         onEditClick = homeScreenViewModel::editTask,
                         onSkipClick = homeScreenViewModel::skipTask,
                         onDeleteClick = homeScreenViewModel::deleteTask,
-                        modifier = Modifier
                     )
                 }
             }
