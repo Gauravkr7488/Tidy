@@ -162,7 +162,7 @@ fun HomeScreen(
                     TaskCard(
                         task = task,
                         onClick = homeScreenViewModel::toggleDoneStatus,
-                        onEditClick = homeScreenViewModel::editTask,
+                        onEditClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
                         onSkipClick = homeScreenViewModel::skipTask,
                         onDeleteClick = homeScreenViewModel::deleteTask,
                         modifier = Modifier
