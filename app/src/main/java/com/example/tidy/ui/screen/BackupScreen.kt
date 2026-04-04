@@ -48,12 +48,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.tidy.ui.component.SimpleCard
-import com.example.tidy.viewModels.TaskViewModel
+import com.example.tidy.viewModels.BackupScreenViewModel
 
 @Composable
 fun BackupScreen(
-    viewModel: TaskViewModel,
+    backupScreenViewModel: BackupScreenViewModel,
+    navController: NavController,
+
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -64,19 +67,19 @@ fun BackupScreen(
         rememberLauncherForActivityResult(
             ActivityResultContracts.CreateDocument("application/json")
         ) { uri ->
-            uri?.let { viewModel.createBackup(context, it) }
+            uri?.let { backupScreenViewModel.createBackup(context, it) }
         }
 
     val importLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocument()
         ) { uri ->
-            uri?.let { viewModel.importBackup(context, it) }
+            uri?.let { backupScreenViewModel.importBackup(context, it) }
         }
 
     // --- new: auto backup folder picker ---
     var autoBackupPath by remember {
-        mutableStateOf(viewModel.getAutoBackupPath(context))
+        mutableStateOf(backupScreenViewModel.getAutoBackupPath(context))
     }
 
     val folderPickerLauncher =
@@ -90,8 +93,8 @@ fun BackupScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                viewModel.setAutoBackupUri(context, it)
-                autoBackupPath = viewModel.getAutoBackupPath(context)
+                backupScreenViewModel.setAutoBackupUri(context, it)
+                autoBackupPath = backupScreenViewModel.getAutoBackupPath(context)
             }
         }
 
@@ -131,7 +134,9 @@ fun BackupScreen(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             IconButton(
-                                modifier = Modifier.padding(8.dp).size(48.dp),
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .size(48.dp),
                                 onClick = { exportLauncher.launch("backup.json") }
                             ) {
                                 Icon(
@@ -156,7 +161,9 @@ fun BackupScreen(
                                 style = MaterialTheme.typography.titleMedium
                             )
                             IconButton(
-                                modifier = Modifier.padding(8.dp).size(48.dp),
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .size(48.dp),
                                 onClick = {
                                     importLauncher.launch(arrayOf("application/json"))
                                 }
@@ -193,7 +200,9 @@ fun BackupScreen(
                                 )
                             }
                             IconButton(
-                                modifier = Modifier.padding(8.dp).size(48.dp),
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .size(48.dp),
                                 onClick = { folderPickerLauncher.launch(null) }
                             ) {
                                 Icon(
