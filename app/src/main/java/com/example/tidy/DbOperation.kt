@@ -45,6 +45,19 @@ class DbOperation(
         return@withContext saveTask(parentTask)
     }
 
+
+    suspend fun updateChildrenRepeatStatus(parentId: Long): Unit = withContext(
+        Dispatchers.IO
+    ) {
+        val task = getTask(parentId)
+        task.children.forEach { child ->
+            val freshChild = getTask(child.id)
+            freshChild.repeat = task.repeat
+            saveTask(freshChild)
+            updateChildrenRepeatStatus(freshChild.id)
+        }
+    }
+
     suspend fun updateDoneStatus(id: Long) = withContext(Dispatchers.IO) {
         val task = getTask(id)
         task.done = !task.done

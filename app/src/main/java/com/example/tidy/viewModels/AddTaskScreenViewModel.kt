@@ -54,6 +54,8 @@ class AddTaskScreenViewModel(
     suspend fun addTask(task: Task): Long {
         var i: Long
         i = dbOperation.saveTask(task)
+        dbOperation.updateChildrenRepeatStatus(i)
+
         if (parentTaskList.isNotEmpty()) {
             i = task.id
             dbOperation.addChild(childId = i, parentId = parentTaskList.last())
