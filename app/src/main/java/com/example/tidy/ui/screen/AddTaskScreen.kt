@@ -48,7 +48,6 @@ import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.KeyboardAwareFAB
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskScreenViewModel
-import com.example.tidy.viewModels.SharedViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -58,7 +57,6 @@ import java.util.Locale
 fun AddTaskScreen(
     addTaskScreenViewModel: AddTaskScreenViewModel,
     navController: NavController,
-    sharedViewModel: SharedViewModel,
     modifier: Modifier = Modifier,
     taskId: Long = 0,
 ) {

@@ -35,7 +35,6 @@ import com.example.tidy.viewModels.BackupScreenViewModel
 import com.example.tidy.viewModels.HomeScreenViewModel
 import com.example.tidy.viewModels.NoteScreenViewModel
 import com.example.tidy.viewModels.SettingsScreenViewModel
-import com.example.tidy.viewModels.SharedViewModel
 
 @Composable
 fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
@@ -50,7 +49,6 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
     val settingsScreenViewModel = remember { SettingsScreenViewModel(dbOperation) }
-    val sharedViewModel = remember { SharedViewModel(navController) }
 
     Scaffold(
         bottomBar = {
@@ -79,14 +77,12 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                     AddTaskScreen(
                         addTaskScreenViewModel,
                         navController,
-                        sharedViewModel = sharedViewModel
                     )
                 } else {
                     AddTaskScreen(
                         addTaskScreenViewModel,
                         navController,
                         taskId = taskId,
-                        sharedViewModel = sharedViewModel
                     )
                 }
             }
@@ -95,7 +91,6 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                 AddTaskScreen(
                     addTaskScreenViewModel,
                     navController,
-                    sharedViewModel = sharedViewModel
                 )
             }
 
