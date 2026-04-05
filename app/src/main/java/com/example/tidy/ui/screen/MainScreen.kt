@@ -42,8 +42,10 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val addTaskScreenViewModel = remember { AddTaskScreenViewModel(dbOperation) }
-    val homeScreenViewModel = remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
+    val addTaskScreenViewModel =
+        remember { AddTaskScreenViewModel(dbOperation, navController = navController) }
+    val homeScreenViewModel =
+        remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
     val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
     val settingsScreenViewModel = remember { SettingsScreenViewModel(dbOperation) }
@@ -71,15 +73,25 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
 
             composable("${Routes.ADD_TASK}/{taskId}") { backStackEntry ->
                 val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
-                if (taskId == null){
-                    AddTaskScreen(addTaskScreenViewModel, navController)
-                }else{
-                    AddTaskScreen(addTaskScreenViewModel, navController, taskId = taskId)
+                if (taskId == null) {
+                    AddTaskScreen(
+                        addTaskScreenViewModel,
+                        navController,
+                    )
+                } else {
+                    AddTaskScreen(
+                        addTaskScreenViewModel,
+                        navController,
+                        taskId = taskId,
+                    )
                 }
             }
 
             composable(Routes.ADD_TASK) {
-                AddTaskScreen(addTaskScreenViewModel, navController)
+                AddTaskScreen(
+                    addTaskScreenViewModel,
+                    navController,
+                )
             }
 
             composable(Routes.SETTINGS) {

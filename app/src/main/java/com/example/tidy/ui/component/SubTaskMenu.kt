@@ -18,6 +18,7 @@
 package com.example.tidy.ui.component
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Task
 import com.example.tidy.toggleValue
@@ -57,6 +59,8 @@ fun SubTaskMenu(
     label: String,
     addNewTask: () -> Unit,
     taskChildren: List<Task>,
+    onTap: (task: Task) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -116,7 +120,14 @@ fun SubTaskMenu(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(20.dp),
+                                        .padding(20.dp)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(
+                                                onTap = {
+                                                    onTap(item)
+                                                }
+                                            )
+                                        },
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {

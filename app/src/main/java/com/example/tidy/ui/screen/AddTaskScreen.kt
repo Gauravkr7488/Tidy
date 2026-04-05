@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -58,7 +59,7 @@ fun AddTaskScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     taskId: Long = 0,
-    ) {
+) {
     var taskId: Long = taskId
     var taskTitle by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -186,14 +187,15 @@ fun AddTaskScreen(
                             navController.navigate(Routes.ADD_TASK)
                         }
                     },
-                    taskChildren
+                    taskChildren,
+                    onTap = addTaskScreenViewModel::editTask,
                 )
             }
             if (createdAt != "") {
                 Text(
                     text = "Created $createdAt",
-                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }

@@ -17,12 +17,16 @@
 
 package com.example.tidy.viewModels
 
+import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
 import com.example.tidy.DbOperation
 import com.example.tidy.Task
+import com.example.tidy.constants.Routes
 
 class AddTaskScreenViewModel(
-    private val dbOperation: DbOperation
-) {
+    private val dbOperation: DbOperation,
+    private val navController: NavController,
+) : ViewModel() {
     private var parentTaskList: MutableList<Long> = mutableListOf()
     private var childFlag: Boolean = false
 
@@ -42,19 +46,25 @@ class AddTaskScreenViewModel(
     suspend fun startAddNewChild(task: Task) {
         val id = dbOperation.saveTask(task)
         childFlag = true
-        if (parentTaskList.lastOrNull() != id) parentTaskList.add(id)
+        parentTaskList.add(id)
     }
 
     suspend fun addTask(task: Task): Long {
         var i: Long
         i = dbOperation.saveTask(task)
         dbOperation.updateChildrenRepeatStatus(i)
-
+        println(parentTaskList)
         if (parentTaskList.isNotEmpty()) {
             i = task.id
             dbOperation.addChild(childId = i, parentId = parentTaskList.last())
             childFlag = false
         }
         return i
+    }
+
+    fun editTask(task: Task) {
+        childFlag = true
+        parentTaskList.add(task.parents.last().id)
+        navController.navigate("${Routes.ADD_TASK}/${task.id}")
     }
 }
