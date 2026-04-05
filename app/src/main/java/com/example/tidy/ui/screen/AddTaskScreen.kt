@@ -179,7 +179,7 @@ fun AddTaskScreen(
                         coroutineScope.launch {
                             addTaskScreenViewModel.startAddNewChild(
                                 Task(
-                                    id = 0,
+                                    id = taskId,
                                     title = taskTitle,
                                     note = note,
                                     repeat = repeatDaily,
