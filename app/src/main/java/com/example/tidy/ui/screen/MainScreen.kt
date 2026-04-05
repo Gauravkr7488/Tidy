@@ -43,8 +43,10 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val addTaskScreenViewModel = remember { AddTaskScreenViewModel(dbOperation) }
-    val homeScreenViewModel = remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
+    val addTaskScreenViewModel =
+        remember { AddTaskScreenViewModel(dbOperation, navController = navController) }
+    val homeScreenViewModel =
+        remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
     val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
     val settingsScreenViewModel = remember { SettingsScreenViewModel(dbOperation) }
@@ -73,15 +75,28 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
 
             composable("${Routes.ADD_TASK}/{taskId}") { backStackEntry ->
                 val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
-                if (taskId == null){
-                    AddTaskScreen(addTaskScreenViewModel, navController, sharedViewModel = sharedViewModel)
-                }else{
-                    AddTaskScreen(addTaskScreenViewModel, navController, taskId = taskId, sharedViewModel = sharedViewModel)
+                if (taskId == null) {
+                    AddTaskScreen(
+                        addTaskScreenViewModel,
+                        navController,
+                        sharedViewModel = sharedViewModel
+                    )
+                } else {
+                    AddTaskScreen(
+                        addTaskScreenViewModel,
+                        navController,
+                        taskId = taskId,
+                        sharedViewModel = sharedViewModel
+                    )
                 }
             }
 
             composable(Routes.ADD_TASK) {
-                AddTaskScreen(addTaskScreenViewModel, navController, sharedViewModel = sharedViewModel)
+                AddTaskScreen(
+                    addTaskScreenViewModel,
+                    navController,
+                    sharedViewModel = sharedViewModel
+                )
             }
 
             composable(Routes.SETTINGS) {
