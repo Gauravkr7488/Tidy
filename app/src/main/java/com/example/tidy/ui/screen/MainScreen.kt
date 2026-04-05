@@ -35,6 +35,7 @@ import com.example.tidy.viewModels.BackupScreenViewModel
 import com.example.tidy.viewModels.HomeScreenViewModel
 import com.example.tidy.viewModels.NoteScreenViewModel
 import com.example.tidy.viewModels.SettingsScreenViewModel
+import com.example.tidy.viewModels.SharedViewModel
 
 @Composable
 fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
@@ -47,6 +48,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
     val settingsScreenViewModel = remember { SettingsScreenViewModel(dbOperation) }
+    val sharedViewModel = remember { SharedViewModel(navController) }
 
     Scaffold(
         bottomBar = {
@@ -72,14 +74,14 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
             composable("${Routes.ADD_TASK}/{taskId}") { backStackEntry ->
                 val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
                 if (taskId == null){
-                    AddTaskScreen(addTaskScreenViewModel, navController)
+                    AddTaskScreen(addTaskScreenViewModel, navController, sharedViewModel = sharedViewModel)
                 }else{
-                    AddTaskScreen(addTaskScreenViewModel, navController, taskId = taskId)
+                    AddTaskScreen(addTaskScreenViewModel, navController, taskId = taskId, sharedViewModel = sharedViewModel)
                 }
             }
 
             composable(Routes.ADD_TASK) {
-                AddTaskScreen(addTaskScreenViewModel, navController)
+                AddTaskScreen(addTaskScreenViewModel, navController, sharedViewModel = sharedViewModel)
             }
 
             composable(Routes.SETTINGS) {
