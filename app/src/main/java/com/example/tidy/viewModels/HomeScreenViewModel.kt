@@ -60,9 +60,8 @@ class HomeScreenViewModel(
                 .filter { it.done && it.parents.all { parent -> parent.done } }
                 .forEach { task ->
                     if (task.repeat) {
-                        task.done = false
-                        task.hide = true
-                        dbOperation.saveTask(task)
+                        val updatedTask = task.copy(done = false, hide = true) // mutating task directly is causing various issues
+                        dbOperation.saveTask(updatedTask)
                     } else {
                         dbOperation.deleteTask(task.id) // delete one time tasks
                     }
