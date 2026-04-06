@@ -38,7 +38,7 @@ class NoteScreenViewModel(
         }
     }
 
-    private suspend fun refreshTasks() {
+     suspend fun refreshTasks() {
         tasks = dbOperation.taskGetAll()
     }
 
