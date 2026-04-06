@@ -15,31 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.example.tidy
+package com.example.tidy.viewModels
 
-import android.app.Application
-import androidx.lifecycle.ProcessLifecycleOwner
-import io.objectbox.BoxStore
+import androidx.lifecycle.ViewModel
+import com.example.tidy.DbOperation
 
-class App: Application() {
-    lateinit var boxStore: BoxStore
-        private set
-
-    lateinit var exportManager: ExportManager
-        private set
-
-    override fun onCreate() {
-        super.onCreate()
-        boxStore = MyObjectBox.builder().androidContext(this).build()
-
-        exportManager = ExportManager(
-            context = this,
-            taskBox = boxStore.boxFor(Task::class.java)
-        )
-
-        ProcessLifecycleOwner.get().lifecycle.addObserver(
-            AppLifecycleObserver(exportManager)
-        )
-    }
+class SettingsScreenViewModel(
+    private val dbOperation: DbOperation
+): ViewModel() {
 }
-

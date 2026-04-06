@@ -39,26 +39,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.runtime.*
-import com.example.tidy.ui.component.TaskItem
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.navigation.compose.*
-import com.example.tidy.viewModels.TaskViewModel
+import com.example.tidy.constants.Routes
+import com.example.tidy.ui.component.TaskCard
+import com.example.tidy.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
-    viewModel: TaskViewModel,
+    homeScreenViewModel: HomeScreenViewModel,
     navController: NavController,
 
     modifier: Modifier = Modifier
 ) {
-    val tasks = viewModel.tasks
+    val tasks = homeScreenViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() && !task.hide }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
     val listState = rememberLazyListState()
     var previousOffset by remember { mutableIntStateOf(0) }
     var previousIndex by remember { mutableIntStateOf(0) }
@@ -94,9 +96,12 @@ fun HomeScreen(
     val offsetY by animateDpAsState(
         targetValue = if (showFab) 0.dp else 300.dp
     )
-    // This will run whenever HomeScreen is visible again
-    LaunchedEffect(currentBackStackEntry) {
-        viewModel.refreshTasks()
+    LaunchedEffect(isOnTop) {
+        if (isOnTop) {
+            homeScreenViewModel.refreshTasks()
+            @Suppress("AssignedValueIsNeverRead")
+            showFab = true
+        }
     }
     val hasDoneTask = tasks.any { it.done }
     Scaffold(
@@ -108,13 +113,10 @@ fun HomeScreen(
                 modifier = Modifier.offset(y = offsetY)
             ) {
 
-                // Delete FAB
                 if (hasDoneTask) {
                     FloatingActionButton(
-                        onClick = {
-                            viewModel.cleanCompletedTasks()
-                            viewModel.refreshTasks()
-                        },
+                        onClick =
+                            { homeScreenViewModel.cleanCompletedTasks() },
                         modifier = Modifier.size(80.dp)
                     ) {
 
@@ -125,9 +127,10 @@ fun HomeScreen(
                     }
                 }
 
-//                // Navigate FAB
                 FloatingActionButton(
-                    onClick = { navController.navigate("add_task") },
+                    onClick = {
+                        navController.navigate("${Routes.ADD_TASK}/${0}")
+                    },
                     modifier = Modifier.size(80.dp)
                 ) {
                     Icon(
@@ -153,13 +156,16 @@ fun HomeScreen(
             )
             LazyColumn(
                 state = listState,
-                contentPadding = PaddingValues(bottom = 80.dp),
+                contentPadding = PaddingValues(bottom = 150.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(tasks, key = { it.id }) { task ->
-                    TaskItem(
+                    TaskCard(
                         task = task,
-                        viewModel
+                        onClick = homeScreenViewModel::toggleDoneStatus,
+                        onEditClick = homeScreenViewModel::editTask,
+                        onSkipClick = homeScreenViewModel::skipTask,
+                        onDeleteClick = homeScreenViewModel::deleteTask,
                     )
                 }
             }

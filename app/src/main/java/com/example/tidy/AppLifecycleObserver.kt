@@ -17,29 +17,23 @@
 
 package com.example.tidy
 
-import android.app.Application
-import androidx.lifecycle.ProcessLifecycleOwner
-import io.objectbox.BoxStore
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
-class App: Application() {
-    lateinit var boxStore: BoxStore
-        private set
+class AppLifecycleObserver(
+    private val exportManager: ExportManager
+) : DefaultLifecycleObserver {
 
-    lateinit var exportManager: ExportManager
-        private set
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    override fun onCreate() {
-        super.onCreate()
-        boxStore = MyObjectBox.builder().androidContext(this).build()
-
-        exportManager = ExportManager(
-            context = this,
-            taskBox = boxStore.boxFor(Task::class.java)
-        )
-
-        ProcessLifecycleOwner.get().lifecycle.addObserver(
-            AppLifecycleObserver(exportManager)
-        )
+    override fun onStop(owner: LifecycleOwner) {
+        // Triggered when app goes to background
+        scope.launch {
+            exportManager.exportSilently()
+        }
     }
 }
-

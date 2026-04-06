@@ -17,22 +17,78 @@
 
 package com.example.tidy
 
-import android.R
+import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
+import io.objectbox.relation.ToMany
 
 @Entity
 data class Task(
     @Id var id: Long = 0,
     var title: String,
     var done: Boolean = false,
+    var note: Boolean = false,
     var repeat: Boolean = false,
+    var description: String = "",
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
-)
+) {
+    lateinit var children: ToMany<Task>
+
+    @Backlink(to = "children")
+    lateinit var parents: ToMany<Task>
+}
 
 @Entity
 data class LastReset(
     @Id var id: Long = 1,
     var lastResetAt: String
+)
+
+data class TaskDto(
+    var id: Long = 0,
+    var title: String,
+    var done: Boolean = false,
+    var note: Boolean? = null,
+    var repeat: Boolean = false,
+    var description: String? = null,
+    var hide: Boolean = false,
+    var parentTasks: List<Long>? = emptyList(),
+    var childTasks: List<Long>? = emptyList(),
+    var createdAt: Long = System.currentTimeMillis(),
+)
+
+fun Task.toDto(): TaskDto {
+    return TaskDto(
+        id = id,
+        title = title,
+        done = done,
+        note = note,
+        repeat = repeat,
+        description = description,
+        hide = hide,
+        createdAt = createdAt,
+//        parentTasks = parents.map { it.id },
+        childTasks = children.map { it.id }
+    )
+}
+
+fun TaskDto.toTask(): Task {
+    return Task(
+        id = 0,
+        title = title,
+        done = done,
+        note = note ?: false,
+        repeat = repeat,
+        description = description ?: "",
+        hide = hide,
+        createdAt = createdAt
+    )
+}
+
+data class TaskInfo(
+    val title: String,
+    val description: String,
+    val note: Boolean,
+    val repeat: Boolean,
 )
