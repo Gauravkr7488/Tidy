@@ -58,7 +58,7 @@ fun HomeScreen(
 
     modifier: Modifier = Modifier
 ) {
-    val tasks = homeScreenViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() }
+    val tasks = homeScreenViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() && !task.hide }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
     val listState = rememberLazyListState()
