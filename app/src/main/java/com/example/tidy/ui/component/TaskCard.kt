@@ -110,27 +110,29 @@ fun TaskCard(
                         }
                     )
 
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                "Skip",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Medium
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.SkipNext,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(18.dp)
-                            )
-                        },
-                        onClick = {
-                            showMenu = false
-                            onSkipClick(task)
-                        }
-                    )
+                    if (!task.note) {
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    "Skip",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.SkipNext,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                )
+                            },
+                            onClick = {
+                                showMenu = false
+                                onSkipClick(task)
+                            }
+                        )
+                    }
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 8.dp),
                         thickness = 0.5.dp,
