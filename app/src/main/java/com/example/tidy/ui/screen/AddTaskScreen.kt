@@ -24,6 +24,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -45,7 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
 import com.example.tidy.constants.Routes
-import com.example.tidy.ui.component.KeyboardAwareFAB
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
@@ -97,11 +100,8 @@ fun AddTaskScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.End
-            ) {
-                KeyboardAwareFAB {
+            FloatingActionButton(
+                onClick = {
                     coroutineScope.launch {
                         addTaskScreenViewModel.addTask(
                             Task(
@@ -114,7 +114,11 @@ fun AddTaskScreen(
                         )
                         navController.popBackStack()
                     }
-                }
+                },
+                modifier = Modifier
+                    .size(80.dp)
+            ) {
+                Icon(Icons.Filled.Save, contentDescription = "Save Task")
             }
         }
     )
