@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.UnfoldLess
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material.icons.outlined.Delete
@@ -162,6 +163,12 @@ fun TaskCard(
                     )
                 }
             )
+            if (task.repeat) {
+                Icon(
+                    imageVector = Icons.Default.Repeat,
+                    contentDescription = "Repeat"
+                )
+            }
             if (task.children.isNotEmpty()) {
                 IconButton(onClick = { expanded = !expanded }) {
                     Icon(
