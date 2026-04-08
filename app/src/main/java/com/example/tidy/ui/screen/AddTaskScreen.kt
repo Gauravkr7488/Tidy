@@ -46,7 +46,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -76,7 +75,6 @@ fun AddTaskScreen(
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
-    val focusManager = LocalFocusManager.current
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -134,7 +132,7 @@ fun AddTaskScreen(
                 .padding(16.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
-                        focusManager.clearFocus()
+                        keyboardController?.hide()
                     })
                 },
             verticalArrangement = Arrangement.Top
