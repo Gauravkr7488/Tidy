@@ -60,8 +60,10 @@ fun TaskCard(
     onEditClick: (Task) -> Unit = {},
     onSkipClick: (Task) -> Unit = {},
     onDeleteClick: (Task) -> Unit = {},
+    onExpandClick: (Long) -> Unit = {},
+    expanded: Boolean = false,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(expanded) }
     var showMenu by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -86,7 +88,10 @@ fun TaskCard(
                 modifier = Modifier
                     .weight(1f),
                 onTap = {
-                    if (task.children.isNotEmpty()) expanded = !expanded
+                    if (task.children.isNotEmpty()) {
+                        onExpandClick(task.id)
+                        expanded = !expanded
+                    }
                     else onClick(task)
                 },
                 menuContent = {
@@ -170,7 +175,10 @@ fun TaskCard(
                 )
             }
             if (task.children.isNotEmpty()) {
-                IconButton(onClick = { expanded = !expanded }) {
+                IconButton(onClick = {
+                    onExpandClick(task.id)
+                    expanded = !expanded
+                }) {
                     Icon(
                         imageVector = if (expanded) Icons.Default.UnfoldLess else Icons.Default.UnfoldMore,
                         contentDescription = null
