@@ -52,7 +52,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in listOf(Routes.HOME, Routes.NOTE, Routes.SETTINGS)) {
+            if (currentRoute in listOf(Routes.HOME, Routes.MENU, Routes.SETTINGS)) {
                 BottomBar(navController, currentRoute)
             }
         }
