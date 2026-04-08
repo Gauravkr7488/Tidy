@@ -40,12 +40,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.runtime.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.navigation.NavController
-import androidx.navigation.compose.*
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.TaskCard
 import com.example.tidy.viewModels.HomeScreenViewModel
@@ -166,6 +169,8 @@ fun HomeScreen(
                         onEditClick = homeScreenViewModel::editTask,
                         onSkipClick = homeScreenViewModel::skipTask,
                         onDeleteClick = homeScreenViewModel::deleteTask,
+                        onExpandClick = homeScreenViewModel::onExpandClick,
+                        expanded = if (task.id in homeScreenViewModel.expandedTaskList) true else false
                     )
                 }
             }
