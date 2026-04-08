@@ -24,4 +24,6 @@ object Routes {
     const val BACKUP = "backup_screen"
 
     const val NOTE = "note_screen"
+    const val MENU = "menu_screen"
+    const val SEARCH = "search_screen"
 }
