@@ -46,7 +46,6 @@ class HomeScreenViewModel(
     init {
         viewModelScope.launch {
             resetTasksForToday()
-            tasks = dbOperation.taskGetAll()
         }
     }
 
@@ -60,7 +59,10 @@ class HomeScreenViewModel(
                 .filter { it.done && it.parents.all { parent -> parent.done } }
                 .forEach { task ->
                     if (task.repeat) {
-                        val updatedTask = task.copy(done = false, hide = true) // mutating task directly is causing various issues
+                        val updatedTask = task.copy(
+                            done = false,
+                            hide = true
+                        ) // mutating task directly is causing various issues
                         dbOperation.saveTask(updatedTask)
                     } else {
                         dbOperation.deleteTask(task.id) // delete one time tasks
@@ -92,21 +94,16 @@ class HomeScreenViewModel(
         }
     }
 
-    fun resetTasksForToday() {
-        val todayDate =
-            SimpleDateFormat("dd", Locale.getDefault())
-                .format(Calendar.getInstance().time)
+    private fun resetTasksForToday() {
         viewModelScope.launch {
+            val todayDate =
+                SimpleDateFormat("dd", Locale.getDefault())
+                    .format(Calendar.getInstance().time)
             val existingReset = dbOperation.getLastReset()
-
-            if (existingReset == null) {
-
-                dbOperation.setLastResetToday(todayDate = todayDate)
-                dbOperation.tasksUnhideAll()
-            } else if (existingReset.lastResetAt != todayDate) {
-                dbOperation.setLastResetToday(todayDate = todayDate)
-                dbOperation.tasksUnhideAll()
-            }
+            if (existingReset?.lastResetAt == todayDate) return@launch
+            dbOperation.setLastResetToday(todayDate = todayDate)
+            dbOperation.tasksUnhideAll()
+            refreshTasks()
         }
     }
 
