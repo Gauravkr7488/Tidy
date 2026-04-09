@@ -149,7 +149,6 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
-                .padding(start = 16.dp, end = 16.dp)
         ) {
 
             Text(
@@ -170,7 +169,7 @@ fun HomeScreen(
                         onSkipClick = homeScreenViewModel::skipTask,
                         onDeleteClick = homeScreenViewModel::deleteTask,
                         onExpandClick = homeScreenViewModel::onExpandClick,
-                        expanded = if (task.id in homeScreenViewModel.expandedTaskList) true else false
+                        expanded = task.id in homeScreenViewModel.expandedTaskList
                     )
                 }
             }
