@@ -53,7 +53,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Task
@@ -136,15 +135,6 @@ fun SearchScreen(
                                 }
                             )
                         },
-                        leadingIcon = if (selectedFilter == filter) {
-                            {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        } else null
                     )
                 }
             }
@@ -222,15 +212,6 @@ fun TaskResultCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Icon(
-                imageVector = if (task.note) Icons.AutoMirrored.Filled.Article
-                else Icons.Default.CheckCircle,
-                contentDescription = null,
-                tint = if (task.done) MaterialTheme.colorScheme.outline
-                else MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = task.title,
@@ -238,8 +219,6 @@ fun TaskResultCard(
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    textDecoration = if (task.done) TextDecoration.LineThrough
-                    else TextDecoration.None
                 )
                 if (task.description.isNotBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
@@ -251,6 +230,22 @@ fun TaskResultCard(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
+            }
+            if (task.note) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Article,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            if (task.done){
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
             }
         }
     }
