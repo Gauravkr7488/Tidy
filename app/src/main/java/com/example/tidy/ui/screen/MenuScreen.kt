@@ -34,12 +34,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -54,42 +49,63 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.example.tidy.constants.Routes
 
 data class MenuItem(
     val title: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val onClick: () -> Unit,
 )
 
 @Composable
 fun MenuScreen(
-    modifier: Modifier = Modifier
+    navController: NavController,
+    modifier: Modifier = Modifier,
 ) {
+    @Suppress("MoveLambdaOutsideParentheses")
     val menuItems = listOf(
-        MenuItem("Home", Icons.Default.Home),
-        MenuItem("Tasks", Icons.Default.List),
-        MenuItem("Completed", Icons.Default.CheckCircle),
-        MenuItem("Trash", Icons.Default.Delete),
-        MenuItem("Favourites", Icons.Default.Star),
-        MenuItem("Settings", Icons.Default.Settings),
+        MenuItem(
+            "Notes",
+            Icons.AutoMirrored.Filled.Article,
+            { navController.navigate(Routes.NOTE) }
+        )
     )
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
     ) { innerPadding ->
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            contentPadding = PaddingValues(
-                start = 16.dp,
-                end = 16.dp,
-                top = innerPadding.calculateTopPadding() + 16.dp,
-                bottom = 16.dp
-            ),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxSize()
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = innerPadding.calculateTopPadding())
+                .padding(start = 16.dp, end = 16.dp)
         ) {
-            items(menuItems) { item ->
-                MenuCard(title = item.title, icon = item.icon)
+            Text(
+                text = "Menu",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 16.dp
+                ),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(menuItems) { item ->
+                    MenuCard(
+                        title = item.title,
+                        icon = item.icon,
+                        onClick = item.onClick,
+                    )
+                }
             }
         }
     }
@@ -99,9 +115,12 @@ fun MenuScreen(
 fun MenuCard(
     title: String,
     icon: ImageVector,
+    onClick: () -> Unit,
+
     modifier: Modifier = Modifier
 ) {
     Card(
+        onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(1f),
