@@ -17,7 +17,10 @@
 
 package com.example.tidy.ui.screen
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -49,11 +52,13 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
     val settingsScreenViewModel = remember { SettingsScreenViewModel(dbOperation) }
-
+    val tabs = listOf(Routes.HOME, Routes.MENU, Routes.SETTINGS)
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val currentPage = tabs[pagerState.currentPage]
     Scaffold(
         bottomBar = {
-            if (currentRoute in listOf(Routes.HOME, Routes.MENU, Routes.SETTINGS)) {
-                BottomBar(navController, currentRoute)
+            if (currentRoute == Routes.HOME) {
+                BottomBar(currentPage, pagerState)
             }
         }
     ) { innerPadding ->
@@ -64,7 +69,17 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
         ) {
 
             composable(Routes.HOME) {
-                HomeScreen(homeScreenViewModel, navController)
+                HorizontalPager(
+                    state = pagerState,
+                    beyondViewportPageCount = 2, // keeps all 3 pages alive
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    when (page) {
+                        0 -> HomeScreen(homeScreenViewModel, navController)
+                        1 -> MenuScreen(navController)
+                        2 -> SettingsScreen(settingsScreenViewModel, navController)
+                    }
+                }
             }
 
             composable(Routes.NOTE) {
@@ -94,16 +109,8 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                 )
             }
 
-            composable(Routes.SETTINGS) {
-                SettingsScreen(settingsScreenViewModel, navController)
-            }
-
             composable(Routes.BACKUP) {
                 BackupScreen(backupScreenViewModel, navController)
-            }
-
-            composable(Routes.MENU) {
-                MenuScreen(navController)
             }
 
             composable(Routes.SEARCH) {
