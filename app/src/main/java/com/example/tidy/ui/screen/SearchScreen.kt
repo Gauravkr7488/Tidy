@@ -46,6 +46,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +56,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.Task
+import com.example.tidy.constants.Routes
 import com.example.tidy.viewModels.HomeScreenViewModel
 
 enum class SearchFilter { ALL, TASKS, NOTES }
@@ -63,6 +67,7 @@ enum class SearchFilter { ALL, TASKS, NOTES }
 @Composable
 fun SearchScreen(
     homeScreenViewModel: HomeScreenViewModel,
+    navController: NavController,
     modifier: Modifier = Modifier,
 ) {
     val tasks = homeScreenViewModel.tasks
@@ -79,6 +84,14 @@ fun SearchScreen(
             SearchFilter.TASKS -> !task.note
         }
         matchesQuery && matchesFilter && !task.hide
+    }
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val isOnTop = currentBackStackEntry?.destination?.route == Routes.SEARCH
+
+    LaunchedEffect(isOnTop) {
+        if (isOnTop) {
+            homeScreenViewModel.refreshTasks()
+        }
     }
 
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
@@ -239,7 +252,7 @@ fun TaskResultCard(
                     modifier = Modifier.size(24.dp)
                 )
             }
-            if (task.done){
+            if (task.done) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = null,
