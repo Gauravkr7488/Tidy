@@ -101,6 +101,10 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
             composable(Routes.BACKUP) {
                 BackupScreen(backupScreenViewModel, navController)
             }
+
+            composable ( Routes.MENU){
+                MenuScreen()
+            }
         }
     }
 }
