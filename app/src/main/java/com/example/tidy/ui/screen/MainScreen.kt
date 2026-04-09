@@ -105,6 +105,10 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
             composable(Routes.MENU) {
                 MenuScreen(navController)
             }
+
+            composable(Routes.SEARCH) {
+                SearchScreen (homeScreenViewModel)
+            }
         }
     }
 }

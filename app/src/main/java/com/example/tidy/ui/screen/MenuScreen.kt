@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -69,6 +70,11 @@ fun MenuScreen(
             "Notes",
             Icons.AutoMirrored.Filled.Article,
             { navController.navigate(Routes.NOTE) }
+        ),
+        MenuItem(
+            "Search",
+            Icons.Default.Search,
+            { navController.navigate(Routes.SEARCH) }
         )
     )
 
