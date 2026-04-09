@@ -22,6 +22,15 @@ import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToMany
 
+enum class RepeatType {
+    NONE, DAILY, WEEKLY, MONTHLY
+}
+
+data class RepeatConfig(
+    val type: RepeatType = RepeatType.NONE,
+    val nextActiveDate: Long? = null
+)
+
 @Entity
 data class Task(
     @Id var id: Long = 0,
@@ -29,6 +38,7 @@ data class Task(
     var done: Boolean = false,
     var note: Boolean = false,
     var repeat: Boolean = false,
+    var repeatConfig: RepeatConfig = RepeatConfig(),
     var description: String = "",
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
@@ -51,6 +61,7 @@ data class TaskDto(
     var done: Boolean = false,
     var note: Boolean? = null,
     var repeat: Boolean = false,
+    var repeatConfig: RepeatConfig = RepeatConfig(),
     var description: String? = null,
     var hide: Boolean = false,
     var parentTasks: List<Long>? = emptyList(),
@@ -65,10 +76,10 @@ fun Task.toDto(): TaskDto {
         done = done,
         note = note,
         repeat = repeat,
+        repeatConfig = repeatConfig,
         description = description,
         hide = hide,
         createdAt = createdAt,
-//        parentTasks = parents.map { it.id },
         childTasks = children.map { it.id }
     )
 }
@@ -80,15 +91,9 @@ fun TaskDto.toTask(): Task {
         done = done,
         note = note ?: false,
         repeat = repeat,
+        repeatConfig = repeatConfig,
         description = description ?: "",
         hide = hide,
         createdAt = createdAt
     )
 }
-
-data class TaskInfo(
-    val title: String,
-    val description: String,
-    val note: Boolean,
-    val repeat: Boolean,
-)
