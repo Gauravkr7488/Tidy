@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.example.tidy.DbOperation
 import com.example.tidy.ExportManager
 import com.example.tidy.Task
+import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -58,11 +59,11 @@ class HomeScreenViewModel(
             tasks
                 .filter { it.done && it.parents.all { parent -> parent.done } }
                 .forEach { task ->
-                    if (task.repeat) {
+                    if (task.repeatType != RepeatTypes.NONE) {
                         val updatedTask = task.copy(
                             done = false,
                             hide = true
-                        ) // mutating task directly is causing various issues
+                        )
                         dbOperation.saveTask(updatedTask)
                     } else {
                         dbOperation.deleteTask(task.id) // delete one time tasks
@@ -99,10 +100,26 @@ class HomeScreenViewModel(
             val todayDate =
                 SimpleDateFormat("dd", Locale.getDefault())
                     .format(Calendar.getInstance().time)
+            val todayDay = SimpleDateFormat("EEE", Locale.getDefault())
+                .format(Calendar.getInstance().time)
+                .uppercase() // gives "MON", "TUE" etc.
+
             val existingReset = dbOperation.getLastReset()
             if (existingReset?.lastResetAt == todayDate) return@launch
+
             dbOperation.setLastResetToday(todayDate = todayDate)
-            dbOperation.tasksUnhideAll()
+
+            val hiddenTasks = dbOperation.taskGetAll().filter { task -> task.hide }
+            hiddenTasks.forEach { task ->
+                if (task.repeatType == RepeatTypes.NONE || task.repeatType == RepeatTypes.DAILY) {
+                    task.copy(hide = false)
+                    dbOperation.saveTask(task)
+                }
+                if (task.repeatType == RepeatTypes.WEEKLY && task.repeatDays.contains(todayDay)) {
+                    task.copy(hide = false)
+                    dbOperation.saveTask(task)
+                }
+            }
             refreshTasks()
         }
     }
