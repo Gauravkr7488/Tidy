@@ -52,7 +52,8 @@ class DbOperation(
         val task = getTask(parentId)
         task.children.forEach { child ->
             val freshChild = getTask(child.id)
-            val newTask = freshChild.copy(repeatType = task.repeatType, repeatDays = task.repeatDays)
+            val newTask =
+                freshChild.copy(repeatType = task.repeatType, repeatDays = task.repeatDays)
             saveTask(newTask)
             updateChildrenRepeatStatus(freshChild.id)
         }
@@ -98,6 +99,11 @@ class DbOperation(
     }
 
     suspend fun setLastResetToday(todayDate: String): Long = withContext(Dispatchers.IO) {
-        return@withContext lastBoxReset.put(LastReset(id = 1, lastResetAt = todayDate))
+        val l = lastBoxReset.all
+        if (l.isNullOrEmpty()) {
+            return@withContext lastBoxReset.put(LastReset(lastResetAt = todayDate))
+        } else {
+            return@withContext lastBoxReset.put(LastReset(id = 1, lastResetAt = todayDate))
+        }
     }
 }
