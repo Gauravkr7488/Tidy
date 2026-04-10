@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +51,9 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
+import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
+import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
@@ -71,10 +74,12 @@ fun AddTaskScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var note by remember { mutableStateOf(false) }
-    var repeatDaily by remember { mutableStateOf(false) }
+    var repeatStatus by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
+    var repeatType by remember { mutableStateOf("") }
+    var repeatDays by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -84,8 +89,9 @@ fun AddTaskScreen(
                 taskTitle = task.title
                 description = task.description
                 note = task.note
-                repeatDaily = task.repeat
-
+                repeatStatus = task.repeatType != RepeatTypes.NONE
+                repeatType = task.repeatType
+                repeatDays = if (repeatType == RepeatTypes.WEEKLY) task.repeatDays else ""
                 val readable = SimpleDateFormat(
                     "MMM dd, yyyy hh:mm a",
                     Locale.getDefault()
@@ -110,7 +116,8 @@ fun AddTaskScreen(
                                 id = taskId,
                                 title = taskTitle,
                                 note = note,
-                                repeat = repeatDaily,
+                                repeatType = repeatType,
+                                repeatDays = repeatDays,
                                 description = description,
                             )
                         )
@@ -178,9 +185,51 @@ fun AddTaskScreen(
                     Text("Repeat Daily")
                     Spacer(modifier = Modifier.weight(1f))
                     Switch(
-                        checked = repeatDaily,
-                        onCheckedChange = { repeatDaily = it }
+                        checked = repeatStatus,
+                        onCheckedChange = { repeatStatus = it }
                     )
+                }
+
+                if (repeatStatus) {
+                    val chips = listOf(
+                        "Daily" to RepeatTypes.DAILY,
+                        "Weekly" to RepeatTypes.WEEKLY,
+                        "Monthly" to RepeatTypes.MONTHLY
+                    )
+
+                    chips.forEach { (label, type) ->
+                        FilterChip(
+                            onClick = { repeatType = type },
+                            label = { Text(label) },
+                            selected = repeatType == type
+                        )
+                    }
+                }
+                if (repeatType == RepeatTypes.WEEKLY) {
+                    var selectedDays by remember { mutableStateOf(setOf<String>()) }
+                    repeatDays = selectedDays.joinToString(", ")
+
+                    val chips = listOf(
+                        "Mon" to WeekDays.MON,
+                        "Tue" to WeekDays.TUE,
+                        "Wed" to WeekDays.WED,
+                        "Thu" to WeekDays.THU,
+                        "Fri" to WeekDays.FRI,
+                        "Sat" to WeekDays.SAT,
+                        "Sun" to WeekDays.SUN
+                    )
+                    chips.forEach { (label, day) ->
+                        FilterChip(
+                            onClick = {
+                                selectedDays = if (day in selectedDays)
+                                    selectedDays - day  // deselect
+                                else
+                                    selectedDays + day  // select
+                            },
+                            label = { Text(label) },
+                            selected = day in selectedDays
+                        )
+                    }
                 }
                 SubTaskMenu(
                     "Child Tasks",
@@ -191,8 +240,9 @@ fun AddTaskScreen(
                                     id = taskId,
                                     title = taskTitle,
                                     note = note,
-                                    repeat = repeatDaily,
-                                    description = description
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
                                 )
                             )
                             navController.navigate(Routes.ADD_TASK)
