@@ -38,13 +38,15 @@ class NoteScreenViewModel(
         }
     }
 
-     suspend fun refreshTasks() {
+    suspend fun refreshTasks() {
         tasks = dbOperation.taskGetAll()
     }
 
-    fun deleteTask(task: Task) {
+    fun deleteTask(
+        id: Long, deleteChildren: Boolean
+    ) {
         viewModelScope.launch {
-            dbOperation.deleteTask(task.id)
+            dbOperation.deleteTask(id)
             refreshTasks()
         }
     }

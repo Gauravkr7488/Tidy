@@ -88,8 +88,14 @@ class HomeScreenViewModel(
         }
     }
 
-    fun deleteTask(task: Task) {
+    fun deleteTask(id: Long, deleteSubtasks: Boolean) {
         viewModelScope.launch {
+            val task = dbOperation.getTask(id)
+            if (deleteSubtasks) {
+                task.children.forEach { task ->
+                    deleteTask(task.id, true)
+                }
+            }
             dbOperation.deleteTask(task.id)
             refreshTasks()
         }
@@ -119,7 +125,7 @@ class HomeScreenViewModel(
                     val newTask = task.copy(hide = false)
                     dbOperation.saveTask(newTask)
                 }
-                if (task.repeatType == RepeatTypes.MONTHLY && task.repeatDays.contains(todayDate)){
+                if (task.repeatType == RepeatTypes.MONTHLY && task.repeatDays.contains(todayDate)) {
                     val newTask = task.copy(hide = false)
                     dbOperation.saveTask(newTask)
                 }
