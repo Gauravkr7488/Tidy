@@ -52,7 +52,7 @@ class DbOperation(
         val task = getTask(parentId)
         task.children.forEach { child ->
             val freshChild = getTask(child.id)
-            freshChild.repeat = task.repeat
+            freshChild.copy(repeatType = task.repeatType, repeatDays = task.repeatDays)
             saveTask(freshChild)
             updateChildrenRepeatStatus(freshChild.id)
         }
