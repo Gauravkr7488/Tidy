@@ -87,6 +87,7 @@ fun AddTaskScreen(
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
     var showDateDialog by remember { mutableStateOf(false) }
+    var showFab by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -115,26 +116,29 @@ fun AddTaskScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    coroutineScope.launch {
-                        addTaskScreenViewModel.addTask(
-                            Task(
-                                id = taskId,
-                                title = taskTitle,
-                                note = note,
-                                repeatType = repeatType,
-                                repeatDays = repeatDays,
-                                description = description,
+            if (showFab) {
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            addTaskScreenViewModel.addTask(
+                                Task(
+                                    id = taskId,
+                                    title = taskTitle,
+                                    note = note,
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
+                                )
                             )
-                        )
-                        navController.popBackStack()
-                    }
-                },
-                modifier = Modifier
-                    .size(80.dp)
-            ) {
-                Icon(Icons.Filled.Save, contentDescription = "Save Task")
+                            showFab = false
+                            navController.popBackStack()
+                        }
+                    },
+                    modifier = Modifier
+                        .size(80.dp)
+                ) {
+                    Icon(Icons.Filled.Save, contentDescription = "Save Task")
+                }
             }
         }
     )
