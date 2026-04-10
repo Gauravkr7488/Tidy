@@ -95,8 +95,6 @@ fun MenuScreen(
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
                 contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
                     top = 16.dp,
                     bottom = 16.dp
                 ),
