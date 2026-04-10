@@ -51,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Task
+import com.example.tidy.constants.RepeatTypes
 
 @Composable
 fun TaskCard(
@@ -168,7 +169,7 @@ fun TaskCard(
                     )
                 }
             )
-            if (task.repeat) {
+            if (task.repeatType != RepeatTypes.NONE) {
                 Icon(
                     imageVector = Icons.Default.Repeat,
                     contentDescription = "Repeat"

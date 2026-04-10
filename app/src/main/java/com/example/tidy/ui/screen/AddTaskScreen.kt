@@ -27,13 +27,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,13 +56,16 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
+import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
+import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Calendar
 
 @Composable
 fun AddTaskScreen(
@@ -71,10 +80,13 @@ fun AddTaskScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var note by remember { mutableStateOf(false) }
-    var repeatDaily by remember { mutableStateOf(false) }
+    var repeatStatus by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
+    var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
+    var repeatDays by remember { mutableStateOf("") }
+    var showDateDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -84,8 +96,9 @@ fun AddTaskScreen(
                 taskTitle = task.title
                 description = task.description
                 note = task.note
-                repeatDaily = task.repeat
-
+                repeatStatus = task.repeatType != RepeatTypes.NONE
+                repeatType = task.repeatType
+                repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
                 val readable = SimpleDateFormat(
                     "MMM dd, yyyy hh:mm a",
                     Locale.getDefault()
@@ -110,7 +123,8 @@ fun AddTaskScreen(
                                 id = taskId,
                                 title = taskTitle,
                                 note = note,
-                                repeat = repeatDaily,
+                                repeatType = repeatType,
+                                repeatDays = repeatDays,
                                 description = description,
                             )
                         )
@@ -175,12 +189,120 @@ fun AddTaskScreen(
                         .fillMaxWidth()
                         .padding(top = 8.dp)
                 ) {
-                    Text("Repeat Daily")
+                    Text("Repeat")
                     Spacer(modifier = Modifier.weight(1f))
                     Switch(
-                        checked = repeatDaily,
-                        onCheckedChange = { repeatDaily = it }
+                        checked = repeatStatus,
+                        onCheckedChange = {
+                            repeatStatus = it
+                            repeatType = RepeatTypes.NONE
+                        }
                     )
+                }
+
+                if (repeatStatus) {
+                    val chips = listOf(
+                        "Daily" to RepeatTypes.DAILY,
+                        "Weekly" to RepeatTypes.WEEKLY,
+                        "Monthly" to RepeatTypes.MONTHLY
+                    )
+                    Row {
+                        chips.forEach { (label, type) ->
+                            FilterChip(
+                                onClick = { repeatType = type },
+                                label = { Text(label) },
+                                selected = repeatType == type,
+                                modifier = Modifier.padding(end = 10.dp)
+                            )
+                        }
+                    }
+                }
+                if (repeatType == RepeatTypes.WEEKLY) {
+                    var selectedDays by remember { mutableStateOf(setOf<String>()) }
+                    repeatDays = selectedDays.joinToString(", ")
+
+                    val chips = listOf(
+                        "S" to WeekDays.SUN,
+                        "M" to WeekDays.MON,
+                        "T" to WeekDays.TUE,
+                        "W" to WeekDays.WED,
+                        "T" to WeekDays.THU,
+                        "F" to WeekDays.FRI,
+                        "S" to WeekDays.SAT,
+                    )
+                    Row {
+                        chips.forEach { (label, day) ->
+                            FilterChip(
+                                onClick = {
+                                    selectedDays = if (day in selectedDays)
+                                        selectedDays - day  // deselect
+                                    else
+                                        selectedDays + day  // select
+                                },
+                                label = { Text(label) },
+                                selected = day in selectedDays,
+                                modifier = Modifier.padding(end = 10.dp)
+
+                            )
+                        }
+                    }
+                }
+                if (repeatType == RepeatTypes.MONTHLY) {
+                    if (repeatDays == "") {
+                        Button(onClick = { showDateDialog = true }) {
+                            Text("Select Date")
+                        }
+                    } else {
+
+                        val chips = repeatDays
+                            .split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+
+                        Row {
+                            chips.forEach { chip ->
+                                FilterChip(
+                                    onClick = {
+                                        val updated = chips.toMutableList().apply {
+                                            remove(chip)
+                                        }
+                                        repeatDays = updated.joinToString(",")
+                                    },
+                                    label = { Text(chip) },
+                                    selected = chip in repeatDays,
+                                    modifier = Modifier.padding(end = 10.dp)
+                                )
+                            }
+                        }
+
+                        Button(onClick = { showDateDialog = true }) {
+                            Text("Select more Dates")
+                        }
+                    }
+                    val state = rememberDatePickerState()
+                    if (showDateDialog) {
+                        DatePickerDialog(
+                            onDismissRequest = { showDateDialog = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    val milli = state.selectedDateMillis
+                                    val calendar = Calendar.getInstance().apply {
+                                        if (milli != null) {
+                                            timeInMillis = milli
+                                        }
+                                    }
+                                    val formatted =
+                                        "%02d".format(calendar.get(Calendar.DAY_OF_MONTH))
+                                    repeatDays = "$repeatDays,$formatted"
+                                    showDateDialog = false
+                                }) {
+                                    Text("OK")
+                                }
+                            }
+                        ) {
+                            DatePicker(state = state)
+                        }
+                    }
                 }
                 SubTaskMenu(
                     "Child Tasks",
@@ -191,8 +313,9 @@ fun AddTaskScreen(
                                     id = taskId,
                                     title = taskTitle,
                                     note = note,
-                                    repeat = repeatDaily,
-                                    description = description
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
                                 )
                             )
                             navController.navigate(Routes.ADD_TASK)
