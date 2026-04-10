@@ -112,12 +112,12 @@ class HomeScreenViewModel(
             val hiddenTasks = dbOperation.taskGetAll().filter { task -> task.hide }
             hiddenTasks.forEach { task ->
                 if (task.repeatType == RepeatTypes.NONE || task.repeatType == RepeatTypes.DAILY) {
-                    task.copy(hide = false)
-                    dbOperation.saveTask(task)
+                    val newTask = task.copy(hide = false)
+                    dbOperation.saveTask(newTask)
                 }
                 if (task.repeatType == RepeatTypes.WEEKLY && task.repeatDays.contains(todayDay)) {
-                    task.copy(hide = false)
-                    dbOperation.saveTask(task)
+                    val newTask = task.copy(hide = false)
+                    dbOperation.saveTask(newTask)
                 }
             }
             refreshTasks()
