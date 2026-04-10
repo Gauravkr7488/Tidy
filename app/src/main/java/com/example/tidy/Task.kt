@@ -43,7 +43,7 @@ data class Task(
 
 @Entity
 data class LastReset(
-    @Id var id: Long = 1,
+    @Id var id: Long = 0,
     var lastResetAt: String
 )
 
