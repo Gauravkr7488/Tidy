@@ -59,9 +59,6 @@ data class TaskDto(
     var parentTasks: List<Long>? = emptyList(),
     var childTasks: List<Long>? = emptyList(),
     var createdAt: Long = System.currentTimeMillis(),
-
-    // for old backups
-    var repeat: Boolean = false,
 )
 
 fun Task.toDto(): TaskDto {
@@ -85,7 +82,7 @@ fun TaskDto.toTask(): Task {
         title = title,
         done = done,
         note = note ?: false,
-        repeatType = if (repeat) RepeatTypes.DAILY else repeatType,
+        repeatType = repeatType,
         repeatDays = repeatOn,
         description = description ?: "",
         hide = hide,
