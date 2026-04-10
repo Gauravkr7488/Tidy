@@ -17,19 +17,11 @@
 
 package com.example.tidy
 
+import com.example.tidy.constants.RepeatTypes
 import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToMany
-
-enum class RepeatType {
-    NONE, DAILY, WEEKLY, MONTHLY
-}
-
-data class RepeatConfig(
-    val type: RepeatType = RepeatType.NONE,
-    val nextActiveDate: Long? = null
-)
 
 @Entity
 data class Task(
@@ -37,8 +29,8 @@ data class Task(
     var title: String,
     var done: Boolean = false,
     var note: Boolean = false,
-    var repeat: Boolean = false,
-    var repeatConfig: RepeatConfig = RepeatConfig(),
+    var repeatType: String = RepeatTypes.NONE,
+    var repeatOn: String = "",
     var description: String = "",
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
@@ -60,8 +52,8 @@ data class TaskDto(
     var title: String,
     var done: Boolean = false,
     var note: Boolean? = null,
-    var repeat: Boolean = false,
-    var repeatConfig: RepeatConfig = RepeatConfig(),
+    var repeatType: String = RepeatTypes.NONE,
+    var repeatOn: String = "",
     var description: String? = null,
     var hide: Boolean = false,
     var parentTasks: List<Long>? = emptyList(),
@@ -75,8 +67,8 @@ fun Task.toDto(): TaskDto {
         title = title,
         done = done,
         note = note,
-        repeat = repeat,
-        repeatConfig = repeatConfig,
+        repeatType = repeatType,
+        repeatOn = repeatOn,
         description = description,
         hide = hide,
         createdAt = createdAt,
@@ -90,8 +82,8 @@ fun TaskDto.toTask(): Task {
         title = title,
         done = done,
         note = note ?: false,
-        repeat = repeat,
-        repeatConfig = repeatConfig,
+        repeatType = repeatType,
+        repeatOn = repeatOn,
         description = description ?: "",
         hide = hide,
         createdAt = createdAt
