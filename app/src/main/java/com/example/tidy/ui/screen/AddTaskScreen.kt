@@ -199,7 +199,7 @@ fun AddTaskScreen(
                         "Weekly" to RepeatTypes.WEEKLY,
                         "Monthly" to RepeatTypes.MONTHLY
                     )
-                    Row() {
+                    Row {
                         chips.forEach { (label, type) ->
                             FilterChip(
                                 onClick = { repeatType = type },
@@ -223,7 +223,7 @@ fun AddTaskScreen(
                         "F" to WeekDays.FRI,
                         "S" to WeekDays.SAT,
                     )
-                    Row() {
+                    Row {
                         chips.forEach { (label, day) ->
                             FilterChip(
                                 onClick = {
