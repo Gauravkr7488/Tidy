@@ -27,6 +27,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -34,7 +37,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -60,6 +65,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Calendar
 
 @Composable
 fun AddTaskScreen(
@@ -80,6 +86,7 @@ fun AddTaskScreen(
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
+    var showDateDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -237,6 +244,37 @@ fun AddTaskScreen(
                                 modifier = Modifier.padding(end = 10.dp)
 
                             )
+                        }
+                    }
+                }
+                if (repeatType == RepeatTypes.MONTHLY) {
+
+                    Button(onClick = { showDateDialog = true }) {
+                        Text("Select Date")
+                    }
+
+                    val state = rememberDatePickerState()
+                    if (showDateDialog) {
+                        DatePickerDialog(
+                            onDismissRequest = { showDateDialog = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    val milli = state.selectedDateMillis
+                                    val calendar = Calendar.getInstance().apply {
+                                        if (milli != null) {
+                                            timeInMillis = milli
+                                        }
+                                    }
+                                    val formatted =
+                                        "%02d".format(calendar.get(Calendar.DAY_OF_MONTH))
+                                    repeatDays = formatted
+                                    showDateDialog = false
+                                }) {
+                                    Text("OK")
+                                }
+                            }
+                        ) {
+                            DatePicker(state = state)
                         }
                     }
                 }
