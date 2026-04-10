@@ -21,7 +21,9 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -41,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,7 +64,8 @@ fun HomeScreen(
 
     modifier: Modifier = Modifier
 ) {
-    val tasks = homeScreenViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() && !task.hide }
+    val tasks =
+        homeScreenViewModel.tasks.filter { task -> !task.note && task.parents.isEmpty() && !task.hide }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
     val listState = rememberLazyListState()
@@ -144,7 +148,6 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -156,23 +159,53 @@ fun HomeScreen(
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(bottom = 150.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(tasks, key = { it.id }) { task ->
-                    TaskCard(
-                        task = task,
-                        onClick = homeScreenViewModel::toggleDoneStatus,
-                        onEditClick = homeScreenViewModel::editTask,
-                        onSkipClick = homeScreenViewModel::skipTask,
-                        onDeleteClick = homeScreenViewModel::deleteTask,
-                        onExpandClick = homeScreenViewModel::onExpandClick,
-                        expanded = task.id in homeScreenViewModel.expandedTaskList
-                    )
+            if (tasks.isEmpty()) {
+                EmptyTaskList()
+            } else {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(bottom = 150.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(tasks, key = { it.id }) { task ->
+                        TaskCard(
+                            task = task,
+                            onClick = homeScreenViewModel::toggleDoneStatus,
+                            onEditClick = homeScreenViewModel::editTask,
+                            onSkipClick = homeScreenViewModel::skipTask,
+                            onDeleteClick = homeScreenViewModel::deleteTask,
+                            onExpandClick = homeScreenViewModel::onExpandClick,
+                            expanded = task.id in homeScreenViewModel.expandedTaskList
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun EmptyTaskList(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.List,
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Add Some Tasks",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
