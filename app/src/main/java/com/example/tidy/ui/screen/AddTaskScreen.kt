@@ -78,7 +78,7 @@ fun AddTaskScreen(
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
-    var repeatType by remember { mutableStateOf("") }
+    var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
@@ -182,11 +182,14 @@ fun AddTaskScreen(
                         .fillMaxWidth()
                         .padding(top = 8.dp)
                 ) {
-                    Text("Repeat Daily")
+                    Text("Repeat")
                     Spacer(modifier = Modifier.weight(1f))
                     Switch(
                         checked = repeatStatus,
-                        onCheckedChange = { repeatStatus = it }
+                        onCheckedChange = {
+                            repeatStatus = it
+                            repeatType = RepeatTypes.NONE
+                        }
                     )
                 }
 
@@ -196,13 +199,15 @@ fun AddTaskScreen(
                         "Weekly" to RepeatTypes.WEEKLY,
                         "Monthly" to RepeatTypes.MONTHLY
                     )
-
-                    chips.forEach { (label, type) ->
-                        FilterChip(
-                            onClick = { repeatType = type },
-                            label = { Text(label) },
-                            selected = repeatType == type
-                        )
+                    Row() {
+                        chips.forEach { (label, type) ->
+                            FilterChip(
+                                onClick = { repeatType = type },
+                                label = { Text(label) },
+                                selected = repeatType == type,
+                                modifier = Modifier.padding(end = 10.dp)
+                            )
+                        }
                     }
                 }
                 if (repeatType == RepeatTypes.WEEKLY) {
@@ -210,25 +215,29 @@ fun AddTaskScreen(
                     repeatDays = selectedDays.joinToString(", ")
 
                     val chips = listOf(
-                        "Mon" to WeekDays.MON,
-                        "Tue" to WeekDays.TUE,
-                        "Wed" to WeekDays.WED,
-                        "Thu" to WeekDays.THU,
-                        "Fri" to WeekDays.FRI,
-                        "Sat" to WeekDays.SAT,
-                        "Sun" to WeekDays.SUN
+                        "S" to WeekDays.SUN,
+                        "M" to WeekDays.MON,
+                        "T" to WeekDays.TUE,
+                        "W" to WeekDays.WED,
+                        "T" to WeekDays.THU,
+                        "F" to WeekDays.FRI,
+                        "S" to WeekDays.SAT,
                     )
-                    chips.forEach { (label, day) ->
-                        FilterChip(
-                            onClick = {
-                                selectedDays = if (day in selectedDays)
-                                    selectedDays - day  // deselect
-                                else
-                                    selectedDays + day  // select
-                            },
-                            label = { Text(label) },
-                            selected = day in selectedDays
-                        )
+                    Row() {
+                        chips.forEach { (label, day) ->
+                            FilterChip(
+                                onClick = {
+                                    selectedDays = if (day in selectedDays)
+                                        selectedDays - day  // deselect
+                                    else
+                                        selectedDays + day  // select
+                                },
+                                label = { Text(label) },
+                                selected = day in selectedDays,
+                                modifier = Modifier.padding(end = 10.dp)
+
+                            )
+                        }
                     }
                 }
                 SubTaskMenu(
