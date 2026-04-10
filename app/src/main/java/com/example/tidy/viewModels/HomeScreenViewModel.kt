@@ -119,6 +119,10 @@ class HomeScreenViewModel(
                     val newTask = task.copy(hide = false)
                     dbOperation.saveTask(newTask)
                 }
+                if (task.repeatType == RepeatTypes.MONTHLY && task.repeatDays.contains(todayDate)){
+                    val newTask = task.copy(hide = false)
+                    dbOperation.saveTask(newTask)
+                }
             }
             refreshTasks()
         }
