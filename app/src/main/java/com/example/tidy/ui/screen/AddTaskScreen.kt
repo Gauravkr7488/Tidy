@@ -98,7 +98,7 @@ fun AddTaskScreen(
                 note = task.note
                 repeatStatus = task.repeatType != RepeatTypes.NONE
                 repeatType = task.repeatType
-                repeatDays = if (repeatType == RepeatTypes.WEEKLY) task.repeatDays else ""
+                repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
                 val readable = SimpleDateFormat(
                     "MMM dd, yyyy hh:mm a",
                     Locale.getDefault()
@@ -248,11 +248,37 @@ fun AddTaskScreen(
                     }
                 }
                 if (repeatType == RepeatTypes.MONTHLY) {
+                    if (repeatDays == "") {
+                        Button(onClick = { showDateDialog = true }) {
+                            Text("Select Date")
+                        }
+                    } else {
 
-                    Button(onClick = { showDateDialog = true }) {
-                        Text("Select Date")
+                        val chips = repeatDays
+                            .split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+
+                        Row {
+                            chips.forEach { chip ->
+                                FilterChip(
+                                    onClick = {
+                                        val updated = chips.toMutableList().apply {
+                                            remove(chip)
+                                        }
+                                        repeatDays = updated.joinToString(",")
+                                    },
+                                    label = { Text(chip) },
+                                    selected = chip in repeatDays,
+                                    modifier = Modifier.padding(end = 10.dp)
+                                )
+                            }
+                        }
+
+                        Button(onClick = { showDateDialog = true }) {
+                            Text("Select more Dates")
+                        }
                     }
-
                     val state = rememberDatePickerState()
                     if (showDateDialog) {
                         DatePickerDialog(
@@ -267,7 +293,7 @@ fun AddTaskScreen(
                                     }
                                     val formatted =
                                         "%02d".format(calendar.get(Calendar.DAY_OF_MONTH))
-                                    repeatDays = formatted
+                                    repeatDays = "$repeatDays,$formatted"
                                     showDateDialog = false
                                 }) {
                                     Text("OK")
