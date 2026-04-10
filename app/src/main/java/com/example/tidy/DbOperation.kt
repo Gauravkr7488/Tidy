@@ -100,12 +100,4 @@ class DbOperation(
     suspend fun setLastResetToday(todayDate: String): Long = withContext(Dispatchers.IO) {
         return@withContext lastBoxReset.put(LastReset(id = 1, lastResetAt = todayDate))
     }
-
-    suspend fun tasksUnhideAll() = withContext(Dispatchers.IO) {
-        val hiddenTasks = taskBox.all.filter { task -> task.hide }
-        hiddenTasks.forEach { task ->
-            val updatedTask = task.copy(hide = false)
-            taskBox.put(updatedTask)
-        }
-    }
 }
