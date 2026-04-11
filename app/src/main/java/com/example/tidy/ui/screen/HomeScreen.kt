@@ -270,7 +270,7 @@ fun contextMenuOptions(
     )
 }
 @Composable
-fun Alpha(last: Boolean, map: List<Boolean>) {
+fun AddIndentation(last: Boolean, map: List<Boolean>) { // last is if the task is final child of the parent and map is the map of line and gaps excluding the final one cause a child always attaches to its parent
     map.forEach { b ->
         if (b) FullLine() else NoLine()
         NoLine() // for space of horizontalLine
@@ -314,7 +314,7 @@ fun SubTaskCard(
         )
         var showDeleteDialog by remember { mutableStateOf(false) }
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-            if (depth != 0) Alpha(last, list)
+            if (depth != 0) AddIndentation(last, list)
             TaskCardNew(
                 task = task,
                 onClick = {
@@ -349,8 +349,8 @@ fun SubTaskCard(
         }
         if (task.children.isNotEmpty() && expanded) {
             val bool =
-                task == task.parents.lastOrNull()?.children?.lastOrNull()
-            val passingList = if (depth > 0) list + !bool else list
+                task == task.parents.lastOrNull()?.children?.lastOrNull() // is task last child
+            val passingList = if (depth > 0) list + !bool else list // if task is last child then add false no line would be needed
             task.children.forEach { child ->
                 key(child.id) {
                     SubTaskCard(
