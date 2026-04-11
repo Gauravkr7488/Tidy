@@ -1,6 +1,6 @@
 package com.example.tidy.ui.component.taskComponents
 
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,31 +15,54 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Task
 
+@Suppress("AssignedValueIsNeverRead")
 @Composable
 fun TaskCardNew(
     task: Task,
     onClick: (Task) -> Unit,
-    onLongClick: (Task) -> Unit,
     modifier: Modifier = Modifier,
-    icons: List<TaskIconAction> = emptyList()
+    icons: List<TaskIconAction> = emptyList(),
+    contextMenuOptions: List<TaskContextAction> = emptyList(),
 ) {
-
+    var tapOffset by remember { mutableStateOf(Offset.Zero) }
+    var showMenu by remember { mutableStateOf(false) }
+    var parentOffset by remember { mutableStateOf(Offset.Zero) }
+    val correctedOffset = parentOffset + tapOffset
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .onGloballyPositioned {
+                parentOffset = it.localToWindow(Offset.Zero)
+            },
         shape = RoundedCornerShape(12.dp),
     ) {
         Row(
             modifier = Modifier
-                .combinedClickable(
-                    onClick = { onClick(task) },
-                    onLongClick = { onLongClick(task) }
-                )
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { onClick(task) },
+                        onLongPress = { offset ->
+                            if (contextMenuOptions.isNotEmpty()) {
+                                tapOffset = offset
+                                showMenu = true
+                            }
+                        }
+                    )
+                }
                 .padding(start = 16.dp, end = 16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -73,4 +96,11 @@ fun TaskCardNew(
             }
         }
     }
+
+    TaskContextMenu(
+        showMenu = showMenu,
+        tapOffset = correctedOffset,
+        onDismiss = { showMenu = !showMenu },
+        options = contextMenuOptions
+    )
 }
