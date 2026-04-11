@@ -45,6 +45,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -53,7 +54,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
-import com.example.tidy.ui.component.TaskCard
+import com.example.tidy.ui.component.taskComponents.TaskCardNew
+import com.example.tidy.ui.component.taskComponents.TaskContextAction
+import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.delay
 
@@ -153,7 +156,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
         ) {
-
             Text(
                 text = "My Tasks",
                 style = MaterialTheme.typography.headlineMedium,
@@ -168,15 +170,41 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(tasks, key = { it.id }) { task ->
-                        TaskCard(
+                        var showDeleteDialog by remember { mutableStateOf(false) }
+                        TaskCardNew(
                             task = task,
-                            onClick = homeScreenViewModel::toggleDoneStatus,
-                            onEditClick = homeScreenViewModel::editTask,
-                            onSkipClick = homeScreenViewModel::skipTask,
-                            onDeleteClick = homeScreenViewModel::deleteTask,
-                            onExpandClick = homeScreenViewModel::onExpandClick,
-                            expanded = task.id in homeScreenViewModel.expandedTaskList
+                            onClick = {
+                                homeScreenViewModel.toggleDoneStatus(task)
+                            },
+                            contextMenuOptions = listOf(
+                                TaskContextAction(
+                                    label = "Edit",
+                                    icon = Icons.Default.Create,
+                                    description = "Edit Task",
+                                    onClick = { homeScreenViewModel.editTask(task) }
+                                ),
+                                TaskContextAction(
+                                    label = "Skip",
+                                    icon = Icons.Default.SkipNext,
+                                    description = "Skip Task",
+                                    onClick = { homeScreenViewModel.skipTask(task) }
+                                ),
+                                TaskContextAction(
+                                    label = "Delete",
+                                    icon = Icons.Default.Delete,
+                                    description = "Delete Task",
+                                    onClick = { showDeleteDialog = true },
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            ),
                         )
+                        if (showDeleteDialog) {
+                            TaskDeleteDialog(
+                                task = task,
+                                onDismiss = { showDeleteDialog = !showDeleteDialog },
+                                onDeleteClick = homeScreenViewModel::deleteTask
+                            )
+                        }
                     }
                 }
             }
