@@ -368,36 +368,14 @@ fun Alpha(last: Boolean, map: List<Boolean>) {
                     .fillMaxHeight()
             )
         }
-        if (map.size > 1) {
-            Box(
-                modifier = Modifier
-                    .width(16.dp)
-                    .fillMaxHeight()
-            )
-        }
     }
-//    if (map.isNotEmpty()){
-//        Box(
-//            modifier = Modifier
-//                .width(16.dp)
-//                .fillMaxHeight(),
-//            contentAlignment = Alignment.Center
-//        ) {
-//            Canvas(
-//                modifier = Modifier
-//                    .fillMaxHeight()
-//                    .width(16.dp)
-//            ) {
-//                val end = if (last) size.height / 2 else size.height
-//                drawLine(
-//                    color = Color.Gray,
-//                    start = Offset(size.width, 0f),
-//                    end = Offset(size.width, end),
-//                    strokeWidth = 2f
-//                )
-//            }
-//        }
-//    }
+    repeat(map.size - 1) {
+        Box(
+            modifier = Modifier
+                .width(16.dp)
+                .fillMaxHeight()
+        )
+    }
 }
 
 @Composable
