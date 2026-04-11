@@ -26,4 +26,5 @@ object Routes {
     const val NOTE = "note_screen"
     const val MENU = "menu_screen"
     const val SEARCH = "search_screen"
+    const val  ARCHIVE = "archive_screen"
 }
