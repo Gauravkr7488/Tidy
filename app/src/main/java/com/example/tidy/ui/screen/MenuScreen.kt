@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -75,6 +76,11 @@ fun MenuScreen(
             "Search",
             Icons.Default.Search,
             { navController.navigate(Routes.SEARCH) }
+        ),
+        MenuItem(
+            "Archive",
+            Icons.Default.Archive,
+            { navController.navigate(Routes.ARCHIVE) }
         )
     )
 
