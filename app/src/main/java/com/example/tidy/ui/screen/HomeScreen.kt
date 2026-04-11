@@ -18,15 +18,20 @@
 package com.example.tidy.ui.screen
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.FloatingActionButton
@@ -51,8 +56,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.tidy.Task
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
@@ -176,27 +185,10 @@ fun HomeScreen(
                             onClick = {
                                 homeScreenViewModel.toggleDoneStatus(task)
                             },
-                            contextMenuOptions = listOf(
-                                TaskContextAction(
-                                    label = "Edit",
-                                    icon = Icons.Default.Create,
-                                    description = "Edit Task",
-                                    onClick = { homeScreenViewModel.editTask(task) }
-                                ),
-                                TaskContextAction(
-                                    label = "Skip",
-                                    icon = Icons.Default.SkipNext,
-                                    description = "Skip Task",
-                                    onClick = { homeScreenViewModel.skipTask(task) }
-                                ),
-                                TaskContextAction(
-                                    label = "Delete",
-                                    icon = Icons.Default.Delete,
-                                    description = "Delete Task",
-                                    onClick = { showDeleteDialog = true },
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            ),
+                            contextMenuOptions = contextMenuOptions(
+                                task,
+                                homeScreenViewModel
+                            ) { showDeleteDialog = true },
                         )
                         if (showDeleteDialog) {
                             TaskDeleteDialog(
@@ -235,5 +227,65 @@ fun EmptyTaskList(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+fun contextMenuOptions(
+    task: Task,
+    homeScreenViewModel: HomeScreenViewModel,
+    onDeleteClick: () -> Unit,
+): List<TaskContextAction> {
+    return listOf(
+        TaskContextAction(
+            label = "Edit",
+            icon = Icons.Default.Create,
+            description = "Edit Task",
+            onClick = { homeScreenViewModel.editTask(task) }
+        ),
+        TaskContextAction(
+            label = "Skip",
+            icon = Icons.Default.SkipNext,
+            description = "Skip Task",
+            onClick = { homeScreenViewModel.skipTask(task) }
+        ),
+        TaskContextAction(
+            label = "Delete",
+            icon = Icons.Default.Delete,
+            description = "Delete Task",
+            onClick = onDeleteClick,
+            color = MaterialTheme.colorScheme.error
+        )
+    )
+}
+
+@Composable
+fun IndentationLines(depth: Int, isLast: Boolean) {
+    Row {
+        repeat(depth) { level ->
+            Box(
+                modifier = Modifier
+                    .width(16.dp)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(modifier = Modifier.fillMaxHeight()) {
+                    drawLine(
+                        color = Color.Gray,
+                        start = Offset(size.width / 2, 0f),
+                        end = Offset(size.width / 2, size.height),
+                        strokeWidth = 2f
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun Sample() {
+    Box {
+        IndentationLines(3, false)
     }
 }
