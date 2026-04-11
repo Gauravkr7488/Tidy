@@ -33,6 +33,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -53,7 +54,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -83,7 +83,7 @@ fun SearchScreen(
             SearchFilter.NOTES -> task.note
             SearchFilter.TASKS -> !task.note
         }
-        matchesQuery && matchesFilter && !task.hide
+        matchesQuery && matchesFilter
     }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.SEARCH
@@ -229,8 +229,6 @@ fun TaskResultCard(
                 Text(
                     text = task.title,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (task.description.isNotBlank()) {
@@ -255,6 +253,14 @@ fun TaskResultCard(
             if (task.done) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            if (task.hide) {
+                Icon(
+                    imageVector = Icons.Default.Archive,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
