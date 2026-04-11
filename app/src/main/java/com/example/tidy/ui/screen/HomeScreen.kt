@@ -18,15 +18,18 @@
 package com.example.tidy.ui.screen
 
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -49,13 +52,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,6 +72,7 @@ import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
+import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.delay
 
@@ -179,22 +186,28 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(tasks, key = { it.id }) { task ->
-                        var showDeleteDialog by remember { mutableStateOf(false) }
-                        TaskCardNew(
-                            task = task,
-                            onClick = {
-                                homeScreenViewModel.toggleDoneStatus(task)
-                            },
-                            contextMenuOptions = contextMenuOptions(
-                                task,
-                                homeScreenViewModel
-                            ) { showDeleteDialog = true },
-                        )
-                        if (showDeleteDialog) {
-                            TaskDeleteDialog(
+                        if (task.children.isEmpty()) {
+                            var showDeleteDialog by remember { mutableStateOf(false) }
+                            TaskCardNew(
                                 task = task,
-                                onDismiss = { showDeleteDialog = !showDeleteDialog },
-                                onDeleteClick = homeScreenViewModel::deleteTask
+                                onClick = {
+                                    homeScreenViewModel.toggleDoneStatus(task)
+                                },
+                                contextMenuOptions = contextMenuOptions(
+                                    task,
+                                    homeScreenViewModel
+                                ) { showDeleteDialog = true },
+                            )
+                            if (showDeleteDialog) {
+                                TaskDeleteDialog(
+                                    task = task,
+                                    onDismiss = { showDeleteDialog = !showDeleteDialog },
+                                    onDeleteClick = homeScreenViewModel::deleteTask
+                                )
+                            }
+                        } else {
+                            SubTaskCard(
+                                task, homeScreenViewModel
                             )
                         }
                     }
@@ -260,20 +273,61 @@ fun contextMenuOptions(
 }
 
 @Composable
-fun IndentationLines(depth: Int, isLast: Boolean) {
+fun IndentationLines(depth: Int, last: Boolean, parentLast: Boolean) {
     Row {
-        repeat(depth) { level ->
+        // spacers for ancestor levels
+        repeat(depth - 1) {
+            if (!parentLast) {
+                Box(
+                    modifier = Modifier
+                        .width(16.dp)
+                        .fillMaxHeight(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(16.dp)
+                    ) {
+                        val end = if (last) size.height / 2 else size.height
+                        drawLine(
+                            color = Color.Gray,
+                            start = Offset(size.width, 0f),
+                            end = Offset(size.width, size.height),
+                            strokeWidth = 2f
+                        )
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .width(16.dp)
+                        .fillMaxHeight()
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .width(16.dp)
+                    .fillMaxHeight()
+            )
+        }
+        if (depth > 0) {
             Box(
                 modifier = Modifier
                     .width(16.dp)
                     .fillMaxHeight(),
                 contentAlignment = Alignment.Center
             ) {
-                Canvas(modifier = Modifier.fillMaxHeight()) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(16.dp)
+                ) {
+                    val end = if (last) size.height / 2 else size.height
                     drawLine(
                         color = Color.Gray,
-                        start = Offset(size.width / 2, 0f),
-                        end = Offset(size.width / 2, size.height),
+                        start = Offset(size.width, 0f),
+                        end = Offset(size.width, end),
                         strokeWidth = 2f
                     )
                 }
@@ -282,10 +336,157 @@ fun IndentationLines(depth: Int, isLast: Boolean) {
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun Sample() {
-    Box {
-        IndentationLines(3, false)
+fun Alpha(last: Boolean, map: List<Boolean>) {
+    map.forEach { bool ->
+        if (bool) {
+            Box(
+                modifier = Modifier
+                    .width(16.dp)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(16.dp)
+                ) {
+                    val end = if (last) size.height / 2 else size.height
+
+                    drawLine(
+                        color = Color.Gray,
+                        start = Offset(size.width, 0f),
+                        end = Offset(size.width, end),
+                        strokeWidth = 2f
+                    )
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .width(16.dp)
+                    .fillMaxHeight()
+            )
+        }
+        if (map.size > 1) {
+            Box(
+                modifier = Modifier
+                    .width(16.dp)
+                    .fillMaxHeight()
+            )
+        }
+    }
+//    if (map.isNotEmpty()){
+//        Box(
+//            modifier = Modifier
+//                .width(16.dp)
+//                .fillMaxHeight(),
+//            contentAlignment = Alignment.Center
+//        ) {
+//            Canvas(
+//                modifier = Modifier
+//                    .fillMaxHeight()
+//                    .width(16.dp)
+//            ) {
+//                val end = if (last) size.height / 2 else size.height
+//                drawLine(
+//                    color = Color.Gray,
+//                    start = Offset(size.width, 0f),
+//                    end = Offset(size.width, end),
+//                    strokeWidth = 2f
+//                )
+//            }
+//        }
+//    }
+}
+
+@Composable
+fun HorizontalLine() {
+    Box(
+        modifier = Modifier
+            .width(16.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawLine(
+                color = Color.Gray,
+                start = Offset(0f, size.height / 2),
+                end = Offset(size.width, size.height / 2),
+                strokeWidth = 2f
+            )
+        }
+    }
+}
+
+@Composable
+fun SubTaskCard(
+    task: Task,
+    homeScreenViewModel: HomeScreenViewModel,
+    depth: Int = 0,
+    last: Boolean = false,
+    list: List<Boolean> = listOf(),
+) {
+    Column {
+        var expanded by remember { mutableStateOf(false) }
+        val rotation by animateFloatAsState(
+            targetValue = if (expanded) 90f else 0f,
+            label = "iconRotation"
+        )
+        val parentLast =
+            task.parents.lastOrNull() == task.parents.lastOrNull()?.parents?.lastOrNull()?.children?.lastOrNull() // is parent last child of grandparent
+        val passingList = list.toMutableList()
+
+        var showDeleteDialog by remember { mutableStateOf(false) }
+        Row(modifier = Modifier.height(IntrinsicSize.Min)) {
+//            IndentationLines(depth, last = last, parentLast = parentLast)
+            Alpha(last, passingList)
+            passingList.add(parentLast)
+            if (depth != 0) HorizontalLine()
+            TaskCardNew(
+                task = task,
+                onClick = {
+                    if (task.children.isNotEmpty()) expanded =
+                        !expanded else homeScreenViewModel.toggleDoneStatus(task)
+                },
+                contextMenuOptions = contextMenuOptions(
+                    task,
+                    homeScreenViewModel
+                ) { showDeleteDialog = true },
+                icons =
+                    if (task.children.isNotEmpty()) {
+                        listOf(
+                            TaskIconAction(
+                                icon = Icons.Default.ChevronRight,
+                                description = "Expand Subtask",
+                                onClick = { expanded = !expanded },
+                                modifier = Modifier.rotate(rotation)
+                            )
+                        )
+                    } else {
+                        emptyList()
+                    },
+            )
+        }
+        if (showDeleteDialog) {
+            TaskDeleteDialog(
+                task = task,
+                onDismiss = { showDeleteDialog = !showDeleteDialog },
+                onDeleteClick = homeScreenViewModel::deleteTask
+            )
+        }
+        if (task.children.isNotEmpty() && expanded) {
+            task.children.forEach { child ->
+                key(child.id) {
+                    SubTaskCard(
+                        task = child,
+                        homeScreenViewModel = homeScreenViewModel,
+                        depth = depth + 1,
+                        last = child == task.children.last(),
+                        list = passingList
+                    )
+                }
+            }
+        }
     }
 }

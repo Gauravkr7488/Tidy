@@ -17,6 +17,7 @@
 
 package com.example.tidy.ui.component.taskComponents
 
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.tidy.Task
 
@@ -24,4 +25,5 @@ data class TaskIconAction(
     val icon: ImageVector,
     val description: String,
     val onClick: (Task) -> Unit,
+    val modifier: Modifier = Modifier,
 )
