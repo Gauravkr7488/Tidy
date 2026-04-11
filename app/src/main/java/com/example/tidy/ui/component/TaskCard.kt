@@ -61,7 +61,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
-
+@Deprecated(message = "use TaskCardNew instead")
 @Composable
 fun TaskCard(
     task: Task,
@@ -251,7 +251,6 @@ fun TaskCard(
             confirmButton = {
                 TextButton(onClick = {
                     onDeleteClick(task.id, deleteChildren)
-//                    onDeleteClick(task)
                     showDeleteDialog = false
                 }) {
                     Text("Delete", color = MaterialTheme.colorScheme.error)
