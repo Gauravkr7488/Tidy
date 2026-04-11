@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Task
@@ -77,6 +78,7 @@ fun TaskCardNew(
                     text = task.title,
                     style = MaterialTheme.typography.bodyLarge,
                     overflow = TextOverflow.Ellipsis,
+                    textDecoration = if (task.done) TextDecoration.LineThrough else TextDecoration.None,
                 )
                 if (task.description.isNotBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
