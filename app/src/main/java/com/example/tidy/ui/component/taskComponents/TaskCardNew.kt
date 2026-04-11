@@ -1,4 +1,4 @@
-package com.example.tidy.ui.component.taskCard
+package com.example.tidy.ui.component.taskComponents
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement

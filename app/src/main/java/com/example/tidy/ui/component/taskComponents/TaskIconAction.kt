@@ -1,4 +1,4 @@
-package com.example.tidy.ui.component.taskCard
+package com.example.tidy.ui.component.taskComponents
 
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.tidy.Task
