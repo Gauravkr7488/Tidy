@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -64,7 +63,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.Task
@@ -271,111 +269,14 @@ fun contextMenuOptions(
         )
     )
 }
-
-@Composable
-fun IndentationLines(depth: Int, last: Boolean, parentLast: Boolean) {
-    Row {
-        // spacers for ancestor levels
-        repeat(depth - 1) {
-            if (!parentLast) {
-                Box(
-                    modifier = Modifier
-                        .width(16.dp)
-                        .fillMaxHeight(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Canvas(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .width(16.dp)
-                    ) {
-                        val end = if (last) size.height / 2 else size.height
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset(size.width, 0f),
-                            end = Offset(size.width, size.height),
-                            strokeWidth = 2f
-                        )
-                    }
-                }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .width(16.dp)
-                        .fillMaxHeight()
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .width(16.dp)
-                    .fillMaxHeight()
-            )
-        }
-        if (depth > 0) {
-            Box(
-                modifier = Modifier
-                    .width(16.dp)
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(16.dp)
-                ) {
-                    val end = if (last) size.height / 2 else size.height
-                    drawLine(
-                        color = Color.Gray,
-                        start = Offset(size.width, 0f),
-                        end = Offset(size.width, end),
-                        strokeWidth = 2f
-                    )
-                }
-            }
-        }
-    }
-}
-
 @Composable
 fun Alpha(last: Boolean, map: List<Boolean>) {
-    map.forEach { bool ->
-        if (bool) {
-            Box(
-                modifier = Modifier
-                    .width(16.dp)
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(16.dp)
-                ) {
-                    val end = if (last) size.height / 2 else size.height
-
-                    drawLine(
-                        color = Color.Gray,
-                        start = Offset(size.width, 0f),
-                        end = Offset(size.width, end),
-                        strokeWidth = 2f
-                    )
-                }
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .width(16.dp)
-                    .fillMaxHeight()
-            )
-        }
+    map.forEach { b ->
+        if (b) FullLine() else NoLine()
+        NoLine() // for space of horizontalLine
     }
-    repeat(map.size - 1) {
-        Box(
-            modifier = Modifier
-                .width(16.dp)
-                .fillMaxHeight()
-        )
-    }
+    if (last) HalfLine() else FullLine()
+    HorizontalLine()
 }
 
 @Composable
@@ -411,16 +312,9 @@ fun SubTaskCard(
             targetValue = if (expanded) 90f else 0f,
             label = "iconRotation"
         )
-        val parentLast =
-            task.parents.lastOrNull() == task.parents.lastOrNull()?.parents?.lastOrNull()?.children?.lastOrNull() // is parent last child of grandparent
-        val passingList = list.toMutableList()
-
         var showDeleteDialog by remember { mutableStateOf(false) }
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-//            IndentationLines(depth, last = last, parentLast = parentLast)
-            Alpha(last, passingList)
-            passingList.add(parentLast)
-            if (depth != 0) HorizontalLine()
+            if (depth != 0) Alpha(last, list)
             TaskCardNew(
                 task = task,
                 onClick = {
@@ -454,6 +348,9 @@ fun SubTaskCard(
             )
         }
         if (task.children.isNotEmpty() && expanded) {
+            val bool =
+                task == task.parents.lastOrNull()?.children?.lastOrNull()
+            val passingList = if (depth > 0) list + !bool else list
             task.children.forEach { child ->
                 key(child.id) {
                     SubTaskCard(
@@ -467,4 +364,60 @@ fun SubTaskCard(
             }
         }
     }
+}
+
+@Composable
+fun FullLine() {
+    Box(
+        modifier = Modifier
+            .width(16.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(16.dp)
+        ) {
+            drawLine(
+                color = Color.Gray,
+                start = Offset(size.width, 0f),
+                end = Offset(size.width, size.height),
+                strokeWidth = 2f
+            )
+        }
+    }
+}
+
+@Composable
+fun HalfLine() {
+    Box(
+        modifier = Modifier
+            .width(16.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(16.dp)
+        ) {
+            drawLine(
+                color = Color.Gray,
+                start = Offset(size.width, 0f),
+                end = Offset(size.width, size.height / 2),
+                strokeWidth = 2f
+            )
+        }
+    }
+}
+
+@Composable
+fun NoLine() {
+    Box(
+        modifier = Modifier
+            .width(16.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {}
 }
