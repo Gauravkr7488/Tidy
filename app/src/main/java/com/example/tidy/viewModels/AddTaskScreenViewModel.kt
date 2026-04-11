@@ -53,7 +53,6 @@ class AddTaskScreenViewModel(
         var i: Long
         i = dbOperation.saveTask(task)
         dbOperation.updateChildrenRepeatStatus(i)
-        println(parentTaskList)
         if (parentTaskList.isNotEmpty()) {
             i = task.id
             dbOperation.addChild(childId = i, parentId = parentTaskList.last())
