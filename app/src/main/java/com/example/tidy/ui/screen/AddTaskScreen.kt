@@ -130,6 +130,7 @@ fun AddTaskScreen(
                                     description = description,
                                 )
                             )
+                            @Suppress("AssignedValueIsNeverRead")
                             showFab = false
                             navController.popBackStack()
                         }
@@ -142,19 +143,24 @@ fun AddTaskScreen(
             }
         }
     )
-    { padding ->
+    { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+                .padding(top = innerPadding.calculateTopPadding())
+                .padding(start = 16.dp, end = 16.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         keyboardController?.hide()
                     })
                 },
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
+            Text(
+                text = "Add Task",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
 
             TextField(
                 value = taskTitle,
@@ -165,7 +171,6 @@ fun AddTaskScreen(
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
-            Spacer(modifier = Modifier.size(10.dp))
             TextField(
                 value = description,
                 onValueChange = { description = it },
@@ -173,11 +178,12 @@ fun AddTaskScreen(
                 singleLine = false,
                 modifier = Modifier.fillMaxWidth()
             )
+
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
             ) {
                 Text("Note")
                 Spacer(modifier = Modifier.weight(1f))
@@ -186,12 +192,12 @@ fun AddTaskScreen(
                     onCheckedChange = { note = it }
                 )
             }
+
             if (!note) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp)
                 ) {
                     Text("Repeat")
                     Spacer(modifier = Modifier.weight(1f))
@@ -309,7 +315,7 @@ fun AddTaskScreen(
                     }
                 }
                 SubTaskMenu(
-                    "Child Tasks",
+                    "Subtasks",
                     {
                         coroutineScope.launch {
                             addTaskScreenViewModel.startAddNewChild(
