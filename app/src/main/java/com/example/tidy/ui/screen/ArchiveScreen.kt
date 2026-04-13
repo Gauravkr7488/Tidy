@@ -17,25 +17,15 @@
 
 package com.example.tidy.ui.screen
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Archive
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -48,14 +38,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.tidy.Task
 import com.example.tidy.constants.Routes
+import com.example.tidy.ui.component.taskComponents.TaskCardNew
+import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.ArchiveScreenViewModel
 import kotlinx.coroutines.launch
 
@@ -90,81 +79,41 @@ fun ArchiveScreen(
                 .padding(start = 16.dp, end = 16.dp)
         ) {
             Text(
-                text = "My Notes",
+                text = "Archive",
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(bottom = 150.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(tasks, key = { it.id }) { task ->
-                    TaskCard(
+                    TaskCardNew(
                         task = task,
-                        onClick = {
-                            archiveScreenViewModel.unarchiveTask(task.id)
-                            scope.launch {
-                                val result = snackBarHostState.showSnackbar(
-                                    message = "Task Unarchived",
-                                    actionLabel = "Undo",
-                                    duration = SnackbarDuration.Short
-                                )
-                                if (result == SnackbarResult.ActionPerformed) {
-                                    archiveScreenViewModel.archiveTask(task.id)
+                        onClick = { },
+                        icons = listOf(
+                            TaskIconAction(
+                                icon = Icons.Default.Archive,
+                                description = "Unarchive Task",
+                                tint = MaterialTheme.colorScheme.primary,
+                                onClick = {
+                                    archiveScreenViewModel.unarchiveTask(task.id)
+                                    scope.launch {
+                                        val result = snackBarHostState.showSnackbar(
+                                            message = "Task Unarchived",
+                                            actionLabel = "Undo",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            archiveScreenViewModel.archiveTask(task.id)
+                                        }
+                                    }
                                 }
-                            }
-                        }
+                            )
+                        )
                     )
                 }
             }
-        }
-    }
-}
-
-@Deprecated(message = "use TaskCardNew instead")
-@Composable
-fun TaskCard(
-    task: Task,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (task.description.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = task.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-            Icon(
-                imageVector = Icons.Default.Archive,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
         }
     }
 }
