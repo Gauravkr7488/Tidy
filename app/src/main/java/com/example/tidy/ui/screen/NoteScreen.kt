@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,7 +37,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
-import com.example.tidy.ui.component.TaskCard
+import com.example.tidy.ui.component.taskComponents.TaskCardNew
+import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.NoteScreenViewModel
 
 @Composable
@@ -55,10 +58,10 @@ fun NoteScreen(
             noteScreenViewModel.refreshTasks()
         }
     }
-    Scaffold (
-            modifier = modifier.fillMaxSize(),
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
 
-    ) { innerPadding ->
+        ) { innerPadding ->
 
 
         Column(
@@ -78,10 +81,17 @@ fun NoteScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(tasks, key = { it.id }) { task ->
-                    TaskCard(
+                    TaskCardNew(
                         task = task,
-                        onEditClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
-                        onDeleteClick = noteScreenViewModel::deleteTask
+                        onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
+                        icons = listOf(
+                            TaskIconAction(
+                                icon = Icons.AutoMirrored.Filled.Article,
+                                description = "Note",
+                                onClick = {},
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        )
                     )
                 }
             }
