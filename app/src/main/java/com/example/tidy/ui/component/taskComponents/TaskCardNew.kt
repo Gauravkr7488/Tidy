@@ -98,12 +98,11 @@ fun TaskCardNew(
             }
 
         }
+        TaskContextMenu(
+            showMenu = showMenu,
+            tapOffset = tapOffset,
+            onDismiss = { showMenu = !showMenu },
+            options = contextMenuOptions
+        )
     }
-
-    TaskContextMenu(
-        showMenu = showMenu,
-        tapOffset = correctedOffset,
-        onDismiss = { showMenu = !showMenu },
-        options = contextMenuOptions
-    )
 }
