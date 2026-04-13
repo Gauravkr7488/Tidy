@@ -92,7 +92,7 @@ fun MenuScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
-                .padding(start = 5.dp, end = 5.dp)
+                .padding(start = 16.dp, end = 16.dp)
         ) {
             Text(
                 text = "Menu",

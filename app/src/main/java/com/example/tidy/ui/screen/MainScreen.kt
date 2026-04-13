@@ -30,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -89,7 +88,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
         ) {
 
             composable(Routes.HOME) {
-                Box(Modifier.padding(start = 16.dp, end = 16.dp)) {
+                Box{
                     HorizontalPager(
                         state = pagerState,
                         beyondViewportPageCount = 2, // keeps all 3 pages alive
