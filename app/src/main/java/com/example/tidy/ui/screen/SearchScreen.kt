@@ -20,7 +20,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,11 +33,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.Archive
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,12 +50,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.tidy.Task
 import com.example.tidy.constants.Routes
+import com.example.tidy.ui.component.taskComponents.TaskCardNew
+import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.HomeScreenViewModel
 
 enum class SearchFilter { ALL, TASKS, NOTES }
@@ -164,13 +160,40 @@ fun SearchScreen(
                         end = 16.dp,
                         bottom = innerPadding.calculateBottomPadding() + 16.dp
                     ),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     items(filteredTasks, key = { it.id }) { task ->
-                        TaskResultCard(
-                            task = task,
-                            onClick = { homeScreenViewModel.editTask(task) }
-                        )
+                        if (task.note) {
+                            TaskCardNew(
+                                task = task,
+                                onClick = { homeScreenViewModel.editTask(task) },
+                                icons = listOf(
+                                    TaskIconAction(
+                                        icon = Icons.AutoMirrored.Filled.Article,
+                                        description = "Note",
+                                        onClick = {},
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                )
+                            )
+                        } else if (task.hide) {
+                            TaskCardNew(
+                                task = task,
+                                onClick = { homeScreenViewModel.editTask(task) },
+                                icons = listOf(
+                                    TaskIconAction(
+                                        icon = Icons.Default.Archive,
+                                        description = "Archived",
+                                        onClick = {},
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                )
+                            )
+                        } else {
+                            TaskCardNew(
+                                task = task,
+                                onClick = { homeScreenViewModel.editTask(task) }
+                            )
+                        }
                     }
                 }
             }
@@ -203,69 +226,5 @@ fun EmptySearchState(
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-    }
-}
-
-@Composable
-fun TaskResultCard(
-    task: Task,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = task.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (task.description.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = task.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
-            if (task.note) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Article,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            if (task.done) {
-                Icon(
-                    imageVector = Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-            if (task.hide) {
-                Icon(
-                    imageVector = Icons.Default.Archive,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
     }
 }
