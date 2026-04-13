@@ -65,6 +65,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
+                .padding(start = 16.dp, end = 16.dp)
         ) {
             Text(
                 text = "Settings",

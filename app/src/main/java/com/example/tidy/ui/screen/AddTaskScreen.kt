@@ -16,6 +16,7 @@
  */
 package com.example.tidy.ui.screen
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
@@ -49,6 +51,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
@@ -130,6 +133,7 @@ fun AddTaskScreen(
                                     description = description,
                                 )
                             )
+                            @Suppress("AssignedValueIsNeverRead")
                             showFab = false
                             navController.popBackStack()
                         }
@@ -142,19 +146,24 @@ fun AddTaskScreen(
             }
         }
     )
-    { padding ->
+    { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+                .padding(top = innerPadding.calculateTopPadding())
+                .padding(start = 16.dp, end = 16.dp)
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         keyboardController?.hide()
                     })
                 },
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
+            Text(
+                text = "Add Task",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
 
             TextField(
                 value = taskTitle,
@@ -165,7 +174,6 @@ fun AddTaskScreen(
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
-            Spacer(modifier = Modifier.size(10.dp))
             TextField(
                 value = description,
                 onValueChange = { description = it },
@@ -173,11 +181,12 @@ fun AddTaskScreen(
                 singleLine = false,
                 modifier = Modifier.fillMaxWidth()
             )
+
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
             ) {
                 Text("Note")
                 Spacer(modifier = Modifier.weight(1f))
@@ -186,22 +195,31 @@ fun AddTaskScreen(
                     onCheckedChange = { note = it }
                 )
             }
+
             if (!note) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp)
                 ) {
+                    val rotation by animateFloatAsState(
+                        targetValue = if (repeatStatus) 45f else 0f,
+                        label = "iconRotation"
+                    )
                     Text("Repeat")
                     Spacer(modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = repeatStatus,
-                        onCheckedChange = {
-                            repeatStatus = it
+                    Button(
+                        onClick = {
+                            repeatStatus = !repeatStatus
                             repeatType = RepeatTypes.NONE
                         }
-                    )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "SubTask",
+                            modifier = Modifier.rotate(rotation)
+                        )
+                    }
                 }
 
                 if (repeatStatus) {
@@ -309,7 +327,7 @@ fun AddTaskScreen(
                     }
                 }
                 SubTaskMenu(
-                    "Child Tasks",
+                    "Subtasks",
                     {
                         coroutineScope.launch {
                             addTaskScreenViewModel.startAddNewChild(
