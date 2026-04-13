@@ -38,10 +38,16 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,6 +57,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.Task
 import com.example.tidy.constants.Routes
 import com.example.tidy.viewModels.ArchiveScreenViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun ArchiveScreen(
@@ -62,6 +69,8 @@ fun ArchiveScreen(
     val listState = rememberLazyListState()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.ARCHIVE
+    val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(isOnTop) {
         if (isOnTop) {
@@ -70,8 +79,8 @@ fun ArchiveScreen(
     }
     Scaffold(
         modifier = modifier.fillMaxSize(),
-
-        ) { innerPadding ->
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
+    ) { innerPadding ->
 
 
         Column(
@@ -89,13 +98,23 @@ fun ArchiveScreen(
                 state = listState,
                 contentPadding = PaddingValues(bottom = 150.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-//                modifier = Modifier.fillMaxSize(),
-
             ) {
                 items(tasks, key = { it.id }) { task ->
                     TaskCard(
                         task = task,
-                        onClick = { archiveScreenViewModel.unarchiveTask(task.id) }
+                        onClick = {
+                            archiveScreenViewModel.unarchiveTask(task.id)
+                            scope.launch {
+                                val result = snackBarHostState.showSnackbar(
+                                    message = "Task Unarchived",
+                                    actionLabel = "Undo",
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    archiveScreenViewModel.archiveTask(task.id)
+                                }
+                            }
+                        }
                     )
                 }
             }
@@ -103,6 +122,7 @@ fun ArchiveScreen(
     }
 }
 
+@Deprecated(message = "use TaskCardNew instead")
 @Composable
 fun TaskCard(
     task: Task,
