@@ -18,6 +18,8 @@
 package com.example.tidy.ui.screen
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -81,6 +83,8 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None },
             modifier = Modifier.padding(innerPadding)
         ) {
 
