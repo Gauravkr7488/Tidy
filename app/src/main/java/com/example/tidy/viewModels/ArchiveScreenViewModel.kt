@@ -27,4 +27,13 @@ class ArchiveScreenViewModel(
             refreshTasks()
         }
     }
+
+    fun archiveTask(id: Long) {
+        viewModelScope.launch {
+            val task = dbOperation.getTask(id)
+            val newTask = task.copy(hide = true)
+            dbOperation.saveTask(newTask)
+            refreshTasks()
+        }
+    }
 }

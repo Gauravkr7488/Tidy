@@ -85,9 +85,14 @@ fun TaskCardNew(
                     )
                 }
             }
-            icons.forEach { (icon, description, onClickAction, modifier) ->
+            icons.forEach { (icon, description, onClickAction, tint, modifier) ->
                 IconButton(onClick = { onClickAction(task) }) {
-                    Icon(icon, contentDescription = description, modifier = modifier)
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = description,
+                        tint = tint,
+                        modifier = modifier
+                    )
                 }
             }
 
