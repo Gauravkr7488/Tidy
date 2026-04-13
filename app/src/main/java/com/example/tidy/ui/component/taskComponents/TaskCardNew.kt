@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,30 +39,25 @@ fun TaskCardNew(
 ) {
     var tapOffset by remember { mutableStateOf(Offset.Zero) }
     var showMenu by remember { mutableStateOf(false) }
-    var parentOffset by remember { mutableStateOf(Offset.Zero) }
-    val correctedOffset = parentOffset + tapOffset
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .onGloballyPositioned {
-                parentOffset = it.localToWindow(Offset.Zero)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onClick(task) },
+                    onLongPress = { offset ->
+                        if (contextMenuOptions.isNotEmpty()) {
+                            tapOffset = offset
+                            showMenu = true
+                        }
+                    }
+                )
             },
         shape = RoundedCornerShape(12.dp),
     ) {
         Row(
             modifier = Modifier
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onTap = { onClick(task) },
-                        onLongPress = { offset ->
-                            if (contextMenuOptions.isNotEmpty()) {
-                                tapOffset = offset
-                                showMenu = true
-                            }
-                        }
-                    )
-                }
                 .padding(start = 16.dp, end = 16.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -98,12 +92,11 @@ fun TaskCardNew(
             }
 
         }
+        TaskContextMenu(
+            showMenu = showMenu,
+            tapOffset = tapOffset,
+            onDismiss = { showMenu = !showMenu },
+            options = contextMenuOptions
+        )
     }
-
-    TaskContextMenu(
-        showMenu = showMenu,
-        tapOffset = correctedOffset,
-        onDismiss = { showMenu = !showMenu },
-        options = contextMenuOptions
-    )
 }

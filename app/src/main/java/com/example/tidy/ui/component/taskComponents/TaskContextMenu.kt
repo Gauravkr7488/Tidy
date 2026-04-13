@@ -27,7 +27,7 @@ fun TaskContextMenu(
         expanded = showMenu,
         onDismissRequest = onDismiss,
         offset = with(density) {
-            DpOffset(tapOffset.x.toDp(), tapOffset.y.toDp())
+            DpOffset(tapOffset.x.toDp(), tapOffset.y.toDp() - 45.dp) // 45 dp is subtracted to make the menu come closer
         },
         shape = RoundedCornerShape(16.dp),
         tonalElevation = 4.dp,
