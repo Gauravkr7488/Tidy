@@ -32,7 +32,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -45,12 +44,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.Ace777.tidy.R
 import com.example.tidy.SettingOption
-import com.example.tidy.viewModels.SettingsScreenViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    settingsScreenViewModel: SettingsScreenViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
 ) {

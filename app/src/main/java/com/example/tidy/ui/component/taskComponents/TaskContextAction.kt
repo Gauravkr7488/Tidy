@@ -15,12 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.example.tidy.viewModels
+package com.example.tidy.ui.component.taskComponents
 
-import androidx.lifecycle.ViewModel
-import com.example.tidy.DbOperation
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 
-class SettingsScreenViewModel(
-    private val dbOperation: DbOperation
-): ViewModel() {
-}
+data class TaskContextAction(
+    val label: String,
+    val icon: ImageVector,
+    val description: String,
+    val onClick: () -> Unit,
+    val color : Color = Color.White
+)

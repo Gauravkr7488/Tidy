@@ -25,13 +25,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -39,29 +45,31 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
-import com.example.tidy.viewModels.NoteScreenViewModel
+import com.example.tidy.viewModels.ArchiveScreenViewModel
+import kotlinx.coroutines.launch
 
 @Composable
-fun NoteScreen(
-    noteScreenViewModel: NoteScreenViewModel,
+fun ArchiveScreen(
+    archiveScreenViewModel: ArchiveScreenViewModel,
     navController: NavController,
     modifier: Modifier = Modifier
-
 ) {
-    val tasks = noteScreenViewModel.tasks.filter { task -> task.note }
+    val tasks = archiveScreenViewModel.tasks.filter { task -> task.hide }
     val listState = rememberLazyListState()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val isOnTop = currentBackStackEntry?.destination?.route == Routes.NOTE
+    val isOnTop = currentBackStackEntry?.destination?.route == Routes.ARCHIVE
+    val snackBarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(isOnTop) {
         if (isOnTop) {
-            noteScreenViewModel.refreshTasks()
+            archiveScreenViewModel.refreshTasks()
         }
     }
     Scaffold(
         modifier = modifier.fillMaxSize(),
-
-        ) { innerPadding ->
+        snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
+    ) { innerPadding ->
 
 
         Column(
@@ -71,25 +79,36 @@ fun NoteScreen(
                 .padding(start = 16.dp, end = 16.dp)
         ) {
             Text(
-                text = "My Notes",
+                text = "Archive",
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(bottom = 150.dp),
-                modifier = Modifier.fillMaxSize()
             ) {
                 items(tasks, key = { it.id }) { task ->
                     TaskCardNew(
                         task = task,
-                        onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
+                        onClick = { },
                         icons = listOf(
                             TaskIconAction(
-                                icon = Icons.AutoMirrored.Filled.Article,
-                                description = "Note",
-                                onClick = {},
+                                icon = Icons.Default.Archive,
+                                description = "Unarchive Task",
                                 tint = MaterialTheme.colorScheme.primary,
+                                onClick = {
+                                    archiveScreenViewModel.unarchiveTask(task.id)
+                                    scope.launch {
+                                        val result = snackBarHostState.showSnackbar(
+                                            message = "Task Unarchived",
+                                            actionLabel = "Undo",
+                                            duration = SnackbarDuration.Short
+                                        )
+                                        if (result == SnackbarResult.ActionPerformed) {
+                                            archiveScreenViewModel.archiveTask(task.id)
+                                        }
+                                    }
+                                }
                             )
                         )
                     )

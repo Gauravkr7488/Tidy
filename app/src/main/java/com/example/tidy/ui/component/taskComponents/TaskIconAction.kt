@@ -15,16 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.example.tidy.constants
+package com.example.tidy.ui.component.taskComponents
 
-object Routes {
-    const val HOME = "home"
-    const val SETTINGS = "settings"
-    const val ADD_TASK = "add_task"
-    const val BACKUP = "backup_screen"
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.tidy.Task
 
-    const val NOTE = "note_screen"
-    const val MENU = "menu_screen"
-    const val SEARCH = "search_screen"
-    const val  ARCHIVE = "archive_screen"
-}
+data class TaskIconAction(
+    val icon: ImageVector,
+    val description: String,
+    val onClick: (Task) -> Unit,
+    val tint: Color = Color.White,
+    val modifier: Modifier = Modifier,
+)

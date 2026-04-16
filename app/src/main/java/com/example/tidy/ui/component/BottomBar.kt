@@ -14,13 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-
 package com.example.tidy.ui.component
 
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -28,21 +27,23 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import com.example.tidy.constants.Routes
+import kotlinx.coroutines.launch
 
 @Composable
-fun BottomBar(navController: NavHostController, currentRoute: String?) {
+fun BottomBar( currentRoute: String, pagerState: PagerState) {
+    val scope = rememberCoroutineScope()
+
     NavigationBar {
         NavigationBarItem(
             selected = currentRoute == Routes.HOME,
             onClick = {
                 if (currentRoute == Routes.HOME) return@NavigationBarItem
-                navController.navigate(Routes.HOME) {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
+                scope.launch {
+                    pagerState.scrollToPage(0)
                 }
             },
             icon = {
@@ -55,30 +56,28 @@ fun BottomBar(navController: NavHostController, currentRoute: String?) {
             label = { Text("Home") }
         )
         NavigationBarItem(
-            selected = currentRoute == Routes.NOTE,
+            selected = currentRoute == Routes.MENU,
             onClick = {
-                if (currentRoute == Routes.NOTE) return@NavigationBarItem
-                navController.navigate(Routes.NOTE) {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
+                if (currentRoute == Routes.MENU) return@NavigationBarItem
+                scope.launch {
+                    pagerState.scrollToPage(1)
                 }
             },
             icon = {
                 Icon(
-                    Icons.AutoMirrored.Filled.Article,
+                    Icons.Default.Apps,
                     null,
                     modifier = Modifier.size(30.dp)
                 )
             },
-            label = { Text("Notes") }
+            label = { Text("Menu") }
         )
         NavigationBarItem(
             selected = currentRoute == Routes.SETTINGS,
             onClick = {
                 if (currentRoute == Routes.SETTINGS) return@NavigationBarItem
-                navController.navigate(Routes.SETTINGS) {
-                    popUpTo(navController.graph.startDestinationId)
-                    launchSingleTop = true
+                scope.launch {
+                    pagerState.scrollToPage(2)
                 }
             },
             icon = {

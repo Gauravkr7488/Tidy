@@ -17,6 +17,7 @@
 
 package com.example.tidy
 
+import com.example.tidy.constants.RepeatTypes
 import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -28,7 +29,8 @@ data class Task(
     var title: String,
     var done: Boolean = false,
     var note: Boolean = false,
-    var repeat: Boolean = false,
+    var repeatType: String = RepeatTypes.NONE,
+    var repeatDays: String = "",
     var description: String = "",
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
@@ -41,7 +43,7 @@ data class Task(
 
 @Entity
 data class LastReset(
-    @Id var id: Long = 1,
+    @Id var id: Long = 0,
     var lastResetAt: String
 )
 
@@ -50,7 +52,8 @@ data class TaskDto(
     var title: String,
     var done: Boolean = false,
     var note: Boolean? = null,
-    var repeat: Boolean = false,
+    var repeatType: String = RepeatTypes.NONE,
+    var repeatOn: String = "",
     var description: String? = null,
     var hide: Boolean = false,
     var parentTasks: List<Long>? = emptyList(),
@@ -64,11 +67,11 @@ fun Task.toDto(): TaskDto {
         title = title,
         done = done,
         note = note,
-        repeat = repeat,
+        repeatType = repeatType,
+        repeatOn = repeatDays,
         description = description,
         hide = hide,
         createdAt = createdAt,
-//        parentTasks = parents.map { it.id },
         childTasks = children.map { it.id }
     )
 }
@@ -79,16 +82,10 @@ fun TaskDto.toTask(): Task {
         title = title,
         done = done,
         note = note ?: false,
-        repeat = repeat,
+        repeatType = repeatType,
+        repeatDays = repeatOn,
         description = description ?: "",
         hide = hide,
         createdAt = createdAt
     )
 }
-
-data class TaskInfo(
-    val title: String,
-    val description: String,
-    val note: Boolean,
-    val repeat: Boolean,
-)

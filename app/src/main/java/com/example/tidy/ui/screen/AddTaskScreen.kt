@@ -16,6 +16,8 @@
  */
 package com.example.tidy.ui.screen
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,11 +26,22 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,20 +51,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
+import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
-import com.example.tidy.ui.component.KeyboardAwareFAB
+import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.SubTaskMenu
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Calendar
 
 @Composable
 fun AddTaskScreen(
@@ -66,10 +83,14 @@ fun AddTaskScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var note by remember { mutableStateOf(false) }
-    var repeatDaily by remember { mutableStateOf(false) }
+    var repeatStatus by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
+    var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
+    var repeatDays by remember { mutableStateOf("") }
+    var showDateDialog by remember { mutableStateOf(false) }
+    var showFab by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -79,8 +100,9 @@ fun AddTaskScreen(
                 taskTitle = task.title
                 description = task.description
                 note = task.note
-                repeatDaily = task.repeat
-
+                repeatStatus = task.repeatType != RepeatTypes.NONE
+                repeatType = task.repeatType
+                repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
                 val readable = SimpleDateFormat(
                     "MMM dd, yyyy hh:mm a",
                     Locale.getDefault()
@@ -97,35 +119,51 @@ fun AddTaskScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.End
-            ) {
-                KeyboardAwareFAB {
-                    coroutineScope.launch {
-                        addTaskScreenViewModel.addTask(
-                            Task(
-                                id = taskId,
-                                title = taskTitle,
-                                note = note,
-                                repeat = repeatDaily,
-                                description = description,
+            if (showFab) {
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            addTaskScreenViewModel.addTask(
+                                Task(
+                                    id = taskId,
+                                    title = taskTitle,
+                                    note = note,
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
+                                )
                             )
-                        )
-                        navController.popBackStack()
-                    }
+                            @Suppress("AssignedValueIsNeverRead")
+                            showFab = false
+                            navController.popBackStack()
+                        }
+                    },
+                    modifier = Modifier
+                        .size(80.dp)
+                ) {
+                    Icon(Icons.Filled.Save, contentDescription = "Save Task")
                 }
             }
         }
     )
-    { padding ->
+    { innerPadding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Top
+                .padding(top = innerPadding.calculateTopPadding())
+                .padding(start = 16.dp, end = 16.dp)
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
+                        keyboardController?.hide()
+                    })
+                },
+            verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
+            Text(
+                text = "Add Task",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp),
+            )
 
             TextField(
                 value = taskTitle,
@@ -136,7 +174,6 @@ fun AddTaskScreen(
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
-            Spacer(modifier = Modifier.size(10.dp))
             TextField(
                 value = description,
                 onValueChange = { description = it },
@@ -144,11 +181,12 @@ fun AddTaskScreen(
                 singleLine = false,
                 modifier = Modifier.fillMaxWidth()
             )
+
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
             ) {
                 Text("Note")
                 Spacer(modifier = Modifier.weight(1f))
@@ -157,22 +195,139 @@ fun AddTaskScreen(
                     onCheckedChange = { note = it }
                 )
             }
+
             if (!note) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp)
                 ) {
-                    Text("Repeat Daily")
-                    Spacer(modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = repeatDaily,
-                        onCheckedChange = { repeatDaily = it }
+                    val rotation by animateFloatAsState(
+                        targetValue = if (repeatStatus) 45f else 0f,
+                        label = "iconRotation"
                     )
+                    Text("Repeat")
+                    Spacer(modifier = Modifier.weight(1f))
+                    Button(
+                        onClick = {
+                            repeatStatus = !repeatStatus
+                            repeatType = RepeatTypes.NONE
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "SubTask",
+                            modifier = Modifier.rotate(rotation)
+                        )
+                    }
+                }
+
+                if (repeatStatus) {
+                    val chips = listOf(
+                        "Daily" to RepeatTypes.DAILY,
+                        "Weekly" to RepeatTypes.WEEKLY,
+                        "Monthly" to RepeatTypes.MONTHLY
+                    )
+                    Row {
+                        chips.forEach { (label, type) ->
+                            FilterChip(
+                                onClick = { repeatType = type },
+                                label = { Text(label) },
+                                selected = repeatType == type,
+                                modifier = Modifier.padding(end = 10.dp)
+                            )
+                        }
+                    }
+                }
+                if (repeatType == RepeatTypes.WEEKLY) {
+                    var selectedDays by remember { mutableStateOf(setOf<String>()) }
+                    repeatDays = selectedDays.joinToString(", ")
+
+                    val chips = listOf(
+                        "S" to WeekDays.SUN,
+                        "M" to WeekDays.MON,
+                        "T" to WeekDays.TUE,
+                        "W" to WeekDays.WED,
+                        "T" to WeekDays.THU,
+                        "F" to WeekDays.FRI,
+                        "S" to WeekDays.SAT,
+                    )
+                    Row {
+                        chips.forEach { (label, day) ->
+                            FilterChip(
+                                onClick = {
+                                    selectedDays = if (day in selectedDays)
+                                        selectedDays - day  // deselect
+                                    else
+                                        selectedDays + day  // select
+                                },
+                                label = { Text(label) },
+                                selected = day in selectedDays,
+                                modifier = Modifier.padding(end = 10.dp)
+
+                            )
+                        }
+                    }
+                }
+                if (repeatType == RepeatTypes.MONTHLY) {
+                    if (repeatDays == "") {
+                        Button(onClick = { showDateDialog = true }) {
+                            Text("Select Date")
+                        }
+                    } else {
+
+                        val chips = repeatDays
+                            .split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+
+                        Row {
+                            chips.forEach { chip ->
+                                FilterChip(
+                                    onClick = {
+                                        val updated = chips.toMutableList().apply {
+                                            remove(chip)
+                                        }
+                                        repeatDays = updated.joinToString(",")
+                                    },
+                                    label = { Text(chip) },
+                                    selected = chip in repeatDays,
+                                    modifier = Modifier.padding(end = 10.dp)
+                                )
+                            }
+                        }
+
+                        Button(onClick = { showDateDialog = true }) {
+                            Text("Select more Dates")
+                        }
+                    }
+                    val state = rememberDatePickerState()
+                    if (showDateDialog) {
+                        DatePickerDialog(
+                            onDismissRequest = { showDateDialog = false },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    val milli = state.selectedDateMillis
+                                    val calendar = Calendar.getInstance().apply {
+                                        if (milli != null) {
+                                            timeInMillis = milli
+                                        }
+                                    }
+                                    val formatted =
+                                        "%02d".format(calendar.get(Calendar.DAY_OF_MONTH))
+                                    repeatDays = "$repeatDays,$formatted"
+                                    showDateDialog = false
+                                }) {
+                                    Text("OK")
+                                }
+                            }
+                        ) {
+                            DatePicker(state = state)
+                        }
+                    }
                 }
                 SubTaskMenu(
-                    "Child Tasks",
+                    "Subtasks",
                     {
                         coroutineScope.launch {
                             addTaskScreenViewModel.startAddNewChild(
@@ -180,8 +335,9 @@ fun AddTaskScreen(
                                     id = taskId,
                                     title = taskTitle,
                                     note = note,
-                                    repeat = repeatDaily,
-                                    description = description
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
                                 )
                             )
                             navController.navigate(Routes.ADD_TASK)

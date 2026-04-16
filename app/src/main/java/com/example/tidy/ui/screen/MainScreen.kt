@@ -17,10 +17,18 @@
 
 package com.example.tidy.ui.screen
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,10 +39,11 @@ import com.example.tidy.ExportManager
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 import com.example.tidy.viewModels.AddTaskScreenViewModel
+import com.example.tidy.viewModels.ArchiveScreenViewModel
 import com.example.tidy.viewModels.BackupScreenViewModel
 import com.example.tidy.viewModels.HomeScreenViewModel
 import com.example.tidy.viewModels.NoteScreenViewModel
-import com.example.tidy.viewModels.SettingsScreenViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
@@ -48,23 +57,50 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
         remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
     val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
-    val settingsScreenViewModel = remember { SettingsScreenViewModel(dbOperation) }
+    val archiveScreenViewModel = remember { ArchiveScreenViewModel(dbOperation) }
+
+    val tabs = listOf(Routes.HOME, Routes.MENU, Routes.SETTINGS)
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
+    val currentPage = tabs[pagerState.currentPage]
+    val scope = rememberCoroutineScope()
+
+    BackHandler(
+        enabled = !pagerState.isScrollInProgress && pagerState.currentPage in 1..2 // only Menu & Settings
+    ) {
+        scope.launch {
+            pagerState.scrollToPage(0)
+        }
+    }
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in listOf(Routes.HOME, Routes.NOTE, Routes.SETTINGS)) {
-                BottomBar(navController, currentRoute)
+            if (currentRoute == Routes.HOME) {
+                BottomBar(currentPage, pagerState)
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Routes.HOME,
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None },
             modifier = Modifier.padding(innerPadding)
         ) {
 
             composable(Routes.HOME) {
-                HomeScreen(homeScreenViewModel, navController)
+                Box{
+                    HorizontalPager(
+                        state = pagerState,
+                        beyondViewportPageCount = 2, // keeps all 3 pages alive
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        when (page) {
+                            0 -> HomeScreen(homeScreenViewModel, navController)
+                            1 -> MenuScreen(navController)
+                            2 -> SettingsScreen(navController)
+                        }
+                    }
+                }
             }
 
             composable(Routes.NOTE) {
@@ -94,12 +130,16 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                 )
             }
 
-            composable(Routes.SETTINGS) {
-                SettingsScreen(settingsScreenViewModel, navController)
-            }
-
             composable(Routes.BACKUP) {
                 BackupScreen(backupScreenViewModel, navController)
+            }
+
+            composable(Routes.SEARCH) {
+                SearchScreen(homeScreenViewModel, navController)
+            }
+
+            composable(Routes.ARCHIVE) {
+                ArchiveScreen(archiveScreenViewModel, navController)
             }
         }
     }

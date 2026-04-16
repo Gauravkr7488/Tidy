@@ -73,7 +73,7 @@ fun SubTaskMenu(
     )
     val listState = rememberLazyListState()
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -90,7 +90,7 @@ fun SubTaskMenu(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = null,
+                    contentDescription = "SubTask",
                     modifier = Modifier.rotate(rotation)
                 )
             }

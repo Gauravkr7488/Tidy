@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import com.example.tidy.DbOperation
 import com.example.tidy.ExportManager
 import com.example.tidy.Task
+import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -46,7 +47,6 @@ class HomeScreenViewModel(
     init {
         viewModelScope.launch {
             resetTasksForToday()
-            tasks = dbOperation.taskGetAll()
         }
     }
 
@@ -59,8 +59,11 @@ class HomeScreenViewModel(
             tasks
                 .filter { it.done && it.parents.all { parent -> parent.done } }
                 .forEach { task ->
-                    if (task.repeat) {
-                        val updatedTask = task.copy(done = false, hide = true) // mutating task directly is causing various issues
+                    if (task.repeatType != RepeatTypes.NONE) {
+                        val updatedTask = task.copy(
+                            done = false,
+                            hide = true
+                        )
                         dbOperation.saveTask(updatedTask)
                     } else {
                         dbOperation.deleteTask(task.id) // delete one time tasks
@@ -85,28 +88,49 @@ class HomeScreenViewModel(
         }
     }
 
-    fun deleteTask(task: Task) {
+    fun deleteTask(id: Long, deleteSubtasks: Boolean) {
         viewModelScope.launch {
+            val task = dbOperation.getTask(id)
+            if (deleteSubtasks) {
+                task.children.forEach { task ->
+                    deleteTask(task.id, true)
+                }
+            }
             dbOperation.deleteTask(task.id)
             refreshTasks()
         }
     }
 
-    fun resetTasksForToday() {
-        val todayDate =
-            SimpleDateFormat("dd", Locale.getDefault())
-                .format(Calendar.getInstance().time)
+    private fun resetTasksForToday() {
         viewModelScope.launch {
+            val todayDate =
+                SimpleDateFormat("dd", Locale.getDefault())
+                    .format(Calendar.getInstance().time)
+            val todayDay = SimpleDateFormat("EEE", Locale.getDefault())
+                .format(Calendar.getInstance().time)
+                .uppercase() // gives "MON", "TUE" etc.
+
             val existingReset = dbOperation.getLastReset()
+            if (existingReset?.lastResetAt == todayDate) return@launch
 
-            if (existingReset == null) {
+            dbOperation.setLastResetToday(todayDate = todayDate)
 
-                dbOperation.setLastResetToday(todayDate = todayDate)
-                dbOperation.tasksUnhideAll()
-            } else if (existingReset.lastResetAt != todayDate) {
-                dbOperation.setLastResetToday(todayDate = todayDate)
-                dbOperation.tasksUnhideAll()
+            val hiddenTasks = dbOperation.taskGetAll().filter { task -> task.hide }
+            hiddenTasks.forEach { task ->
+                if (task.repeatType == RepeatTypes.NONE || task.repeatType == RepeatTypes.DAILY) {
+                    val newTask = task.copy(hide = false)
+                    dbOperation.saveTask(newTask)
+                }
+                if (task.repeatType == RepeatTypes.WEEKLY && task.repeatDays.contains(todayDay)) {
+                    val newTask = task.copy(hide = false)
+                    dbOperation.saveTask(newTask)
+                }
+                if (task.repeatType == RepeatTypes.MONTHLY && task.repeatDays.contains(todayDate)) {
+                    val newTask = task.copy(hide = false)
+                    dbOperation.saveTask(newTask)
+                }
             }
+            refreshTasks()
         }
     }
 
@@ -120,5 +144,16 @@ class HomeScreenViewModel(
 
     fun editTask(task: Task) {
         navController.navigate("${Routes.ADD_TASK}/${task.id}")
+    }
+
+    var expandedTaskList: MutableList<Long> = mutableListOf()
+        private set
+
+    fun onExpandClick(id: Long) {
+        if (id in expandedTaskList) {
+            expandedTaskList.remove(id)
+        } else {
+            expandedTaskList.add(id)
+        }
     }
 }
