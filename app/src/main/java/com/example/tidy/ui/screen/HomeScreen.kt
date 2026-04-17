@@ -198,6 +198,17 @@ fun HomeScreen(
                                     task,
                                     homeScreenViewModel
                                 ) { showDeleteDialog = true },
+                                icons = buildList {
+                                    if (task.repeatType != RepeatTypes.NONE) {
+                                        add(
+                                            TaskIconAction(
+                                                icon = Icons.Default.Repeat,
+                                                description = "Repeating Task",
+                                                onClick = { },
+                                            )
+                                        )
+                                    }
+                                }
                             )
                             if (showDeleteDialog) {
                                 TaskDeleteDialog(
