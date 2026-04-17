@@ -53,6 +53,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -66,6 +67,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.Task
+import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
@@ -270,8 +272,12 @@ fun contextMenuOptions(
         )
     )
 }
+
 @Composable
-fun AddIndentation(last: Boolean, map: List<Boolean>) { // last is if the task is final child of the parent and map is the map of line and gaps excluding the final one cause a child always attaches to its parent
+fun AddIndentation(
+    last: Boolean,
+    map: List<Boolean>
+) { // last is if the task is final child of the parent and map is the map of line and gaps excluding the final one cause a child always attaches to its parent
     map.forEach { b ->
         if (b) FullLine() else NoLine()
         NoLine() // for space of horizontalLine
@@ -327,17 +333,26 @@ fun SubTaskCard(
                     homeScreenViewModel
                 ) { showDeleteDialog = true },
                 icons =
-                    if (task.children.isNotEmpty()) {
-                        listOf(
-                            TaskIconAction(
-                                icon = Icons.Default.ChevronRight,
-                                description = "Expand Subtask",
-                                onClick = { expanded = !expanded },
-                                modifier = Modifier.rotate(rotation)
+                    buildList {
+                        if (task.repeatType != RepeatTypes.NONE) {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Repeat,
+                                    description = "Repeating Task",
+                                    onClick = { },
+                                )
                             )
-                        )
-                    } else {
-                        emptyList()
+                        }
+                        if (task.children.isNotEmpty()) {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.ChevronRight,
+                                    description = "Expand Subtask",
+                                    onClick = { expanded = !expanded },
+                                    modifier = Modifier.rotate(rotation)
+                                )
+                            )
+                        }
                     },
             )
         }
@@ -351,7 +366,8 @@ fun SubTaskCard(
         if (task.children.isNotEmpty() && expanded) {
             val bool =
                 task == task.parents.lastOrNull()?.children?.lastOrNull() // is task last child
-            val passingList = if (depth > 0) list + !bool else list // if task is last child then add false no line would be needed
+            val passingList =
+                if (depth > 0) list + !bool else list // if task is last child then add false no line would be needed
             task.children.forEach { child ->
                 key(child.id) {
                     SubTaskCard(
