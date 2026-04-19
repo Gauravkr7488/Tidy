@@ -33,8 +33,8 @@ import com.example.tidy.Task
 @Composable
 fun TaskCardNew(
     task: Task,
-    onClick: (Task) -> Unit,
     modifier: Modifier = Modifier,
+    onClick: (Task) -> Unit = {},
     icons: List<TaskIconAction> = emptyList(),
     contextMenuOptions: List<TaskContextAction> = emptyList(),
 ) {
