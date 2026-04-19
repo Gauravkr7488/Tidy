@@ -56,7 +56,6 @@ class AddTaskScreenViewModel(
     }
 
     fun editTask(task: Task) {
-        parentTaskId = task.parents.last().id
         navController.navigate("${Routes.ADD_TASK}/${task.id}")
     }
 }
