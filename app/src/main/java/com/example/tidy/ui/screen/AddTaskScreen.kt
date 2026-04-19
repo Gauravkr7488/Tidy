@@ -24,8 +24,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Save
@@ -62,13 +66,16 @@ import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
-import com.example.tidy.ui.component.SubTaskMenu
+import com.example.tidy.toggleValue
+import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Calendar
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.OutlinedButton
 
 @Composable
 fun AddTaskScreen(
@@ -326,9 +333,8 @@ fun AddTaskScreen(
                         }
                     }
                 }
-                if (addTaskScreenViewModel.parentTaskId == 0L){
+                if (addTaskScreenViewModel.parentTaskId == 0L) {
                     SubTaskMenu(
-                        "Subtasks",
                         {
                             coroutineScope.launch {
                                 addTaskScreenViewModel.startAddNewChild(
@@ -345,7 +351,6 @@ fun AddTaskScreen(
                             }
                         },
                         taskChildren,
-                        onTap = addTaskScreenViewModel::editTask,
                     )
                 }
             }
@@ -356,6 +361,86 @@ fun AddTaskScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun SubTaskMenu(
+    addNewTask: () -> Unit,
+    taskChildren: List<Task>,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(taskChildren) {
+        if (taskChildren.isNotEmpty()) expanded = true
+    }
+
+    val rotation by animateFloatAsState(
+        targetValue = if (expanded) 45f else 0f,
+        label = "iconRotation"
+    )
+
+    val listState = rememberLazyListState()
+
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "SubTasks", style = MaterialTheme.typography.bodyLarge
+            )
+
+            Button(
+                onClick = {
+                    if (taskChildren.isEmpty()) {
+                        addNewTask()
+                    }
+                    expanded = toggleValue(expanded)
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "SubTasks",
+                    modifier = Modifier.rotate(rotation)
+                )
+            }
+        }
+        if (expanded && taskChildren.isNotEmpty()) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp),
+            ) {
+                items(
+                    items = taskChildren,
+                    key = { it.id }
+                ) { item ->
+                    TaskCardNew(task = item)
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                OutlinedButton(
+                    onClick = { addNewTask() },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Spacer(Modifier.width(6.dp))
+                    Text("Add a New Task")
+                }
             }
         }
     }
