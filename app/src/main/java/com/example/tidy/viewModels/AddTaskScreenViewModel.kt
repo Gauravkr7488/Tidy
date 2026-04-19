@@ -27,43 +27,36 @@ class AddTaskScreenViewModel(
     private val dbOperation: DbOperation,
     private val navController: NavController,
 ) : ViewModel() {
-    private var parentTaskList: MutableList<Long> = mutableListOf()
     private var childFlag: Boolean = false
-
+    var parentTaskId: Long = 0
+        private set
 
     suspend fun getCurrentTask(taskId: Long): Task? {
-        var id: Long?
-        if (parentTaskList.isNotEmpty() && !childFlag) {
-            id = parentTaskList.last()
-            parentTaskList.removeAt(parentTaskList.size - 1)
+        if (parentTaskId != 0L && !childFlag) {
+            val id = parentTaskId
+            parentTaskId = 0
             return dbOperation.getTask(id)
         }
-        id = taskId
-        if (id == 0L) return null
-        return dbOperation.getTask(id)
+        if (taskId == 0L) return null
+        return dbOperation.getTask(taskId)
     }
 
     suspend fun startAddNewChild(task: Task) {
-        val id = dbOperation.saveTask(task)
         childFlag = true
-        parentTaskList.add(id)
+        parentTaskId = dbOperation.saveTask(task)
     }
 
-    suspend fun addTask(task: Task): Long {
-        var i: Long
-        i = dbOperation.saveTask(task)
+    suspend fun addTask(task: Task) {
+        val i: Long = dbOperation.saveTask(task)
         dbOperation.updateChildrenRepeatStatus(i)
-        if (parentTaskList.isNotEmpty()) {
-            i = task.id
-            dbOperation.addChild(childId = i, parentId = parentTaskList.last())
+        if (parentTaskId != 0L) {
+            dbOperation.addChild(childId = i, parentId = parentTaskId)
             childFlag = false
         }
-        return i
     }
 
     fun editTask(task: Task) {
-        childFlag = true
-        parentTaskList.add(task.parents.last().id)
+        parentTaskId = task.parents.last().id
         navController.navigate("${Routes.ADD_TASK}/${task.id}")
     }
 }

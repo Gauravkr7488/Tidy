@@ -326,26 +326,28 @@ fun AddTaskScreen(
                         }
                     }
                 }
-                SubTaskMenu(
-                    "Subtasks",
-                    {
-                        coroutineScope.launch {
-                            addTaskScreenViewModel.startAddNewChild(
-                                Task(
-                                    id = taskId,
-                                    title = taskTitle,
-                                    note = note,
-                                    repeatType = repeatType,
-                                    repeatDays = repeatDays,
-                                    description = description,
+                if (addTaskScreenViewModel.parentTaskId == 0L){
+                    SubTaskMenu(
+                        "Subtasks",
+                        {
+                            coroutineScope.launch {
+                                addTaskScreenViewModel.startAddNewChild(
+                                    Task(
+                                        id = taskId,
+                                        title = taskTitle,
+                                        note = note,
+                                        repeatType = repeatType,
+                                        repeatDays = repeatDays,
+                                        description = description,
+                                    )
                                 )
-                            )
-                            navController.navigate(Routes.ADD_TASK)
-                        }
-                    },
-                    taskChildren,
-                    onTap = addTaskScreenViewModel::editTask,
-                )
+                                navController.navigate(Routes.ADD_TASK)
+                            }
+                        },
+                        taskChildren,
+                        onTap = addTaskScreenViewModel::editTask,
+                    )
+                }
             }
             if (createdAt != "") {
                 Text(
