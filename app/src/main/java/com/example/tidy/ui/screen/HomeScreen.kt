@@ -69,6 +69,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
+import com.example.tidy.ui.component.fabMenu.FabAction
+import com.example.tidy.ui.component.fabMenu.FabMenu
 import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
@@ -133,39 +135,51 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier.offset(y = offsetY)
-            ) {
-
-                if (hasDoneTask) {
-                    FloatingActionButton(
-                        onClick =
-                            { homeScreenViewModel.cleanCompletedTasks() },
-                        modifier = Modifier.size(80.dp)
-                    ) {
-
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete Completed"
-                        )
-                    }
-                }
-
-                FloatingActionButton(
-                    onClick = {
-                        navController.navigate("${Routes.ADD_TASK}/${0}")
-                    },
-                    modifier = Modifier.size(80.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Create,
-                        contentDescription = "Add Task"
+            FabMenu(
+                actions = listOf(
+                    FabAction(
+                        icon = Icons.Default.Create,
+                        description = "Add Task",
+                        onClick = { navController.navigate("${Routes.ADD_TASK}/${0}") },
+                        label = "Add Task",
                     )
-                }
-            }
+                )
+            )
         }
+//        floatingActionButton = {
+//            Column(
+//                verticalArrangement = Arrangement.spacedBy(12.dp),
+//                horizontalAlignment = Alignment.End,
+//                modifier = Modifier.offset(y = offsetY)
+//            ) {
+//
+//                if (hasDoneTask) {
+//                    FloatingActionButton(
+//                        onClick =
+//                            { homeScreenViewModel.cleanCompletedTasks() },
+//                        modifier = Modifier.size(80.dp)
+//                    ) {
+//
+//                        Icon(
+//                            imageVector = Icons.Default.Delete,
+//                            contentDescription = "Delete Completed"
+//                        )
+//                    }
+//                }
+//
+//                FloatingActionButton(
+//                    onClick = {
+//                        navController.navigate("${Routes.ADD_TASK}/${0}")
+//                    },
+//                    modifier = Modifier.size(80.dp)
+//                ) {
+//                    Icon(
+//                        imageVector = Icons.Default.Create,
+//                        contentDescription = "Add Task"
+//                    )
+//                }
+//            }
+//        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
