@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -135,51 +134,35 @@ fun HomeScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            FabMenu(
-                actions = listOf(
-                    FabAction(
-                        icon = Icons.Default.Create,
-                        description = "Add Task",
-                        onClick = { navController.navigate("${Routes.ADD_TASK}/${0}") },
-                        label = "Add Task",
-                    )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier.offset(y = offsetY)
+            ) {
+                FabMenu(
+                    actions = buildList {
+                        if (hasDoneTask) {
+                            add(
+                                FabAction(
+                                    icon = Icons.Default.Delete,
+                                    description = "Delete Completed",
+                                    onClick = { homeScreenViewModel.cleanCompletedTasks() },
+                                    label = "Delete Completed",
+                                )
+                            )
+                        }
+                        add(
+                            FabAction(
+                                icon = Icons.Default.Create,
+                                description = "Add Task",
+                                onClick = { navController.navigate("${Routes.ADD_TASK}/${0}") },
+                                label = "Add Task",
+                            )
+                        )
+                    }
                 )
-            )
+            }
         }
-//        floatingActionButton = {
-//            Column(
-//                verticalArrangement = Arrangement.spacedBy(12.dp),
-//                horizontalAlignment = Alignment.End,
-//                modifier = Modifier.offset(y = offsetY)
-//            ) {
-//
-//                if (hasDoneTask) {
-//                    FloatingActionButton(
-//                        onClick =
-//                            { homeScreenViewModel.cleanCompletedTasks() },
-//                        modifier = Modifier.size(80.dp)
-//                    ) {
-//
-//                        Icon(
-//                            imageVector = Icons.Default.Delete,
-//                            contentDescription = "Delete Completed"
-//                        )
-//                    }
-//                }
-//
-//                FloatingActionButton(
-//                    onClick = {
-//                        navController.navigate("${Routes.ADD_TASK}/${0}")
-//                    },
-//                    modifier = Modifier.size(80.dp)
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Default.Create,
-//                        contentDescription = "Add Task"
-//                    )
-//                }
-//            }
-//        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
