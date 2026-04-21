@@ -17,7 +17,6 @@
 
 package com.example.tidy.ui.screen
 
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +29,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -57,9 +55,7 @@ import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -75,7 +71,6 @@ import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.HomeScreenViewModel
-import kotlinx.coroutines.delay
 
 @Composable
 fun HomeScreen(
@@ -89,45 +84,10 @@ fun HomeScreen(
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
     val listState = rememberLazyListState()
-    var previousOffset by remember { mutableIntStateOf(0) }
-    var previousIndex by remember { mutableIntStateOf(0) }
 
-    var showFab by remember { mutableStateOf(true) }
-    LaunchedEffect(listState) {
-        snapshotFlow {
-            listState.firstVisibleItemIndex to
-                    listState.firstVisibleItemScrollOffset
-        }.collect { (index, offset) ->
-
-            val scrollingUp =
-                index < previousIndex ||
-                        (index == previousIndex && offset < previousOffset)
-
-            val scrollingDown =
-                index > previousIndex ||
-                        (index == previousIndex && offset > previousOffset)
-
-            if (scrollingDown) {
-                showFab = false
-            } else if (scrollingUp) {
-                delay(200)
-                showFab = true
-            }
-            @Suppress("AssignedValueIsNeverRead")
-            previousIndex = index
-            @Suppress("AssignedValueIsNeverRead")
-            previousOffset = offset
-        }
-    }
-
-    val offsetY by animateDpAsState(
-        targetValue = if (showFab) 0.dp else 300.dp
-    )
     LaunchedEffect(isOnTop) {
         if (isOnTop) {
             homeScreenViewModel.refreshTasks()
-            @Suppress("AssignedValueIsNeverRead")
-            showFab = true
         }
     }
     val hasDoneTask = tasks.any { it.done }
@@ -137,7 +97,6 @@ fun HomeScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.End,
-                modifier = Modifier.offset(y = offsetY)
             ) {
                 FabMenu(
                     actions = buildList {
