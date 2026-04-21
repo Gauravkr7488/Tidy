@@ -217,8 +217,9 @@ fun AddTaskScreen(
                     Spacer(modifier = Modifier.weight(1f))
                     Button(
                         onClick = {
+                            repeatType =
+                                if (repeatType != RepeatTypes.NONE) RepeatTypes.NONE else RepeatTypes.DAILY
                             repeatStatus = !repeatStatus
-                            repeatType = RepeatTypes.NONE
                         }
                     ) {
                         Icon(
