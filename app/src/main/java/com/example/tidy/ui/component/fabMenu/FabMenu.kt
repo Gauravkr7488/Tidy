@@ -43,7 +43,9 @@ fun FabMenu(
             AnimatedVisibility(visible = expanded) {
                 Column(
                     horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.padding(bottom = 16.dp, start = 5.dp, end = 5.dp) // for the shadow to not clip
+
                 ) {
                     actions.forEach { fabAction ->
                         ExtendedFloatingActionButton(
