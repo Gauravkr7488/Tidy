@@ -1,6 +1,6 @@
 # Tidy
 
-A TODO app made for my own use.
+A personal management app made for my own use.
 
 ## Installation
 
