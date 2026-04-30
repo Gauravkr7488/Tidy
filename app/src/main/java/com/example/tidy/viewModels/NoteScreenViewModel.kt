@@ -25,7 +25,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
 import com.example.tidy.Task
 import kotlinx.coroutines.launch
-
+@Deprecated("Delete this")
 class NoteScreenViewModel(
     private val dbOperation: DbOperation,
 ) : ViewModel() {

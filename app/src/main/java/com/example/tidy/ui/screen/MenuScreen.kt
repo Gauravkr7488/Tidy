@@ -67,11 +67,11 @@ fun MenuScreen(
 ) {
     @Suppress("MoveLambdaOutsideParentheses")
     val menuItems = listOf(
-        MenuItem(
-            "Notes",
-            Icons.AutoMirrored.Filled.Article,
-            { navController.navigate(Routes.NOTE) }
-        ),
+//        MenuItem(
+//            "Notes",
+//            Icons.AutoMirrored.Filled.Article,
+//            { navController.navigate(Routes.NOTE) }
+//        ),
         MenuItem(
             "Search",
             Icons.Default.Search,

@@ -58,7 +58,7 @@ import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.HomeScreenViewModel
 
-enum class SearchFilter { ALL, TASKS, NOTES }
+enum class SearchFilter { ALL, TASKS }
 
 @Composable
 fun SearchScreen(
@@ -76,7 +76,7 @@ fun SearchScreen(
                 task.description.contains(query, ignoreCase = true)
         val matchesFilter = when (selectedFilter) {
             SearchFilter.ALL -> true
-            SearchFilter.NOTES -> task.note
+//            SearchFilter.NOTES -> task.note
             SearchFilter.TASKS -> !task.note
         }
         matchesQuery && matchesFilter
@@ -139,7 +139,7 @@ fun SearchScreen(
                             Text(
                                 text = when (filter) {
                                     SearchFilter.ALL -> "All"
-                                    SearchFilter.NOTES -> "Notes"
+//                                    SearchFilter.NOTES -> "Notes"
                                     SearchFilter.TASKS -> "Tasks"
                                 }
                             )
