@@ -41,7 +41,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -106,7 +105,6 @@ fun AddTaskScreen(
                 taskChildren = task.children.toList()
                 taskTitle = task.title
                 description = task.description
-                note = task.note
                 repeatStatus = task.repeatType != RepeatTypes.NONE
                 repeatType = task.repeatType
                 repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
@@ -188,20 +186,6 @@ fun AddTaskScreen(
                 singleLine = false,
                 modifier = Modifier.fillMaxWidth()
             )
-
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text("Note")
-                Spacer(modifier = Modifier.weight(1f))
-                Switch(
-                    checked = note,
-                    onCheckedChange = { note = it }
-                )
-            }
 
             if (!note) {
                 Row(

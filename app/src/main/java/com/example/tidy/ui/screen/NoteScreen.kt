@@ -40,7 +40,7 @@ import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.NoteScreenViewModel
-
+@Deprecated("Delete this")
 @Composable
 fun NoteScreen(
     noteScreenViewModel: NoteScreenViewModel,
