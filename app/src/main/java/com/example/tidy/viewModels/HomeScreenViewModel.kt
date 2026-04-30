@@ -90,14 +90,25 @@ class HomeScreenViewModel(
 
     fun deleteTask(id: Long, deleteSubtasks: Boolean) {
         viewModelScope.launch {
-            val task = dbOperation.getTask(id)
-            if (deleteSubtasks) {
-                task.children.forEach { task ->
-                    deleteTask(task.id, true)
-                }
-            }
-            dbOperation.deleteTask(task.id)
+            deleteTaskAsync(id, deleteSubtasks)
             refreshTasks()
+        }
+    }
+
+    private suspend fun deleteTaskAsync(id: Long, deleteSubtasks: Boolean) {
+        val task = dbOperation.getTask(id)
+        if (deleteSubtasks) {
+            task.children.forEach { task ->
+                deleteTask(task.id, true)
+            }
+        }
+        val parentId = task.parents.firstOrNull()?.id
+        dbOperation.deleteTask(task.id)
+        if (parentId != null) {
+            val parent = dbOperation.getTask(parentId)
+            parent.done = parent.children.all { it.done }
+            dbOperation.saveTask(parent)
+            dbOperation.updateParentDoneStatus(parentId)
         }
     }
 
