@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.Ace777.tidy.R
 import com.example.tidy.SettingOption
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
 fun SettingsScreen(
@@ -58,6 +59,7 @@ fun SettingsScreen(
         ),
     )
     Scaffold(
+        topBar = { TopAppBar("Settings") },
         modifier = modifier.fillMaxSize(),
 
         ) { innerPadding ->
@@ -65,13 +67,8 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
-                .padding(start = 16.dp, end = 16.dp)
+                .padding(start = 5.dp, end = 5.dp)
         ) {
-            Text(
-                text = "Settings",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize()

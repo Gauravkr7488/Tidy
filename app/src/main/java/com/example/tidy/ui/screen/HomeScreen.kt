@@ -133,11 +133,6 @@ fun HomeScreen(
                 .padding(top = innerPadding.calculateTopPadding())
                 .padding(start = 5.dp, end = 5.dp)
         ) {
-//            Text(
-//                text = "My Tasks",
-//                style = MaterialTheme.typography.headlineMedium,
-//                modifier = Modifier.padding(bottom = 16.dp),
-//            )
             if (tasks.isEmpty()) {
                 EmptyTaskList()
             } else {

@@ -56,6 +56,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.HomeScreenViewModel
 
 enum class SearchFilter { ALL, TASKS }
@@ -90,7 +91,7 @@ fun SearchScreen(
         }
     }
 
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(topBar = { TopAppBar("Search") }, modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -156,8 +157,8 @@ fun SearchScreen(
             } else {
                 LazyColumn(
                     contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
+                        start = 5.dp,
+                        end = 5.dp,
                         bottom = innerPadding.calculateBottomPadding() + 16.dp
                     ),
                 ) {
