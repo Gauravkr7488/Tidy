@@ -88,4 +88,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.compose.foundation:foundation:1.6.0")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.11.0")
 }

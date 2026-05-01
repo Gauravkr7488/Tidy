@@ -52,6 +52,7 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -70,8 +71,10 @@ import com.example.tidy.ui.component.taskComponents.TaskCardNew
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.HomeScreenViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     homeScreenViewModel: HomeScreenViewModel,
@@ -121,19 +124,15 @@ fun HomeScreen(
                     }
                 )
             }
-        }
+        },
+        topBar = { TopAppBar("My Tasks") }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
-                .padding(start = 16.dp, end = 16.dp)
+                .padding(start = 5.dp, end = 5.dp)
         ) {
-            Text(
-                text = "My Tasks",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
             if (tasks.isEmpty()) {
                 EmptyTaskList()
             } else {
