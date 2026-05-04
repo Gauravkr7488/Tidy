@@ -44,7 +44,9 @@ class BackupScreenViewModel(
             try {
                 val tasks = dbOperation.taskGetAll()
                 val dtoTasks = tasks.map { it.toDto() }
-                val json = Gson().toJson(dtoTasks)
+                val lastReset = dbOperation.getLastReset()
+                val backupDto = BackupDto(lastReset?.lastResetAt, dtoTasks)
+                val json = Gson().toJson(backupDto)
 
                 context.contentResolver
                     .openOutputStream(uri)
@@ -67,6 +69,7 @@ class BackupScreenViewModel(
     ) {
         viewModelScope.launch {
             val oldTasks = dbOperation.taskGetAll()
+            val oldReset = dbOperation.getLastReset()
 
             try {
                 val json = context.contentResolver
@@ -75,15 +78,18 @@ class BackupScreenViewModel(
                     ?.readText()
 
                 if (json != null) {
-                    val dtos = Gson().fromJson(
+                    val backupDto = Gson().fromJson(
                         json,
-                        Array<TaskDto>::class.java
-                    ).toList()
-
-
+                        BackupDto::class.java
+                    )
+                    val taskDtos = backupDto.tasks
+                    val lastResetAt = backupDto.lastResetAt
+                    if (lastResetAt != null){
+                        dbOperation.setLastResetToday(lastResetAt)
+                    }
                     val idMap = mutableMapOf<Long, Task>()
 
-                    val newTasks = dtos.map { dto ->
+                    val newTasks = taskDtos.map { dto ->
                         val task = dto.toTask()
                         idMap[dto.id] = task
                         task
@@ -93,7 +99,7 @@ class BackupScreenViewModel(
                     dbOperation.taskSaveList(newTasks)// to get new ids
 
 //              relation work
-                    dtos.forEach { dto ->
+                    taskDtos.forEach { dto ->
                         val task = idMap[dto.id] ?: return@forEach
 
                         val children = dto.childTasks?.mapNotNull { oldChildId ->
@@ -110,6 +116,7 @@ class BackupScreenViewModel(
             } catch (e: Exception) {
                 dbOperation.taskDeleteALl()
                 dbOperation.taskSaveList(oldTasks)
+                dbOperation.setLastResetToday(oldReset?.lastResetAt ?: "")
                 Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
                 e.printStackTrace()
             }
@@ -134,3 +141,8 @@ class BackupScreenViewModel(
 
 
 }
+
+data class BackupDto(
+    val lastResetAt: String?,
+    val tasks: List<TaskDto>
+)
