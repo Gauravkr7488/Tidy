@@ -112,7 +112,7 @@ fun HomeScreen(
                 ) {
                     FloatingActionButton(
                         onClick = { homeScreenViewModel.cleanCompletedTasks() },
-                        modifier = Modifier.padding(bottom = 16.dp, start = 5.dp, end = 5.dp)
+                        modifier = Modifier.padding(bottom = 16.dp, start = 5.dp, end = 5.dp) // padding for shadows
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
