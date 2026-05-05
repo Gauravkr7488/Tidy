@@ -17,7 +17,12 @@
 
 package com.example.tidy.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,41 +38,40 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.SkipNext
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
-import com.example.tidy.ui.component.fabMenu.FabAction
-import com.example.tidy.ui.component.fabMenu.FabMenu
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
@@ -99,31 +103,33 @@ fun HomeScreen(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalAlignment = Alignment.End,
             ) {
-                FabMenu(
-                    actions = buildList {
-                        if (hasDoneTask) {
-                            add(
-                                FabAction(
-                                    icon = Icons.Default.Delete,
-                                    description = "Delete Completed",
-                                    onClick = { homeScreenViewModel.cleanCompletedTasks() },
-                                    label = "Delete Completed",
-                                )
-                            )
-                        }
-                        add(
-                            FabAction(
-                                icon = Icons.Default.Create,
-                                description = "Add Task",
-                                onClick = { navController.navigate("${Routes.ADD_TASK}/${0}") },
-                                label = "Add Task",
-                            )
+                AnimatedVisibility(
+                    visible = hasDoneTask,
+                    enter = slideInVertically { it } + fadeIn(),
+                    exit = slideOutVertically { it } + fadeOut()
+                ) {
+                    FloatingActionButton(
+                        onClick = { homeScreenViewModel.cleanCompletedTasks() },
+                        modifier = Modifier.padding(bottom = 16.dp, start = 5.dp, end = 5.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete Completed"
                         )
                     }
-                )
+                }
+                FloatingActionButton(
+                    onClick = { navController.navigate("${Routes.ADD_TASK}/${0}") },
+                    modifier = Modifier.size(80.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Create,
+                        contentDescription = "Create new Task"
+                    )
+                }
+
             }
         },
         topBar = { TopAppBar("My Tasks") }
@@ -176,7 +182,7 @@ fun HomeScreen(
                             }
                         } else {
                             SubTaskCard(
-                                task, homeScreenViewModel,  modifier = Modifier.animateItem(),
+                                task, homeScreenViewModel, modifier = Modifier.animateItem(),
                             )
                         }
                     }
@@ -217,7 +223,7 @@ fun HomeScreen(
                             }
                         } else {
                             SubTaskCard(
-                                task, homeScreenViewModel,  modifier = Modifier.animateItem(),
+                                task, homeScreenViewModel, modifier = Modifier.animateItem(),
                             )
                         }
                     }
