@@ -19,6 +19,7 @@ package com.example.tidy.ui.screen
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,6 +29,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -74,7 +76,11 @@ import java.util.Date
 import java.util.Locale
 import java.util.Calendar
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
+import kotlin.math.min
 
 @Composable
 fun AddTaskScreen(
@@ -138,7 +144,6 @@ fun AddTaskScreen(
                                     description = description,
                                 )
                             )
-                            @Suppress("AssignedValueIsNeverRead")
                             showFab = false
                             navController.popBackStack()
                         }
@@ -318,6 +323,7 @@ fun AddTaskScreen(
                         }
                     }
                 }
+                RepeatMenu()
                 if (addTaskScreenViewModel.parentTaskId == 0L) {
                     SubTaskMenu(
                         {
@@ -428,5 +434,40 @@ fun SubTaskMenu(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun RepeatMenu() {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+        var repeatType by remember { mutableStateOf(RepeatTypes.NONE) } // default value
+        Text("Repeat")
+        Spacer(modifier = Modifier.weight(1f))
+        Box {
+            TextButton(
+                onClick = { expanded = !expanded }
+            ) {
+                Text(repeatType, modifier = Modifier.widthIn(min = 80.dp))
+                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                listOf(
+                    RepeatTypes.NONE, RepeatTypes.DAILY, RepeatTypes.WEEKLY, RepeatTypes.MONTHLY
+                ).forEach { t ->
+                    DropdownMenuItem(
+                        text = { Text(t) },
+                        onClick = {
+                            repeatType = t
+                            expanded = false
+                        },
+                    )
+                }
+            }
+        }
+
     }
 }
