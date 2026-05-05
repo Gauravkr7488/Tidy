@@ -31,7 +31,7 @@ import com.example.tidy.Task
 
 @Suppress("AssignedValueIsNeverRead")
 @Composable
-fun TaskCardNew(
+fun TaskCard(
     task: Task,
     modifier: Modifier = Modifier,
     onClick: (Task) -> Unit = {},
@@ -47,7 +47,7 @@ fun TaskCardNew(
             ),
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 2.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = { onClick(task) },

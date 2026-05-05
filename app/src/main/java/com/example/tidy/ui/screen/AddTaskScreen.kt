@@ -66,7 +66,7 @@ import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.toggleValue
-import com.example.tidy.ui.component.taskComponents.TaskCardNew
+import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -408,7 +408,7 @@ fun SubTaskMenu(
                     items = taskChildren,
                     key = { it.id }
                 ) { item ->
-                    TaskCardNew(task = item)
+                    TaskCard(task = item)
                 }
             }
 
