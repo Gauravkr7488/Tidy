@@ -68,7 +68,7 @@ import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.fabMenu.FabAction
 import com.example.tidy.ui.component.fabMenu.FabMenu
-import com.example.tidy.ui.component.taskComponents.TaskCardNew
+import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
@@ -145,7 +145,7 @@ fun HomeScreen(
                     items(tasks.filter { !it.done }, key = { it.id }) { task ->
                         if (task.children.isEmpty()) {
                             var showDeleteDialog by remember { mutableStateOf(false) }
-                            TaskCardNew(
+                            TaskCard(
                                 modifier = Modifier.animateItem(),
                                 task = task,
                                 onClick = {
@@ -186,7 +186,7 @@ fun HomeScreen(
                     items(tasks.filter { it.done }, key = { it.id }) { task ->
                         if (task.children.isEmpty()) {
                             var showDeleteDialog by remember { mutableStateOf(false) }
-                            TaskCardNew(
+                            TaskCard(
                                 modifier = Modifier.animateItem(),
                                 task = task,
                                 onClick = {
@@ -334,7 +334,7 @@ fun SubTaskCard(
         var showDeleteDialog by remember { mutableStateOf(false) }
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             if (depth != 0) AddIndentation(last, list)
-            TaskCardNew(
+            TaskCard(
                 task = task,
                 onClick = {
                     if (task.children.isNotEmpty()) expanded =

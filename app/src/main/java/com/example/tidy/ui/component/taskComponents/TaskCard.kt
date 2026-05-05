@@ -31,7 +31,7 @@ import com.example.tidy.Task
 
 @Suppress("AssignedValueIsNeverRead")
 @Composable
-fun TaskCardNew(
+fun TaskCard(
     task: Task,
     modifier: Modifier = Modifier,
     onClick: (Task) -> Unit = {},

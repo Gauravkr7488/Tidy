@@ -54,7 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
-import com.example.tidy.ui.component.taskComponents.TaskCardNew
+import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.HomeScreenViewModel
@@ -164,7 +164,7 @@ fun SearchScreen(
                 ) {
                     items(filteredTasks, key = { it.id }) { task ->
                         if (task.note) {
-                            TaskCardNew(
+                            TaskCard(
                                 task = task,
                                 onClick = { homeScreenViewModel.editTask(task) },
                                 icons = listOf(
@@ -177,7 +177,7 @@ fun SearchScreen(
                                 )
                             )
                         } else if (task.hide) {
-                            TaskCardNew(
+                            TaskCard(
                                 task = task,
                                 onClick = { homeScreenViewModel.editTask(task) },
                                 icons = listOf(
@@ -190,7 +190,7 @@ fun SearchScreen(
                                 )
                             )
                         } else {
-                            TaskCardNew(
+                            TaskCard(
                                 task = task,
                                 onClick = { homeScreenViewModel.editTask(task) }
                             )

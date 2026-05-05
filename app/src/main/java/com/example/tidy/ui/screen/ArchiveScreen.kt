@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
-import com.example.tidy.ui.component.taskComponents.TaskCardNew
+import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.ArchiveScreenViewModel
 import kotlinx.coroutines.launch
@@ -88,7 +88,7 @@ fun ArchiveScreen(
                 contentPadding = PaddingValues(bottom = 150.dp),
             ) {
                 items(tasks, key = { it.id }) { task ->
-                    TaskCardNew(
+                    TaskCard(
                         task = task,
                         onClick = { },
                         icons = listOf(
