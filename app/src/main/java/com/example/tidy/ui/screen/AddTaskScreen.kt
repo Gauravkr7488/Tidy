@@ -16,7 +16,14 @@
  */
 package com.example.tidy.ui.screen
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +32,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -80,7 +88,6 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.OutlinedButton
-import kotlin.math.min
 
 @Composable
 fun AddTaskScreen(
@@ -95,13 +102,11 @@ fun AddTaskScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var note by remember { mutableStateOf(false) }
-    var repeatStatus by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
-    var showDateDialog by remember { mutableStateOf(false) }
     var showFab by remember { mutableStateOf(true) }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
@@ -111,7 +116,6 @@ fun AddTaskScreen(
                 taskChildren = task.children.toList()
                 taskTitle = task.title
                 description = task.description
-                repeatStatus = task.repeatType != RepeatTypes.NONE
                 repeatType = task.repeatType
                 repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
                 val readable = SimpleDateFormat(
@@ -317,129 +321,136 @@ fun RepeatMenu(
     onRepeatDaysChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        var expanded by remember { mutableStateOf(false) }
-        var showDateDialog by remember { mutableStateOf(false) }
+    var showDateDialog by remember { mutableStateOf(false) }
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            var expanded by remember { mutableStateOf(false) }
 
-        Text("Repeat")
-        Spacer(modifier = Modifier.weight(1f))
-        Column {
-            Box {
-                TextButton(
-                    onClick = { expanded = !expanded }
-                ) {
-                    Text(repeatType, modifier = Modifier.widthIn(min = 60.dp))
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    listOf(
-                        RepeatTypes.NONE, RepeatTypes.DAILY, RepeatTypes.WEEKLY, RepeatTypes.MONTHLY
-                    ).forEach { t ->
-                        DropdownMenuItem(
-                            text = { Text(t) },
-                            onClick = {
-                                onRepeatTypeChange(t)
-                                expanded = false
-                            },
-                        )
+            Text("Repeat")
+            Spacer(modifier = Modifier.weight(1f))
+            Column {
+                Box {
+                    TextButton(
+                        onClick = { expanded = !expanded }
+                    ) {
+                        Text(repeatType, modifier = Modifier.widthIn(min = 60.dp))
+                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                     }
-                }
-            }
-            if (repeatType == RepeatTypes.WEEKLY) {
-                var selectedDays by remember { mutableStateOf(
-                    repeatDays.split(",")
-                            .map { it.trim() }
-                            .filter { it.isNotEmpty() }
-                ) }
-
-                val chips = listOf(
-                    "S" to WeekDays.SUN,
-                    "M" to WeekDays.MON,
-                    "T" to WeekDays.TUE,
-                    "W" to WeekDays.WED,
-                    "T" to WeekDays.THU,
-                    "F" to WeekDays.FRI,
-                    "S" to WeekDays.SAT,
-                )
-                Row {
-                    chips.forEach { (label, day) ->
-                        FilterChip(
-                            onClick = {
-                                selectedDays =
-                                    if (day in selectedDays) selectedDays - day else selectedDays + day
-                                onRepeatDaysChange(
-                                    selectedDays.joinToString(
-                                        ", "
-                                    )
-                                )
-
-                            },
-                            label = { Text(label) },
-                            selected = day in selectedDays,
-                            modifier = Modifier.padding(end = 10.dp)
-
-                        )
-                    }
-                }
-            }
-            if (repeatType == RepeatTypes.MONTHLY) {
-                if (repeatDays == "") {
-                    Button(onClick = { showDateDialog = true }) {
-                        Text("Select Date")
-                    }
-                } else {
-
-                    val chips = repeatDays
-                        .split(",")
-                        .map { it.trim() }
-                        .filter { it.isNotEmpty() }
-
-                    Row {
-                        chips.forEach { chip ->
-                            FilterChip(
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        listOf(
+                            RepeatTypes.NONE,
+                            RepeatTypes.DAILY,
+                            RepeatTypes.WEEKLY,
+                            RepeatTypes.MONTHLY
+                        ).forEach { t ->
+                            DropdownMenuItem(
+                                text = { Text(t) },
                                 onClick = {
-                                    val updated = chips.toMutableList().apply {
-                                        remove(chip)
-                                    }
-                                    onRepeatDaysChange(updated.joinToString(","))
+                                    onRepeatTypeChange(t)
+                                    expanded = false
                                 },
-                                label = { Text(chip) },
-                                selected = chip in repeatDays,
-                                modifier = Modifier.padding(end = 10.dp)
                             )
                         }
                     }
+                }
+            }
+        }
+        if (repeatType == RepeatTypes.WEEKLY) {
+            var selectedDays by remember {
+                mutableStateOf(
+                    repeatDays.split(",")
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
+                )
+            }
 
-                    Button(onClick = { showDateDialog = true }) {
-                        Text("Select more Dates")
+            val chips = listOf(
+                "S" to WeekDays.SUN,
+                "M" to WeekDays.MON,
+                "T" to WeekDays.TUE,
+                "W" to WeekDays.WED,
+                "T" to WeekDays.THU,
+                "F" to WeekDays.FRI,
+                "S" to WeekDays.SAT,
+            )
+            Row {
+                chips.forEach { (label, day) ->
+                    FilterChip(
+                        onClick = {
+                            selectedDays =
+                                if (day in selectedDays) selectedDays - day else selectedDays + day
+                            onRepeatDaysChange(
+                                selectedDays.joinToString(
+                                    ", "
+                                )
+                            )
+
+                        },
+                        label = { Text(label) },
+                        selected = day in selectedDays,
+                        modifier = Modifier.padding(end = 10.dp)
+
+                    )
+                }
+            }
+        }
+        if (repeatType == RepeatTypes.MONTHLY) {
+            if (repeatDays == "") {
+                Button(onClick = { showDateDialog = true }) {
+                    Text("Select Date")
+                }
+            } else {
+
+                val chips = repeatDays
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+
+                Row {
+                    chips.forEach { chip ->
+                        FilterChip(
+                            onClick = {
+                                val updated = chips.toMutableList().apply {
+                                    remove(chip)
+                                }
+                                onRepeatDaysChange(updated.joinToString(","))
+                            },
+                            label = { Text(chip) },
+                            selected = chip in repeatDays,
+                            modifier = Modifier.padding(end = 10.dp)
+                        )
                     }
                 }
-                val state = rememberDatePickerState()
-                if (showDateDialog) {
-                    DatePickerDialog(
-                        onDismissRequest = { showDateDialog = false },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                val milli = state.selectedDateMillis
-                                val calendar = Calendar.getInstance().apply {
-                                    if (milli != null) {
-                                        timeInMillis = milli
-                                    }
+
+                Button(onClick = { showDateDialog = true }) {
+                    Text("Select more Dates")
+                }
+            }
+            val state = rememberDatePickerState()
+            if (showDateDialog) {
+                DatePickerDialog(
+                    onDismissRequest = { showDateDialog = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            val milli = state.selectedDateMillis
+                            val calendar = Calendar.getInstance().apply {
+                                if (milli != null) {
+                                    timeInMillis = milli
                                 }
-                                val formatted =
-                                    "%02d".format(calendar.get(Calendar.DAY_OF_MONTH))
-                                onRepeatDaysChange("$repeatDays,$formatted")
-                                showDateDialog = false
-                            }) {
-                                Text("OK")
                             }
+                            val formatted =
+                                "%02d".format(calendar.get(Calendar.DAY_OF_MONTH))
+                            onRepeatDaysChange("$repeatDays,$formatted")
+                            showDateDialog = false
+                        }) {
+                            Text("OK")
                         }
-                    ) {
-                        DatePicker(state = state)
                     }
+                ) {
+                    DatePicker(state = state)
                 }
             }
         }
