@@ -17,6 +17,7 @@
 package com.example.tidy.ui.screen
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,8 +32,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -326,7 +329,9 @@ fun RepeatMenu(
             Column {
                 Box {
                     TextButton(
-                        onClick = { expanded = !expanded }
+                        onClick = { expanded = !expanded },
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(repeatType, modifier = Modifier.widthIn(min = 60.dp))
                         Icon(Icons.Default.ArrowDropDown, contentDescription = null)
@@ -391,18 +396,21 @@ fun RepeatMenu(
         }
         if (repeatType == RepeatTypes.MONTHLY) {
             if (repeatDays == "") {
-                Button(onClick = { showDateDialog = true }) {
+                Button(onClick = { showDateDialog = true }, modifier = Modifier.fillMaxWidth()) {
                     Text("Select Date")
                 }
             } else {
-
                 val chips = repeatDays
                     .split(",")
                     .map { it.trim() }
                     .filter { it.isNotEmpty() }
+                val listState = rememberLazyListState()
 
-                Row {
-                    chips.forEach { chip ->
+                LazyRow(
+                    state = listState,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(chips){ chip ->
                         FilterChip(
                             onClick = {
                                 val updated = chips.toMutableList().apply {
@@ -417,7 +425,7 @@ fun RepeatMenu(
                     }
                 }
 
-                Button(onClick = { showDateDialog = true }) {
+                Button(onClick = { showDateDialog = true }, modifier = Modifier.fillMaxWidth()) {
                     Text("Select more Dates")
                 }
             }
