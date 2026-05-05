@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -141,10 +142,11 @@ fun HomeScreen(
                     contentPadding = PaddingValues(bottom = 150.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(tasks, key = { it.id }) { task ->
+                    items(tasks.filter { !it.done }, key = { it.id }) { task ->
                         if (task.children.isEmpty()) {
                             var showDeleteDialog by remember { mutableStateOf(false) }
                             TaskCardNew(
+                                modifier = Modifier.animateItem(),
                                 task = task,
                                 onClick = {
                                     homeScreenViewModel.toggleDoneStatus(task)
@@ -174,7 +176,48 @@ fun HomeScreen(
                             }
                         } else {
                             SubTaskCard(
-                                task, homeScreenViewModel
+                                task, homeScreenViewModel,  modifier = Modifier.animateItem(),
+                            )
+                        }
+                    }
+
+                    item { Spacer(modifier = Modifier.heightIn(10.dp)) }
+
+                    items(tasks.filter { it.done }, key = { it.id }) { task ->
+                        if (task.children.isEmpty()) {
+                            var showDeleteDialog by remember { mutableStateOf(false) }
+                            TaskCardNew(
+                                modifier = Modifier.animateItem(),
+                                task = task,
+                                onClick = {
+                                    homeScreenViewModel.toggleDoneStatus(task)
+                                },
+                                contextMenuOptions = contextMenuOptions(
+                                    task,
+                                    homeScreenViewModel
+                                ) { showDeleteDialog = true },
+                                icons = buildList {
+                                    if (task.repeatType != RepeatTypes.NONE) {
+                                        add(
+                                            TaskIconAction(
+                                                icon = Icons.Default.Repeat,
+                                                description = "Repeating Task",
+                                                onClick = { },
+                                            )
+                                        )
+                                    }
+                                }
+                            )
+                            if (showDeleteDialog) {
+                                TaskDeleteDialog(
+                                    task = task,
+                                    onDismiss = { showDeleteDialog = !showDeleteDialog },
+                                    onDeleteClick = homeScreenViewModel::deleteTask
+                                )
+                            }
+                        } else {
+                            SubTaskCard(
+                                task, homeScreenViewModel,  modifier = Modifier.animateItem(),
                             )
                         }
                     }
@@ -275,11 +318,14 @@ fun HorizontalLine() {
 fun SubTaskCard(
     task: Task,
     homeScreenViewModel: HomeScreenViewModel,
+    modifier: Modifier = Modifier,
     depth: Int = 0,
     last: Boolean = false,
     list: List<Boolean> = listOf(),
 ) {
-    Column {
+    Column(
+        modifier = modifier
+    ) {
         var expanded by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(
             targetValue = if (expanded) 90f else 0f,
