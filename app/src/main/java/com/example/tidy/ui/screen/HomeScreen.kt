@@ -112,7 +112,11 @@ fun HomeScreen(
                 ) {
                     FloatingActionButton(
                         onClick = { homeScreenViewModel.cleanCompletedTasks() },
-                        modifier = Modifier.padding(bottom = 16.dp, start = 5.dp, end = 5.dp) // padding for shadows
+                        modifier = Modifier.padding(
+                            bottom = 16.dp,
+                            start = 5.dp,
+                            end = 5.dp
+                        ) // padding for shadows
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -148,7 +152,7 @@ fun HomeScreen(
                     contentPadding = PaddingValues(bottom = 150.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(tasks.filter { !it.done }, key = { it.id }) { task ->
+                    items(tasks.filter { !it.done }, key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         if (task.children.isEmpty()) {
                             var showDeleteDialog by remember { mutableStateOf(false) }
                             TaskCard(
