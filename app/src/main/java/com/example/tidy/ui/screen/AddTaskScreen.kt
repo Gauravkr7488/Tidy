@@ -457,35 +457,38 @@ fun RepeatMenu(
 fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> Unit) {
     val listState = rememberLazyListState()
     var subTaskTitle by remember { mutableStateOf("") }
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxWidth()
-//            .heightIn(max = 300.dp),
-    ) {
-        items(
-            items = taskChildren,
-            key = { it.title }
-        ) { item ->
-            TaskCard(task = item)
+    Column {
+        Text("SubTasks")
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp)
+                .padding(bottom = 5.dp),
+        ) {
+            items(
+                items = taskChildren,
+            ) { item ->
+                TaskCard(task = item)
+            }
         }
-        item {
-            OutlinedTextField(
-                value = subTaskTitle,
-                onValueChange = { subTaskTitle = it },
-                placeholder = { Text("Add Subtask") },
-                keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = {
-                        if (subTaskTitle != ""){
-                            addChildrenWithTitle(subTaskTitle)  // triggered when Enter/Done is pressed
-                            subTaskTitle = ""
-                        }
+        OutlinedTextField(
+            value = subTaskTitle,
+            onValueChange = { subTaskTitle = it },
+            placeholder = { Text("Add Subtask") },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    if (subTaskTitle != "") {
+                        addChildrenWithTitle(subTaskTitle)
+                        subTaskTitle = ""
                     }
-                )
-            )
-        }
+                }
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+        )
     }
 }
