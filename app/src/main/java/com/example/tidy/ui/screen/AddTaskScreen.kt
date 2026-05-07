@@ -107,7 +107,7 @@ fun AddTaskScreen(
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
-    val task = Task(title = "")
+    val task by remember { mutableStateOf(Task(title = "")) }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -206,11 +206,10 @@ fun AddTaskScreen(
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it },
             )
-            if (addTaskScreenViewModel.parentTaskId == 0L) {
-                NewSubTaskMenu(task) {
-                    val childTask = Task(title = it)
-                    task.children.add(childTask)
-                }
+            NewSubTaskMenu(taskChildren) {
+                val childTask = Task(title = it)
+                task.children.add(childTask)
+                taskChildren = taskChildren + childTask
             }
             if (createdAt != "") {
                 Text(
@@ -455,7 +454,7 @@ fun RepeatMenu(
 
 
 @Composable
-fun NewSubTaskMenu(task: Task, addChildrenWithTitle: (String) -> Unit) {
+fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> Unit) {
     val listState = rememberLazyListState()
     var subTaskTitle by remember { mutableStateOf("") }
     LazyColumn(
@@ -465,8 +464,8 @@ fun NewSubTaskMenu(task: Task, addChildrenWithTitle: (String) -> Unit) {
 //            .heightIn(max = 300.dp),
     ) {
         items(
-            items = task.children,
-            key = { it.id }
+            items = taskChildren,
+            key = { it.title }
         ) { item ->
             TaskCard(task = item)
         }
@@ -480,7 +479,10 @@ fun NewSubTaskMenu(task: Task, addChildrenWithTitle: (String) -> Unit) {
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = {
-                        addChildrenWithTitle(subTaskTitle)  // triggered when Enter/Done is pressed
+                        if (subTaskTitle != ""){
+                            addChildrenWithTitle(subTaskTitle)  // triggered when Enter/Done is pressed
+                            subTaskTitle = ""
+                        }
                     }
                 )
             )
