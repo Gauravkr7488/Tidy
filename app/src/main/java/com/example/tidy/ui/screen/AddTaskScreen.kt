@@ -102,7 +102,7 @@ fun AddTaskScreen(
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
-    var showFab by remember { mutableStateOf(true) }
+    var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -456,4 +456,3 @@ fun RepeatMenu(
         }
     }
 }
-
