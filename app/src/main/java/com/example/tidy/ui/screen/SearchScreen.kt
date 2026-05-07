@@ -167,7 +167,7 @@ fun SearchScreen(
                             TaskCard(
                                 task = task,
                                 onClick = { homeScreenViewModel.editTask(task) },
-                                icons = listOf(
+                                trailingIcons = listOf(
                                     TaskIconAction(
                                         icon = Icons.AutoMirrored.Filled.Article,
                                         description = "Note",
@@ -180,7 +180,7 @@ fun SearchScreen(
                             TaskCard(
                                 task = task,
                                 onClick = { homeScreenViewModel.editTask(task) },
-                                icons = listOf(
+                                trailingIcons = listOf(
                                     TaskIconAction(
                                         icon = Icons.Default.Archive,
                                         description = "Archived",

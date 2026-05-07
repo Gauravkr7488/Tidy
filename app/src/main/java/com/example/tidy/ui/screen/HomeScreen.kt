@@ -43,10 +43,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -70,7 +71,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.Task
-import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
@@ -152,7 +152,9 @@ fun HomeScreen(
                     contentPadding = PaddingValues(bottom = 150.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(tasks.filter { !it.done }, key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
+                    items(
+                        tasks.filter { !it.done },
+                        key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         if (task.children.isEmpty()) {
                             var showDeleteDialog by remember { mutableStateOf(false) }
                             TaskCard(
@@ -161,21 +163,19 @@ fun HomeScreen(
                                 onClick = {
                                     homeScreenViewModel.toggleDoneStatus(task)
                                 },
+                                leadingIcons = buildList {
+                                    add(
+                                        TaskIconAction(
+                                            icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
+                                            description = "",
+                                            onClick = { homeScreenViewModel.toggleDoneStatus(task) },
+                                        )
+                                    )
+                                },
                                 contextMenuOptions = contextMenuOptions(
                                     task,
                                     homeScreenViewModel
                                 ) { showDeleteDialog = true },
-                                icons = buildList {
-                                    if (task.repeatType != RepeatTypes.NONE) {
-                                        add(
-                                            TaskIconAction(
-                                                icon = Icons.Default.Repeat,
-                                                description = "Repeating Task",
-                                                onClick = { },
-                                            )
-                                        )
-                                    }
-                                }
                             )
                             if (showDeleteDialog) {
                                 TaskDeleteDialog(
@@ -206,17 +206,15 @@ fun HomeScreen(
                                     task,
                                     homeScreenViewModel
                                 ) { showDeleteDialog = true },
-                                icons = buildList {
-                                    if (task.repeatType != RepeatTypes.NONE) {
-                                        add(
-                                            TaskIconAction(
-                                                icon = Icons.Default.Repeat,
-                                                description = "Repeating Task",
-                                                onClick = { },
-                                            )
+                                leadingIcons = buildList {
+                                    add(
+                                        TaskIconAction(
+                                            icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
+                                            description = "",
+                                            onClick = { homeScreenViewModel.toggleDoneStatus(task) },
                                         )
-                                    }
-                                }
+                                    )
+                                },
                             )
                             if (showDeleteDialog) {
                                 TaskDeleteDialog(
@@ -354,17 +352,8 @@ fun SubTaskCard(
                     task,
                     homeScreenViewModel
                 ) { showDeleteDialog = true },
-                icons =
+                leadingIcons =
                     buildList {
-                        if (task.repeatType != RepeatTypes.NONE) {
-                            add(
-                                TaskIconAction(
-                                    icon = Icons.Default.Repeat,
-                                    description = "Repeating Task",
-                                    onClick = { },
-                                )
-                            )
-                        }
                         if (task.children.isNotEmpty()) {
                             add(
                                 TaskIconAction(
@@ -372,6 +361,14 @@ fun SubTaskCard(
                                     description = "Expand Subtask",
                                     onClick = { expanded = !expanded },
                                     modifier = Modifier.rotate(rotation)
+                                )
+                            )
+                        } else {
+                            add(
+                                TaskIconAction(
+                                    icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
+                                    description = "",
+                                    onClick = { homeScreenViewModel.toggleDoneStatus(task) },
                                 )
                             )
                         }
