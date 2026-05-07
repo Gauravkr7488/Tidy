@@ -149,10 +149,9 @@ fun AddTaskScreen(
                                 repeatDays = repeatDays,
                                 description = description,
                             )
+                            addTaskScreenViewModel.addTask(newTask) // once to attaching to objectbox
                             newTask.children.addAll(task.children)
-                            addTaskScreenViewModel.addTask(
-                                newTask
-                            )
+                            addTaskScreenViewModel.addTask(newTask) // once for the children to persist
                             showFab = false
                             navController.popBackStack()
                         }
