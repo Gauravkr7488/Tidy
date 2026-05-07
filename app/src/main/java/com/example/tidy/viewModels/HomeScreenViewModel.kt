@@ -161,14 +161,4 @@ class HomeScreenViewModel(
         navController.navigate("${Routes.ADD_TASK}/${task.id}")
     }
 
-    var expandedTaskList: MutableList<Long> = mutableListOf()
-        private set
-
-    fun onExpandClick(id: Long) {
-        if (id in expandedTaskList) {
-            expandedTaskList.remove(id)
-        } else {
-            expandedTaskList.add(id)
-        }
-    }
 }
