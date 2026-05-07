@@ -16,7 +16,6 @@
  */
 package com.example.tidy.ui.screen
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -29,15 +28,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
@@ -49,7 +48,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -64,18 +63,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
-import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
-import com.example.tidy.toggleValue
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
@@ -102,7 +99,8 @@ fun AddTaskScreen(
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
-    var showFab by remember { mutableStateOf(true) }
+    var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
+    val task by remember { mutableStateOf(Task(title = "")) }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -133,16 +131,20 @@ fun AddTaskScreen(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
-                            addTaskScreenViewModel.addTask(
-                                Task(
-                                    id = taskId,
-                                    title = taskTitle,
-                                    note = note,
-                                    repeatType = repeatType,
-                                    repeatDays = repeatDays,
-                                    description = description,
-                                )
+                            task.children.forEach { child ->
+                                addTaskScreenViewModel.addTask(child)
+                            }
+                            val newTask = task.copy(
+                                id = taskId,
+                                title = taskTitle,
+                                note = note,
+                                repeatType = repeatType,
+                                repeatDays = repeatDays,
+                                description = description,
                             )
+                            addTaskScreenViewModel.addTask(newTask) // once to attaching to objectbox
+                            newTask.children.addAll(task.children)
+                            addTaskScreenViewModel.addTask(newTask) // once for the children to persist
                             showFab = false
                             navController.popBackStack()
                         }
@@ -196,25 +198,10 @@ fun AddTaskScreen(
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it },
             )
-            if (addTaskScreenViewModel.parentTaskId == 0L) {
-                SubTaskMenu(
-                    {
-                        coroutineScope.launch {
-                            addTaskScreenViewModel.startAddNewChild(
-                                Task(
-                                    id = taskId,
-                                    title = taskTitle,
-                                    note = note,
-                                    repeatType = repeatType,
-                                    repeatDays = repeatDays,
-                                    description = description,
-                                )
-                            )
-                            navController.navigate(Routes.ADD_TASK)
-                        }
-                    },
-                    taskChildren,
-                )
+            NewSubTaskMenu(taskChildren) {
+                val childTask = Task(title = it)
+                task.children.add(childTask)
+                taskChildren = taskChildren + childTask
             }
             if (createdAt != "") {
                 Text(
@@ -223,86 +210,6 @@ fun AddTaskScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun SubTaskMenu(
-    addNewTask: () -> Unit,
-    taskChildren: List<Task>,
-    modifier: Modifier = Modifier,
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    LaunchedEffect(taskChildren) {
-        if (taskChildren.isNotEmpty()) expanded = true
-    }
-
-    val rotation by animateFloatAsState(
-        targetValue = if (expanded) 45f else 0f,
-        label = "iconRotation"
-    )
-
-    val listState = rememberLazyListState()
-
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "SubTasks", style = MaterialTheme.typography.bodyLarge
-            )
-
-            Button(
-                onClick = {
-                    if (taskChildren.isEmpty()) {
-                        addNewTask()
-                    }
-                    expanded = toggleValue(expanded)
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "SubTasks",
-                    modifier = Modifier.rotate(rotation)
-                )
-            }
-        }
-        if (expanded && taskChildren.isNotEmpty()) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 300.dp),
-            ) {
-                items(
-                    items = taskChildren,
-                    key = { it.id }
-                ) { item ->
-                    TaskCard(task = item)
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-
-                OutlinedButton(
-                    onClick = { addNewTask() },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Spacer(Modifier.width(6.dp))
-                    Text("Add a New Task")
-                }
             }
         }
     }
@@ -410,7 +317,7 @@ fun RepeatMenu(
                     state = listState,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(chips){ chip ->
+                    items(chips) { chip ->
                         FilterChip(
                             onClick = {
                                 val updated = chips.toMutableList().apply {
@@ -457,3 +364,47 @@ fun RepeatMenu(
     }
 }
 
+
+@Composable
+fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> Unit) {
+    val listState = rememberLazyListState()
+    var subTaskTitle by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
+    Column {
+        Text("SubTasks")
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp)
+                .padding(bottom = 5.dp),
+        ) {
+            items(
+                items = taskChildren,
+            ) { item ->
+                TaskCard(task = item)
+            }
+        }
+        OutlinedTextField(
+            value = subTaskTitle,
+            onValueChange = { subTaskTitle = it },
+            placeholder = { Text("Add Subtask") },
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = {
+                    coroutineScope.launch {
+                        if (subTaskTitle != "") {
+                            addChildrenWithTitle(subTaskTitle)
+                            subTaskTitle = ""
+                            listState.animateScrollToItem(taskChildren.size)
+                        }
+                    }
+                }
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+    }
+}

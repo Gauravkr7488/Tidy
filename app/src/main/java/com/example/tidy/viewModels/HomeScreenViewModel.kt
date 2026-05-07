@@ -99,12 +99,16 @@ class HomeScreenViewModel(
         val task = dbOperation.getTask(id)
         if (deleteSubtasks) {
             task.children.forEach { task ->
-                deleteTask(task.id, true)
+                deleteTaskAsync(task.id, true)
             }
         }
         val parentId = task.parents.firstOrNull()?.id
         dbOperation.deleteTask(task.id)
-        if (parentId != null) {
+        updateParentStatus(parentId)
+    }
+
+    private suspend fun updateParentStatus(parentId: Long?) {
+        if (parentId != null) { // update parent status
             val parent = dbOperation.getTask(parentId)
             parent.done = parent.children.all { it.done }
             dbOperation.saveTask(parent)
@@ -157,14 +161,4 @@ class HomeScreenViewModel(
         navController.navigate("${Routes.ADD_TASK}/${task.id}")
     }
 
-    var expandedTaskList: MutableList<Long> = mutableListOf()
-        private set
-
-    fun onExpandClick(id: Long) {
-        if (id in expandedTaskList) {
-            expandedTaskList.remove(id)
-        } else {
-            expandedTaskList.add(id)
-        }
-    }
 }
