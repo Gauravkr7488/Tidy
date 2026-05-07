@@ -91,7 +91,7 @@ fun ArchiveScreen(
                     TaskCard(
                         task = task,
                         onClick = { },
-                        icons = listOf(
+                        trailingIcons = listOf(
                             TaskIconAction(
                                 icon = Icons.Default.Archive,
                                 description = "Unarchive Task",

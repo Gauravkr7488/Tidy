@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -24,22 +27,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.tidy.Task
+import com.example.tidy.constants.RepeatTypes
 
-@Suppress("AssignedValueIsNeverRead")
 @Composable
 fun TaskCard(
     task: Task,
     modifier: Modifier = Modifier,
     onClick: (Task) -> Unit = {},
-    icons: List<TaskIconAction> = emptyList(),
+    leadingIcons: List<TaskIconAction> = emptyList(),
+    trailingIcons: List<TaskIconAction> = emptyList(),
     contextMenuOptions: List<TaskContextAction> = emptyList(),
 ) {
     var tapOffset by remember { mutableStateOf(Offset.Zero) }
     var showMenu by remember { mutableStateOf(false) }
+
     Card(
         colors =
             CardDefaults.cardColors(
@@ -68,6 +75,15 @@ fun TaskCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            leadingIcons.forEach { (icon, description, onClickAction, tint, modifier) ->
+                Icon(
+                    imageVector = icon,
+                    contentDescription = description,
+                    tint = tint,
+                    modifier = modifier
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -90,7 +106,10 @@ fun TaskCard(
                     )
                 }
             }
-            icons.forEach { (icon, description, onClickAction, tint, modifier) ->
+            if (task.repeatType != RepeatTypes.NONE) {
+                RepeatBadge(task.repeatType)
+            }
+            trailingIcons.forEach { (icon, description, onClickAction, tint, modifier) ->
                 IconButton(onClick = { onClickAction(task) }) {
                     Icon(
                         imageVector = icon,
@@ -100,13 +119,38 @@ fun TaskCard(
                     )
                 }
             }
-
         }
         TaskContextMenu(
             showMenu = showMenu,
             tapOffset = tapOffset,
             onDismiss = { showMenu = !showMenu },
             options = contextMenuOptions
+        )
+    }
+}
+
+// ── Repeat badge ─────────────────────────────────────────────────────────────
+
+
+@Composable
+fun RepeatBadge(frequency: String) {
+    if (frequency == "none") return // to guard against old values
+    Row(
+        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Repeat,
+            contentDescription = null,
+            modifier = Modifier.size(12.dp),
+            tint = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+        Text(
+            text = frequency,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
         )
     }
 }

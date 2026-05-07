@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.ui.graphics)
     val nav_version = "2.9.7"
 
     // Jetpack Compose integration
