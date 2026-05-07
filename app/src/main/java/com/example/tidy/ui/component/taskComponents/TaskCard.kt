@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Repeat
@@ -75,7 +76,7 @@ fun TaskCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            leadingIcons.forEach { (icon, description, onClickAction, tint, modifier) ->
+            leadingIcons.forEach { (icon, description, _, tint, modifier) ->
                 Icon(
                     imageVector = icon,
                     contentDescription = description,
@@ -136,7 +137,7 @@ fun TaskCard(
 fun RepeatBadge(frequency: String) {
     if (frequency == "none") return // to guard against old values
     Row(
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+        modifier = Modifier.width(80.dp).padding(horizontal = 8.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
