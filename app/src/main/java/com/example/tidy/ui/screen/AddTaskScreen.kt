@@ -36,6 +36,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -50,6 +52,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -69,6 +72,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
@@ -103,6 +107,7 @@ fun AddTaskScreen(
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
+    val task = Task(title = "")
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -133,15 +138,20 @@ fun AddTaskScreen(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
+                            task.children.forEach { child ->
+                                addTaskScreenViewModel.addTask(child)
+                            }
+                            val newTask = task.copy(
+                                id = taskId,
+                                title = taskTitle,
+                                note = note,
+                                repeatType = repeatType,
+                                repeatDays = repeatDays,
+                                description = description,
+                            )
+                            newTask.children.addAll(task.children)
                             addTaskScreenViewModel.addTask(
-                                Task(
-                                    id = taskId,
-                                    title = taskTitle,
-                                    note = note,
-                                    repeatType = repeatType,
-                                    repeatDays = repeatDays,
-                                    description = description,
-                                )
+                                newTask
                             )
                             showFab = false
                             navController.popBackStack()
@@ -197,24 +207,10 @@ fun AddTaskScreen(
                 onRepeatDaysChange = { repeatDays = it },
             )
             if (addTaskScreenViewModel.parentTaskId == 0L) {
-                SubTaskMenu(
-                    {
-                        coroutineScope.launch {
-                            addTaskScreenViewModel.startAddNewChild(
-                                Task(
-                                    id = taskId,
-                                    title = taskTitle,
-                                    note = note,
-                                    repeatType = repeatType,
-                                    repeatDays = repeatDays,
-                                    description = description,
-                                )
-                            )
-                            navController.navigate(Routes.ADD_TASK)
-                        }
-                    },
-                    taskChildren,
-                )
+                NewSubTaskMenu(task) {
+                    val childTask = Task(title = it)
+                    task.children.add(childTask)
+                }
             }
             if (createdAt != "") {
                 Text(
@@ -410,7 +406,7 @@ fun RepeatMenu(
                     state = listState,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(chips){ chip ->
+                    items(chips) { chip ->
                         FilterChip(
                             onClick = {
                                 val updated = chips.toMutableList().apply {
@@ -453,6 +449,41 @@ fun RepeatMenu(
                     DatePicker(state = state)
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+fun NewSubTaskMenu(task: Task, addChildrenWithTitle: (String) -> Unit) {
+    val listState = rememberLazyListState()
+    var subTaskTitle by remember { mutableStateOf("") }
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxWidth()
+//            .heightIn(max = 300.dp),
+    ) {
+        items(
+            items = task.children,
+            key = { it.id }
+        ) { item ->
+            TaskCard(task = item)
+        }
+        item {
+            OutlinedTextField(
+                value = subTaskTitle,
+                onValueChange = { subTaskTitle = it },
+                placeholder = { Text("Add Subtask") },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = {
+                        addChildrenWithTitle(subTaskTitle)  // triggered when Enter/Done is pressed
+                    }
+                )
+            )
         }
     }
 }
