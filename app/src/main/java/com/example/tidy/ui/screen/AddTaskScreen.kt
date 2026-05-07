@@ -457,6 +457,7 @@ fun RepeatMenu(
 fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> Unit) {
     val listState = rememberLazyListState()
     var subTaskTitle by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
     Column {
         Text("SubTasks")
         LazyColumn(
@@ -481,9 +482,12 @@ fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> U
             ),
             keyboardActions = KeyboardActions(
                 onNext = {
-                    if (subTaskTitle != "") {
-                        addChildrenWithTitle(subTaskTitle)
-                        subTaskTitle = ""
+                    coroutineScope.launch {
+                        if (subTaskTitle != "") {
+                            addChildrenWithTitle(subTaskTitle)
+                            subTaskTitle = ""
+                            listState.animateScrollToItem(taskChildren.size)
+                        }
                     }
                 }
             ),
