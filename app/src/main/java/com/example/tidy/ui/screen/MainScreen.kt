@@ -39,7 +39,6 @@ import com.example.tidy.ExportManager
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 import com.example.tidy.viewModels.AddTaskScreenViewModel
-import com.example.tidy.viewModels.ArchiveScreenViewModel
 import com.example.tidy.viewModels.BackupScreenViewModel
 import com.example.tidy.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
@@ -55,7 +54,6 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val homeScreenViewModel =
         remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
-    val archiveScreenViewModel = remember { ArchiveScreenViewModel(dbOperation) }
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -130,10 +128,6 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
 
             composable(Routes.SEARCH) {
                 SearchScreen(homeScreenViewModel, navController)
-            }
-
-            composable(Routes.ARCHIVE) {
-                ArchiveScreen(archiveScreenViewModel, navController)
             }
         }
     }

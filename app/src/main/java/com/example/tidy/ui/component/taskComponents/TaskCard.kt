@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -110,15 +109,13 @@ fun TaskCard(
             if (task.repeatType != RepeatTypes.NONE) {
                 RepeatBadge(task.repeatType)
             }
-            trailingIcons.forEach { (icon, description, onClickAction, tint, modifier) ->
-                IconButton(onClick = { onClickAction(task) }) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = description,
-                        tint = tint,
-                        modifier = modifier
-                    )
-                }
+            trailingIcons.forEach { (icon, description, _, tint, modifier) ->
+                Icon(
+                    imageVector = icon,
+                    contentDescription = description,
+                    tint = tint,
+                    modifier = modifier
+                )
             }
         }
         TaskContextMenu(
@@ -137,7 +134,9 @@ fun TaskCard(
 fun RepeatBadge(frequency: String) {
     if (frequency == "none") return // to guard against old values
     Row(
-        modifier = Modifier.width(80.dp).padding(horizontal = 8.dp, vertical = 3.dp),
+        modifier = Modifier
+            .width(80.dp)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
