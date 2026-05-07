@@ -16,7 +16,6 @@
  */
 package com.example.tidy.ui.screen
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +28,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -39,7 +37,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
@@ -51,7 +48,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -67,7 +63,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
@@ -77,9 +72,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
-import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
-import com.example.tidy.toggleValue
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
@@ -217,86 +210,6 @@ fun AddTaskScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp)
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun SubTaskMenu(
-    addNewTask: () -> Unit,
-    taskChildren: List<Task>,
-    modifier: Modifier = Modifier,
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    LaunchedEffect(taskChildren) {
-        if (taskChildren.isNotEmpty()) expanded = true
-    }
-
-    val rotation by animateFloatAsState(
-        targetValue = if (expanded) 45f else 0f,
-        label = "iconRotation"
-    )
-
-    val listState = rememberLazyListState()
-
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "SubTasks", style = MaterialTheme.typography.bodyLarge
-            )
-
-            Button(
-                onClick = {
-                    if (taskChildren.isEmpty()) {
-                        addNewTask()
-                    }
-                    expanded = toggleValue(expanded)
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "SubTasks",
-                    modifier = Modifier.rotate(rotation)
-                )
-            }
-        }
-        if (expanded && taskChildren.isNotEmpty()) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 300.dp),
-            ) {
-                items(
-                    items = taskChildren,
-                    key = { it.id }
-                ) { item ->
-                    TaskCard(task = item)
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-
-                OutlinedButton(
-                    onClick = { addNewTask() },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Spacer(Modifier.width(6.dp))
-                    Text("Add a New Task")
-                }
             }
         }
     }
