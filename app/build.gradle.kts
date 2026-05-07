@@ -90,4 +90,5 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.compose.foundation:foundation:1.6.0")
     implementation("androidx.compose.ui:ui-text-google-fonts:1.11.0")
+    implementation("androidx.core:core-splashscreen:1.2.0")
 }
