@@ -125,7 +125,7 @@ fun TaskCard(
                     )
                 }
             }
-            Column {
+            Column { // For Badges
                 if (task.children.isNotEmpty()) {
                     var doneChildrenCount = 0
                     task.children.forEach { child ->
@@ -137,8 +137,12 @@ fun TaskCard(
                         contentDescription = "${doneChildrenCount}/${task.children.size} Done"
                     )
                 }
-                if (task.repeatType != RepeatTypes.NONE) {
-                    RepeatBadge(task.repeatType)
+                if (task.repeatType != RepeatTypes.NONE && task.repeatType != "none") {  // "none" to guard against old values
+                    Badge(
+                        text = task.repeatType,
+                        imageVector = Icons.Default.Repeat,
+                        contentDescription = "Repeats ${task.repeatType}"
+                    )
                 }
             }
             trailingIcons.forEach { (icon, description, _, tint, modifier) ->
@@ -160,38 +164,9 @@ fun TaskCard(
 }
 
 @Composable
-fun RepeatBadge(frequency: String) {
-    if (frequency == "none") return // to guard against old values
-    Row(
-        modifier = Modifier
-            .width(80.dp)
-//            .padding(horizontal = 8.dp, vertical = 3.dp)
-        ,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Repeat,
-            contentDescription = "Repeats $frequency",
-            modifier = Modifier.size(12.dp),
-            tint = MaterialTheme.colorScheme.onSecondaryContainer
-        )
-        Text(
-            text = frequency,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
-        )
-    }
-}
-
-@Composable
 fun Badge(text: String, imageVector: ImageVector, contentDescription: String) {
     Row(
-        modifier = Modifier
-            .width(80.dp)
-//            .padding(horizontal = 8.dp, vertical = 3.dp)
-        ,
+        modifier = Modifier.width(80.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
