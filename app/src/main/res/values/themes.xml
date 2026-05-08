@@ -2,4 +2,16 @@
 <resources>
 
     <style name="Theme.Tidy" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Background color -->
+        <item name="windowSplashScreenBackground">@color/design_default_color_background</item>
+
+        <!-- Center icon -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+
+        <!-- ✅ ADD THIS - tells the app which theme to use after splash -->
+        <item name="postSplashScreenTheme">@style/Theme.Tidy</item>
+    </style>
+
 </resources>

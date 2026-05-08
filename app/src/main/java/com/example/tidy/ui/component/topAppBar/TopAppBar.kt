@@ -15,17 +15,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.example.tidy.ui.component.taskComponents
+package com.example.tidy.ui.component.topAppBar
 
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.tidy.Task
 
-data class TaskIconAction(
-    val icon: ImageVector,
-    val description: String,
-    val onClick: (Task) -> Unit,
-    val tint: Color = Color.White, //TODO change this
-    val modifier: Modifier = Modifier,
-)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TopAppBar(
+    title: String,
+    modifier: Modifier = Modifier,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    TopAppBar(
+        title = { Text(title, style = MaterialTheme.typography.headlineLarge) },
+        modifier = modifier,
+        actions = actions,
+    )
+}

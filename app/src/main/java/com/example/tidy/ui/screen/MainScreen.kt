@@ -39,10 +39,8 @@ import com.example.tidy.ExportManager
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 import com.example.tidy.viewModels.AddTaskScreenViewModel
-import com.example.tidy.viewModels.ArchiveScreenViewModel
 import com.example.tidy.viewModels.BackupScreenViewModel
 import com.example.tidy.viewModels.HomeScreenViewModel
-import com.example.tidy.viewModels.NoteScreenViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -52,14 +50,12 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
         navController.currentBackStackEntryAsState().value?.destination?.route
 
     val addTaskScreenViewModel =
-        remember { AddTaskScreenViewModel(dbOperation, navController = navController) }
+        remember { AddTaskScreenViewModel(dbOperation) }
     val homeScreenViewModel =
         remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
-    val noteScreenViewModel = remember { NoteScreenViewModel(dbOperation) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
-    val archiveScreenViewModel = remember { ArchiveScreenViewModel(dbOperation) }
 
-    val tabs = listOf(Routes.HOME, Routes.MENU, Routes.SETTINGS)
+    val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val currentPage = tabs[pagerState.currentPage]
     val scope = rememberCoroutineScope()
@@ -88,7 +84,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
         ) {
 
             composable(Routes.HOME) {
-                Box{
+                Box {
                     HorizontalPager(
                         state = pagerState,
                         beyondViewportPageCount = 2, // keeps all 3 pages alive
@@ -96,15 +92,11 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                     ) { page ->
                         when (page) {
                             0 -> HomeScreen(homeScreenViewModel, navController)
-                            1 -> MenuScreen(navController)
+                            1 -> SearchScreen(homeScreenViewModel, navController)
                             2 -> SettingsScreen(navController)
                         }
                     }
                 }
-            }
-
-            composable(Routes.NOTE) {
-                NoteScreen(noteScreenViewModel, navController)
             }
 
             composable("${Routes.ADD_TASK}/{taskId}") { backStackEntry ->
@@ -136,10 +128,6 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
 
             composable(Routes.SEARCH) {
                 SearchScreen(homeScreenViewModel, navController)
-            }
-
-            composable(Routes.ARCHIVE) {
-                ArchiveScreen(archiveScreenViewModel, navController)
             }
         }
     }

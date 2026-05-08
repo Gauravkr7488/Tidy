@@ -16,8 +16,8 @@ android {
         applicationId = name
         minSdk = 24
         targetSdk = 36
-        versionCode = 6
-        versionName = "2.14.7"
+        versionCode = 9
+        versionName = "2.27.18"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -29,6 +29,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            isMinifyEnabled = false
         }
     }
     compileOptions {
@@ -44,6 +49,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.foundation.layout)
+    implementation(libs.androidx.ui.graphics)
     val nav_version = "2.9.7"
 
     // Jetpack Compose integration
@@ -83,4 +89,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.compose.foundation:foundation:1.6.0")
+    implementation("androidx.compose.ui:ui-text-google-fonts:1.11.0")
+    implementation("androidx.core:core-splashscreen:1.2.0")
 }
