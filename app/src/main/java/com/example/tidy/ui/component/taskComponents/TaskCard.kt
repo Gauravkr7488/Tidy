@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2026  Gaurav Kumar
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.example.tidy.ui.component.taskComponents
 
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -108,19 +125,21 @@ fun TaskCard(
                     )
                 }
             }
-            if (task.children.isNotEmpty()) {
-                var doneChildrenCount = 0
-                task.children.forEach { child ->
-                    if (child.done) doneChildrenCount++
+            Column {
+                if (task.children.isNotEmpty()) {
+                    var doneChildrenCount = 0
+                    task.children.forEach { child ->
+                        if (child.done) doneChildrenCount++
+                    }
+                    Badge(
+                        text = "${doneChildrenCount}/${task.children.size}",
+                        imageVector = Icons.Default.TaskAlt,
+                        contentDescription = "${doneChildrenCount}/${task.children.size} Done"
+                    )
                 }
-                Badge(
-                    text = "${doneChildrenCount}/${task.children.size}",
-                    imageVector = Icons.Default.TaskAlt,
-                    contentDescription = "${doneChildrenCount}/${task.children.size} Done"
-                )
-            }
-            if (task.repeatType != RepeatTypes.NONE) {
-                RepeatBadge(task.repeatType)
+                if (task.repeatType != RepeatTypes.NONE) {
+                    RepeatBadge(task.repeatType)
+                }
             }
             trailingIcons.forEach { (icon, description, _, tint, modifier) ->
                 Icon(
@@ -146,7 +165,8 @@ fun RepeatBadge(frequency: String) {
     Row(
         modifier = Modifier
             .width(80.dp)
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+//            .padding(horizontal = 8.dp, vertical = 3.dp)
+        ,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -170,7 +190,8 @@ fun Badge(text: String, imageVector: ImageVector, contentDescription: String) {
     Row(
         modifier = Modifier
             .width(80.dp)
-            .padding(horizontal = 8.dp, vertical = 3.dp),
+//            .padding(horizontal = 8.dp, vertical = 3.dp)
+        ,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
