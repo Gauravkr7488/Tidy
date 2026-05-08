@@ -50,21 +50,23 @@ fun TaskDeleteDialog(
                         append("'?")
                     }
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable { deleteChildren = !deleteChildren }
-                        .padding(vertical = 4.dp)
-                ) {
-                    Checkbox(
-                        checked = deleteChildren,
-                        onCheckedChange = { deleteChildren = it }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Also delete subtasks")
+                if (task.children.isNotEmpty()){
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.small)
+                            .clickable { deleteChildren = !deleteChildren }
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Checkbox(
+                            checked = deleteChildren,
+                            onCheckedChange = { deleteChildren = it }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Also delete subtasks")
+                    }
                 }
             }
         },
