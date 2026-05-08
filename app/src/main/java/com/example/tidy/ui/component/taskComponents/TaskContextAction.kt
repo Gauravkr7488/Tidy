@@ -25,5 +25,5 @@ data class TaskContextAction(
     val icon: ImageVector,
     val description: String,
     val onClick: () -> Unit,
-    val color : Color = Color.White
+    val color : Color = Color.Unspecified
 )
