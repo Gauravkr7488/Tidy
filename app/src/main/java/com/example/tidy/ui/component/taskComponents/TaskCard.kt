@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -26,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -106,6 +108,17 @@ fun TaskCard(
                     )
                 }
             }
+            if (task.children.isNotEmpty()) {
+                var doneChildrenCount = 0
+                task.children.forEach { child ->
+                    if (child.done) doneChildrenCount++
+                }
+                Badge(
+                    text = "${doneChildrenCount}/${task.children.size}",
+                    imageVector = Icons.Default.TaskAlt,
+                    contentDescription = "${doneChildrenCount}/${task.children.size} Done"
+                )
+            }
             if (task.repeatType != RepeatTypes.NONE) {
                 RepeatBadge(task.repeatType)
             }
@@ -127,9 +140,6 @@ fun TaskCard(
     }
 }
 
-// ── Repeat badge ─────────────────────────────────────────────────────────────
-
-
 @Composable
 fun RepeatBadge(frequency: String) {
     if (frequency == "none") return // to guard against old values
@@ -142,12 +152,36 @@ fun RepeatBadge(frequency: String) {
     ) {
         Icon(
             imageVector = Icons.Default.Repeat,
-            contentDescription = null,
+            contentDescription = "Repeats $frequency",
             modifier = Modifier.size(12.dp),
             tint = MaterialTheme.colorScheme.onSecondaryContainer
         )
         Text(
             text = frequency,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+    }
+}
+
+@Composable
+fun Badge(text: String, imageVector: ImageVector, contentDescription: String) {
+    Row(
+        modifier = Modifier
+            .width(80.dp)
+            .padding(horizontal = 8.dp, vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Icon(
+            imageVector = imageVector,
+            contentDescription = contentDescription,
+            modifier = Modifier.size(12.dp),
+            tint = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+        Text(
+            text = text,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSecondaryContainer

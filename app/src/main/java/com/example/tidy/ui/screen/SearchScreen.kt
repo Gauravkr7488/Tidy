@@ -31,7 +31,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
@@ -163,38 +162,22 @@ fun SearchScreen(
                     ),
                 ) {
                     items(filteredTasks, key = { it.id }) { task ->
-                        if (task.note) {
-                            TaskCard(
-                                task = task,
-                                onClick = { homeScreenViewModel.editTask(task) },
-                                trailingIcons = listOf(
-                                    TaskIconAction(
-                                        icon = Icons.AutoMirrored.Filled.Article,
-                                        description = "Note",
-                                        onClick = {},
-                                        tint = MaterialTheme.colorScheme.primary,
+                        TaskCard(
+                            task = task,
+                            onClick = { homeScreenViewModel.editTask(task) },
+                            trailingIcons = buildList {
+                                if (task.hide) {
+                                    add(
+                                        TaskIconAction(
+                                            icon = Icons.Default.Archive,
+                                            description = "Archived",
+                                            onClick = {},
+                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                        )
                                     )
-                                )
-                            )
-                        } else if (task.hide) {
-                            TaskCard(
-                                task = task,
-                                onClick = { homeScreenViewModel.editTask(task) },
-                                trailingIcons = listOf(
-                                    TaskIconAction(
-                                        icon = Icons.Default.Archive,
-                                        description = "Archived",
-                                        onClick = {},
-                                        tint = MaterialTheme.colorScheme.primary,
-                                    )
-                                )
-                            )
-                        } else {
-                            TaskCard(
-                                task = task,
-                                onClick = { homeScreenViewModel.editTask(task) }
-                            )
-                        }
+                                }
+                            }
+                        )
                     }
                 }
             }
