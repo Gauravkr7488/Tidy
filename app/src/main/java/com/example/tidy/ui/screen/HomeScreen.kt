@@ -272,13 +272,16 @@ fun contextMenuOptions(
             label = "Edit",
             icon = Icons.Default.Create,
             description = "Edit Task",
-            onClick = { homeScreenViewModel.editTask(task) }
+            onClick = { homeScreenViewModel.editTask(task) },
+            color = MaterialTheme.colorScheme.onTertiaryContainer
         ),
         TaskContextAction(
             label = "Skip",
             icon = Icons.Default.SkipNext,
             description = "Skip Task",
-            onClick = { homeScreenViewModel.skipTask(task) }
+            onClick = { homeScreenViewModel.skipTask(task) },
+            color = MaterialTheme.colorScheme.onTertiaryContainer
+
         ),
         TaskContextAction(
             label = "Delete",
