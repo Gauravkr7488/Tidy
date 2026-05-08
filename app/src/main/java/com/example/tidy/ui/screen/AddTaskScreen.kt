@@ -39,6 +39,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -101,6 +102,7 @@ fun AddTaskScreen(
     var repeatDays by remember { mutableStateOf("") }
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
     val task by remember { mutableStateOf(Task(title = "")) }
+    var showAlertDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         coroutineScope.launch {
             val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -131,23 +133,29 @@ fun AddTaskScreen(
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
-                            task.children.forEach { child ->
-                                addTaskScreenViewModel.addTask(child)
+                            if (taskTitle != "") {
+                                task.children.forEach { child ->
+                                    addTaskScreenViewModel.addTask(child)
+                                }
+                                val newTask = task.copy(
+                                    id = taskId,
+                                    title = taskTitle,
+                                    note = note,
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
+                                )
+                                addTaskScreenViewModel.addTask(newTask) // once to attaching to objectbox
+                                newTask.children.addAll(task.children)
+                                addTaskScreenViewModel.addTask(newTask) // once for the children to persist
+                                showFab = false
+                                navController.popBackStack()
+                            }else{
+                                @Suppress("AssignedValueIsNeverRead")
+                                showAlertDialog = true
                             }
-                            val newTask = task.copy(
-                                id = taskId,
-                                title = taskTitle,
-                                note = note,
-                                repeatType = repeatType,
-                                repeatDays = repeatDays,
-                                description = description,
-                            )
-                            addTaskScreenViewModel.addTask(newTask) // once to attaching to objectbox
-                            newTask.children.addAll(task.children)
-                            addTaskScreenViewModel.addTask(newTask) // once for the children to persist
-                            showFab = false
-                            navController.popBackStack()
                         }
+
                     },
                     modifier = Modifier
                         .size(80.dp)
@@ -211,8 +219,25 @@ fun AddTaskScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
+            if (showAlertDialog){
+                EmptyTitleDialog { showAlertDialog = false }
+            }
         }
     }
+}
+
+@Composable
+fun EmptyTitleDialog(onDismiss: () -> Unit){
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {Text("Please Enter Title")},
+        text = { Text("Task can not be saved without a title.") },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Ok")
+            }
+        }
+    )
 }
 
 @Composable
