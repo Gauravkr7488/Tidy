@@ -14,9 +14,9 @@ A personal management app with all necessary features.
 
 ## Screenshots
 
-| ![1](https://github.com/user-attachments/assets/868d27e0-2bc8-43a0-ac32-12c19c7f0cc7) | ![2](https://github.com/user-attachments/assets/552f53cf-d2e2-415a-9209-a19414d0e468) |
+| ![1](https://github.com/user-attachments/assets/da133fd3-d8dc-450e-b37f-57c80970cd62) | ![2](https://github.com/user-attachments/assets/f12d3417-e9a6-44ff-8145-8069210fb727) |
 |:------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------:|
-| ![3](https://github.com/user-attachments/assets/2cbb3bc8-ff8c-40d2-8a9f-d381a7b286c0) | ![4](https://github.com/user-attachments/assets/49a8ed3a-5983-45d8-80e8-cf1d2062f376) |
+| ![3](https://github.com/user-attachments/assets/a63099bc-7db2-4ff1-9f3e-86316d3429c6) | ![4](https://github.com/user-attachments/assets/49a8ed3a-5983-45d8-80e8-cf1d2062f376) |
 
 ## License
 
@@ -29,7 +29,7 @@ See the LICENSE file for full details.
 ## Inspiration
 
 This project was inspired by Grit (https://github.com/shub39/Grit)
-by shub39.
+by shub39 and Tasks (https://github.com/tasks/tasks).
 
 ## Author
 
