@@ -136,7 +136,13 @@ fun HomeScreen(
 
             }
         },
-        topBar = { TopAppBar("My Tasks") }
+        topBar = {
+            var doneTaskCount = 0
+            tasks.forEach { task ->
+                if (task.done) doneTaskCount++
+            }
+            TopAppBar("My Tasks", subtitle = "$doneTaskCount/${tasks.size} tasks Completed")
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
