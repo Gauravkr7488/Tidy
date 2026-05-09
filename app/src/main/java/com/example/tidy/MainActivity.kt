@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var lastBoxReset: Box<LastReset>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()  // ✅ must be first
+//        installSplashScreen()  // ✅ must be first
         super.onCreate(savedInstanceState)
         val app = application as App
         taskBox = app.boxStore.boxFor(Task::class.java)
