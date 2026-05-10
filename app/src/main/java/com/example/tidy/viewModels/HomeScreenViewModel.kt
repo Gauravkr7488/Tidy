@@ -136,7 +136,7 @@ class HomeScreenViewModel(
                     val newTask = task.copy(hide = false)
                     dbOperation.saveTask(newTask)
                 }
-                if (task.repeatType == RepeatTypes.WEEKLY && task.repeatDays.contains(todayDay)) {
+                if ((task.repeatType == RepeatTypes.WEEKLY || task.repeatType == "weekly") && task.repeatDays.contains(todayDay)) { // "weekly" for old tasks
                     val newTask = task.copy(hide = false)
                     dbOperation.saveTask(newTask)
                 }
