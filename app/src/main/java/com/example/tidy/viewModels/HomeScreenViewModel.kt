@@ -46,6 +46,8 @@ class HomeScreenViewModel(
 
     init {
         viewModelScope.launch {
+            tasks.forEach { task -> repeatFix(task) } // old repeat migration, can be removed after one run
+            refreshTasks()
             resetTasksForToday()
         }
     }
@@ -161,4 +163,13 @@ class HomeScreenViewModel(
         navController.navigate("${Routes.ADD_TASK}/${task.id}")
     }
 
+    suspend fun repeatFix(task: Task) {
+        var newTask: Task = task
+        when (task.repeatType) {
+            "daily" -> newTask = task.copy(repeatType = RepeatTypes.DAILY)
+            "weekly" -> newTask = task.copy(repeatType = RepeatTypes.WEEKLY)
+            "monthly" -> newTask = task.copy(repeatType = RepeatTypes.MONTHLY)
+        }
+        dbOperation.saveTask(newTask)
+    }
 }
