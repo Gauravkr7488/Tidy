@@ -140,7 +140,12 @@ fun HomeScreen(
                         tasks.filter { !it.done },
                         key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         SubTaskCard(
-                            task, homeScreenViewModel, modifier = Modifier.animateItem(),
+                            task,
+                            toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
+                            deleteTask = homeScreenViewModel::deleteTask,
+                            onEdit = homeScreenViewModel::editTask,
+                            onSkip = homeScreenViewModel::skipTask,
+                            modifier = Modifier.animateItem(),
                         )
                     }
 
@@ -148,7 +153,12 @@ fun HomeScreen(
 
                     items(tasks.filter { it.done }, key = { it.id }) { task ->
                         SubTaskCard(
-                            task, homeScreenViewModel, modifier = Modifier.animateItem(),
+                            task,
+                            toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
+                            deleteTask = homeScreenViewModel::deleteTask,
+                            onEdit = homeScreenViewModel::editTask,
+                            onSkip = homeScreenViewModel::skipTask,
+                            modifier = Modifier.animateItem(),
                         )
                     }
                 }

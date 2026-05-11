@@ -26,6 +26,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -36,16 +40,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import com.example.tidy.Task
 import com.example.tidy.ui.component.taskComponents.TaskCard
+import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
-import com.example.tidy.ui.screen.contextMenuOptions
-import com.example.tidy.viewModels.HomeScreenViewModel
 
 
 @Composable
 fun SubTaskCard(
     task: Task,
-    homeScreenViewModel: HomeScreenViewModel,
+    toggleDoneStatus: (Task) -> Unit,
+    deleteTask: (Long, Boolean) -> Unit,
+    onEdit: (Task) -> Unit,
+    onSkip: (Task) -> Unit,
     modifier: Modifier = Modifier,
     depth: Int = 0,
     last: Boolean = false,
@@ -66,11 +72,11 @@ fun SubTaskCard(
                 task = task,
                 onClick = {
                     if (task.children.isNotEmpty()) expanded =
-                        !expanded else homeScreenViewModel.toggleDoneStatus(task)
+                        !expanded else toggleDoneStatus(task)
                 },
                 contextMenuOptions = contextMenuOptions(
-                    task,
-                    homeScreenViewModel
+                    { onEdit(task) },
+                    { onSkip(task) }
                 ) { showDeleteDialog = true },
                 leadingIcons =
                     buildList {
@@ -88,7 +94,7 @@ fun SubTaskCard(
                                 TaskIconAction(
                                     icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
                                     description = "",
-                                    onClick = { homeScreenViewModel.toggleDoneStatus(task) },
+                                    onClick = { toggleDoneStatus(task) },
                                 )
                             )
                         }
@@ -99,7 +105,7 @@ fun SubTaskCard(
             TaskDeleteDialog(
                 task = task,
                 onDismiss = { showDeleteDialog = !showDeleteDialog },
-                onDeleteClick = { homeScreenViewModel.deleteTask(task.id, it) }
+                onDeleteClick = { deleteTask(task.id, it) }
             )
         }
         if (task.children.isNotEmpty() && expanded) {
@@ -111,13 +117,50 @@ fun SubTaskCard(
                 key(child.id) {
                     SubTaskCard(
                         task = child,
-                        homeScreenViewModel = homeScreenViewModel,
                         depth = depth + 1,
                         last = child == task.children.last(),
-                        list = passingList
+                        list = passingList,
+                        toggleDoneStatus = toggleDoneStatus,
+                        deleteTask = deleteTask,
+                        onEdit = onEdit,
+                        onSkip = onSkip,
+                        modifier = modifier
                     )
                 }
             }
         }
     }
+}
+
+
+@Composable
+fun contextMenuOptions(
+    onEdit: () -> Unit,
+    onSkip: () -> Unit,
+    onDelete: () -> Unit,
+): List<TaskContextAction> {
+    return listOf(
+        TaskContextAction(
+            label = "Edit",
+            icon = Icons.Default.Create,
+            description = "Edit Task",
+            onClick = onEdit,
+            color = MaterialTheme.colorScheme.onTertiaryContainer
+        ),
+        TaskContextAction(
+            label = "Skip",
+            icon = Icons.Default.SkipNext,
+            description = "Skip Task",
+            onClick = onSkip,
+            color = MaterialTheme.colorScheme.onTertiaryContainer
+
+        ),
+        TaskContextAction(
+            label = "Delete",
+            icon = Icons.Default.Delete,
+            description = "Delete Task",
+            onClick = onDelete,
+            color = MaterialTheme.colorScheme.error
+        )
+    )
 }
