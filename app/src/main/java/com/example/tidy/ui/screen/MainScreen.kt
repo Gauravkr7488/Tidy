@@ -123,7 +123,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
             }
 
             composable(Routes.BACKUP) {
-                BackupScreen(backupScreenViewModel, navController)
+                BackupScreen(backupScreenViewModel)
             }
 
             composable(Routes.SEARCH) {

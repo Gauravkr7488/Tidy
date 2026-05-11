@@ -16,6 +16,7 @@
  */
 package com.example.tidy
 
+import com.example.tidy.Utils.getCurrentDate
 import io.objectbox.Box
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -94,16 +95,14 @@ class DbOperation(
         return@withContext taskBox.put(tasks)
     }
 
-    suspend fun getLastReset(): LastReset? = withContext(Dispatchers.IO) {
-        return@withContext lastBoxReset.get(1)
+    suspend fun getLastResetDate() = withContext(Dispatchers.IO) {
+        var lastResetDate = lastBoxReset.get(1).lastResetDate
+        if (lastResetDate == null) lastResetDate = getCurrentDate()
+        return@withContext lastResetDate
     }
 
     suspend fun setLastResetToday(todayDate: String): Long = withContext(Dispatchers.IO) {
-        val l = lastBoxReset.all
-        if (l.isNullOrEmpty()) {
-            return@withContext lastBoxReset.put(LastReset(lastResetAt = todayDate))
-        } else {
-            return@withContext lastBoxReset.put(LastReset(id = 1, lastResetAt = todayDate))
-        }
+        val reset = LastReset(id = 1, lastResetDate = todayDate)
+        lastBoxReset.put(reset)
     }
 }

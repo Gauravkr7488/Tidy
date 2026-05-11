@@ -38,13 +38,13 @@ data class Task(
     lateinit var children: ToMany<Task>
 
     @Backlink(to = "children")
-    lateinit var parents: ToMany<Task>
+    lateinit var parents: ToMany<Task>  // TODO
 }
 
 @Entity
 data class LastReset(
-    @Id var id: Long = 0,
-    var lastResetAt: String
+    @Id var id: Long = 1,
+    var lastResetDate: String?
 )
 
 data class TaskDto(
@@ -61,7 +61,7 @@ data class TaskDto(
     var createdAt: Long = System.currentTimeMillis(),
 )
 
-fun Task.toDto(): TaskDto {
+fun Task.toTaskDto(): TaskDto {
     return TaskDto(
         id = id,
         title = title,

@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:487149403695391365",
-      "lastPropertyId": "2:1299498313448653914",
+      "lastPropertyId": "3:2474048856595795511",
       "name": "LastReset",
       "properties": [
         {
@@ -15,8 +15,8 @@
           "flags": 1
         },
         {
-          "id": "2:1299498313448653914",
-          "name": "lastResetAt",
+          "id": "3:2474048856595795511",
+          "name": "lastResetDate",
           "type": 9
         }
       ],
@@ -91,7 +91,9 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    1299498313448653914
+  ],
   "retiredRelationUids": [
     6825170327699755278
   ],
