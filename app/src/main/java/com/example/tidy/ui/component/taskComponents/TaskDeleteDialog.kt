@@ -32,7 +32,7 @@ import com.example.tidy.Task
 fun TaskDeleteDialog(
     task: Task,
     onDismiss: () -> Unit,
-    onDeleteClick: (Long, Boolean) -> Unit,
+    onDeleteClick: (Boolean) -> Unit,
 ) {
     var deleteChildren by remember { mutableStateOf(false) }
 
@@ -50,7 +50,7 @@ fun TaskDeleteDialog(
                         append("'?")
                     }
                 )
-                if (task.children.isNotEmpty()){
+                if (task.children.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -72,7 +72,7 @@ fun TaskDeleteDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                onDeleteClick(task.id, deleteChildren)
+                onDeleteClick(deleteChildren)
                 onDismiss()
             }) {
                 Text("Delete", color = MaterialTheme.colorScheme.error)

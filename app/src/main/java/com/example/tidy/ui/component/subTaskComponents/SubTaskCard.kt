@@ -99,7 +99,7 @@ fun SubTaskCard(
             TaskDeleteDialog(
                 task = task,
                 onDismiss = { showDeleteDialog = !showDeleteDialog },
-                onDeleteClick = homeScreenViewModel::deleteTask
+                onDeleteClick = { homeScreenViewModel.deleteTask(task.id, it) }
             )
         }
         if (task.children.isNotEmpty() && expanded) {
