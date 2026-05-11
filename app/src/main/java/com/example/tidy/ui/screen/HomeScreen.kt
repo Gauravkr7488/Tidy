@@ -38,7 +38,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -53,10 +52,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.tidy.Task
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.subTaskComponents.SubTaskCard
-import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.HomeScreenViewModel
 
@@ -184,36 +181,4 @@ fun EmptyTaskList(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
-}
-
-@Composable
-fun contextMenuOptions(
-    task: Task,
-    homeScreenViewModel: HomeScreenViewModel,
-    onDeleteClick: () -> Unit,
-): List<TaskContextAction> {
-    return listOf(
-        TaskContextAction(
-            label = "Edit",
-            icon = Icons.Default.Create,
-            description = "Edit Task",
-            onClick = { homeScreenViewModel.editTask(task) },
-            color = MaterialTheme.colorScheme.onTertiaryContainer
-        ),
-        TaskContextAction(
-            label = "Skip",
-            icon = Icons.Default.SkipNext,
-            description = "Skip Task",
-            onClick = { homeScreenViewModel.skipTask(task) },
-            color = MaterialTheme.colorScheme.onTertiaryContainer
-
-        ),
-        TaskContextAction(
-            label = "Delete",
-            icon = Icons.Default.Delete,
-            description = "Delete Task",
-            onClick = onDeleteClick,
-            color = MaterialTheme.colorScheme.error
-        )
-    )
 }
