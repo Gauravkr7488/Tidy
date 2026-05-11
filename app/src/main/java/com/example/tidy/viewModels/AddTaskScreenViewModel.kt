@@ -33,4 +33,8 @@ class AddTaskScreenViewModel(
         val i: Long = dbOperation.saveTask(task)
         dbOperation.updateChildrenRepeatStatus(i)
     }
+
+    suspend fun attach(task: Task){
+        dbOperation.attach(task)
+    }
 }

@@ -97,4 +97,8 @@ class DbOperation(
         val reset = LastReset(id = 1, lastResetDate = todayDate)
         lastBoxReset.put(reset)
     }
+
+    suspend fun attach(task: Task)= withContext(Dispatchers.IO){
+        taskBox.attach(task)
+    }
 }
