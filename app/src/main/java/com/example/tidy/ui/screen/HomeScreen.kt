@@ -161,79 +161,17 @@ fun HomeScreen(
                     items(
                         tasks.filter { !it.done },
                         key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
-                        if (task.children.isEmpty()) {
-                            var showDeleteDialog by remember { mutableStateOf(false) }
-                            TaskCard(
-                                modifier = Modifier.animateItem(),
-                                task = task,
-                                onClick = {
-                                    homeScreenViewModel.toggleDoneStatus(task)
-                                },
-                                leadingIcons = buildList {
-                                    add(
-                                        TaskIconAction(
-                                            icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
-                                            description = "",
-                                            onClick = { homeScreenViewModel.toggleDoneStatus(task) },
-                                        )
-                                    )
-                                },
-                                contextMenuOptions = contextMenuOptions(
-                                    task,
-                                    homeScreenViewModel
-                                ) { showDeleteDialog = true },
-                            )
-                            if (showDeleteDialog) {
-                                TaskDeleteDialog(
-                                    task = task,
-                                    onDismiss = { showDeleteDialog = !showDeleteDialog },
-                                    onDeleteClick = homeScreenViewModel::deleteTask
-                                )
-                            }
-                        } else {
-                            SubTaskCard(
-                                task, homeScreenViewModel, modifier = Modifier.animateItem(),
-                            )
-                        }
+                        SubTaskCard(
+                            task, homeScreenViewModel, modifier = Modifier.animateItem(),
+                        )
                     }
 
                     item { Spacer(modifier = Modifier.heightIn(10.dp)) }
 
                     items(tasks.filter { it.done }, key = { it.id }) { task ->
-                        if (task.children.isEmpty()) {
-                            var showDeleteDialog by remember { mutableStateOf(false) }
-                            TaskCard(
-                                modifier = Modifier.animateItem(),
-                                task = task,
-                                onClick = {
-                                    homeScreenViewModel.toggleDoneStatus(task)
-                                },
-                                contextMenuOptions = contextMenuOptions(
-                                    task,
-                                    homeScreenViewModel
-                                ) { showDeleteDialog = true },
-                                leadingIcons = buildList {
-                                    add(
-                                        TaskIconAction(
-                                            icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
-                                            description = "",
-                                            onClick = { homeScreenViewModel.toggleDoneStatus(task) },
-                                        )
-                                    )
-                                },
-                            )
-                            if (showDeleteDialog) {
-                                TaskDeleteDialog(
-                                    task = task,
-                                    onDismiss = { showDeleteDialog = !showDeleteDialog },
-                                    onDeleteClick = homeScreenViewModel::deleteTask
-                                )
-                            }
-                        } else {
-                            SubTaskCard(
-                                task, homeScreenViewModel, modifier = Modifier.animateItem(),
-                            )
-                        }
+                        SubTaskCard(
+                            task, homeScreenViewModel, modifier = Modifier.animateItem(),
+                        )
                     }
                 }
             }
