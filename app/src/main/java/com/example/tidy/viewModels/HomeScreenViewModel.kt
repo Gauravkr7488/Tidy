@@ -26,14 +26,13 @@ import androidx.navigation.NavController
 import com.example.tidy.DbOperation
 import com.example.tidy.ExportManager
 import com.example.tidy.Task
+import com.example.tidy.Utils.getCurrentDate
+import com.example.tidy.Utils.getCurrentDay
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
 class HomeScreenViewModel(
     private val dbOperation: DbOperation,
@@ -118,37 +117,28 @@ class HomeScreenViewModel(
         }
     }
 
-    private fun resetTasksForToday() {
-        viewModelScope.launch {
-            val todayDate =
-                SimpleDateFormat("dd", Locale.getDefault())
-                    .format(Calendar.getInstance().time)
-            val todayDay = SimpleDateFormat("EEE", Locale.getDefault())
-                .format(Calendar.getInstance().time)
-                .uppercase() // gives "MON", "TUE" etc.
+    private suspend fun resetTasksForToday() {
+        val todayDate = getCurrentDate()
+        val todayDay = getCurrentDay()
 
-            val existingReset = dbOperation.getLastReset()
-            if (existingReset?.lastResetAt == todayDate) return@launch
+        val lastResetDate = dbOperation.getLastResetDate()
+        if (lastResetDate == todayDate) return
 
-            dbOperation.setLastResetToday(todayDate = todayDate)
+        dbOperation.setLastResetToday(todayDate = todayDate)
 
-            val hiddenTasks = dbOperation.taskGetAll().filter { task -> task.hide }
-            hiddenTasks.forEach { task ->
-                if (task.repeatType == RepeatTypes.NONE || task.repeatType == RepeatTypes.DAILY) {
-                    val newTask = task.copy(hide = false)
-                    dbOperation.saveTask(newTask)
-                }
-                if (task.repeatType == RepeatTypes.WEEKLY && task.repeatDays.contains(todayDay)) {
-                    val newTask = task.copy(hide = false)
-                    dbOperation.saveTask(newTask)
-                }
-                if (task.repeatType == RepeatTypes.MONTHLY && task.repeatDays.contains(todayDate)) {
-                    val newTask = task.copy(hide = false)
-                    dbOperation.saveTask(newTask)
-                }
+        val hiddenTasks = dbOperation.taskGetAll().filter { task -> task.hide }
+        hiddenTasks.forEach { task ->
+            val shouldUnhide = when (task.repeatType) {
+                RepeatTypes.NONE, RepeatTypes.DAILY -> true
+                RepeatTypes.WEEKLY -> task.repeatDays.contains(todayDay)
+                RepeatTypes.MONTHLY -> task.repeatDays.contains(todayDate)
+                else -> false
             }
-            refreshTasks()
+            if (shouldUnhide) {
+                dbOperation.saveTask(task.copy(hide = false))
+            }
         }
+        refreshTasks()
     }
 
     @OptIn(DelicateCoroutinesApi::class)

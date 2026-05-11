@@ -61,7 +61,7 @@ data class TaskDto(
     var createdAt: Long = System.currentTimeMillis(),
 )
 
-fun Task.toDto(): TaskDto {
+fun Task.toTaskDto(): TaskDto {
     return TaskDto(
         id = id,
         title = title,

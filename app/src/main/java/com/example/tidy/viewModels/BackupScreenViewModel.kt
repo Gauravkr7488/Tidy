@@ -23,103 +23,90 @@ import android.widget.Toast
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
 import com.example.tidy.Task
 import com.example.tidy.TaskDto
-import com.example.tidy.toDto
+import com.example.tidy.Utils.createBackupJson
 import com.example.tidy.toTask
 import com.google.gson.Gson
-import kotlinx.coroutines.launch
 
 class BackupScreenViewModel(
     private val dbOperation: DbOperation
-) : ViewModel() {
-    fun createBackup(
+) {
+    suspend fun createBackup(
         context: Context,
         uri: Uri
     ) {
-        viewModelScope.launch {
-            try {
-                val tasks = dbOperation.taskGetAll()
-                val dtoTasks = tasks.map { it.toDto() }
-                val lastReset = dbOperation.getLastReset()
-                val backupDto = BackupDto(lastReset?.lastResetAt, dtoTasks)
-                val json = Gson().toJson(backupDto)
+        try {
+            val json = createBackupJson(dbOperation.taskGetAll(),dbOperation.getLastResetDate())
 
-                context.contentResolver
-                    .openOutputStream(uri)
-                    ?.use { stream ->
-                        stream.write(json.toByteArray())
-                    }
-
-                Toast.makeText(context, "Backup successful", Toast.LENGTH_SHORT).show()
-
-            } catch (e: Exception) {
-                Toast.makeText(context, "Backup failed", Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
-            }
-        }
-    }
-
-    fun importBackup(
-        context: Context,
-        uri: Uri
-    ) {
-        viewModelScope.launch {
-            val oldTasks = dbOperation.taskGetAll()
-            val oldReset = dbOperation.getLastReset()
-
-            try {
-                val json = context.contentResolver
-                    .openInputStream(uri)
-                    ?.bufferedReader()
-                    ?.readText()
-
-                if (json != null) {
-                    val backupDto = Gson().fromJson(
-                        json,
-                        BackupDto::class.java
-                    )
-                    val taskDtos = backupDto.tasks
-                    val lastResetAt = backupDto.lastResetAt
-                    if (lastResetAt != null){
-                        dbOperation.setLastResetToday(lastResetAt)
-                    }
-                    val idMap = mutableMapOf<Long, Task>()
-
-                    val newTasks = taskDtos.map { dto ->
-                        val task = dto.toTask()
-                        idMap[dto.id] = task
-                        task
-                    }
-
-                    dbOperation.taskDeleteALl()
-                    dbOperation.taskSaveList(newTasks)// to get new ids
-
-//              relation work
-                    taskDtos.forEach { dto ->
-                        val task = idMap[dto.id] ?: return@forEach
-
-                        val children = dto.childTasks?.mapNotNull { oldChildId ->
-                            idMap[oldChildId]
-                        } ?: emptyList()
-
-                        task.children.addAll(children)
-                    }
-                    dbOperation.taskSaveList(newTasks)
-
-                    Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
+            context.contentResolver
+                .openOutputStream(uri)
+                ?.use { stream ->
+                    stream.write(json.toByteArray())
                 }
 
-            } catch (e: Exception) {
+            Toast.makeText(context, "Backup successful", Toast.LENGTH_SHORT).show()
+
+        } catch (e: Exception) {
+            Toast.makeText(context, "Backup failed", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+        }
+    }
+    suspend fun importBackup(
+        context: Context,
+        uri: Uri
+    ) {
+        val oldTasks = dbOperation.taskGetAll()
+        val oldResetDate = dbOperation.getLastResetDate()
+
+        try {
+            val json = context.contentResolver
+                .openInputStream(uri)
+                ?.bufferedReader()
+                ?.readText()
+
+            if (json != null) {
+                val backupDto = Gson().fromJson(
+                    json,
+                    BackupDto::class.java
+                )
+                val taskDtos = backupDto.tasks
+                val lastResetDate = backupDto.lastResetDate
+
+                dbOperation.setLastResetToday(lastResetDate)
+
+                val idMap = mutableMapOf<Long, Task>()
+
+                val newTasks = taskDtos.map { dto ->
+                    val task = dto.toTask()
+                    idMap[dto.id] = task // saves the map of dto.id and task
+                    return@map task
+                }
                 dbOperation.taskDeleteALl()
-                dbOperation.taskSaveList(oldTasks)
-                dbOperation.setLastResetToday(oldReset?.lastResetAt ?: "")
-                Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
+                dbOperation.taskSaveList(newTasks) // to get new ids
+
+//                  relation work
+                taskDtos.forEach { dto ->
+                    val task = idMap[dto.id] ?: return@forEach
+
+                    val children = dto.childTasks?.mapNotNull { oldChildId ->
+                        idMap[oldChildId]
+                    } ?: emptyList()
+
+                    task.children.addAll(children)
+                }
+                dbOperation.taskSaveList(newTasks)
+
+                Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
             }
+
+        } catch (e: Exception) {
+            dbOperation.taskDeleteALl()
+            dbOperation.taskSaveList(oldTasks)
+            dbOperation.setLastResetToday(oldResetDate)
+            Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
         }
     }
 
@@ -143,6 +130,6 @@ class BackupScreenViewModel(
 }
 
 data class BackupDto(
-    val lastResetAt: String?,
+    val lastResetDate: String,
     val tasks: List<TaskDto>
 )

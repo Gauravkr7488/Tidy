@@ -42,39 +42,48 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.tidy.ui.component.SimpleCard
 import com.example.tidy.viewModels.BackupScreenViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun BackupScreen(
     backupScreenViewModel: BackupScreenViewModel,
-    navController: NavController,
 
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     // --- existing launchers, unchanged ---
     val exportLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.CreateDocument("application/json")
         ) { uri ->
-            uri?.let { backupScreenViewModel.createBackup(context, it) }
+            uri?.let {
+                coroutineScope.launch {
+                    backupScreenViewModel.createBackup(context, it)
+                }
+            }
         }
 
     val importLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocument()
         ) { uri ->
-            uri?.let { backupScreenViewModel.importBackup(context, it) }
+            uri?.let {
+                coroutineScope.launch {
+                    backupScreenViewModel.importBackup(context, it)
+                }
+            }
         }
 
     // --- new: auto backup folder picker ---

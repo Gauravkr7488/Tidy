@@ -34,7 +34,8 @@ class App: Application() {
 
         exportManager = ExportManager(
             context = this,
-            taskBox = boxStore.boxFor(Task::class.java)
+            taskBox = boxStore.boxFor(Task::class.java),
+            lastBoxReset = boxStore.boxFor(LastReset::class.java)
         )
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(
