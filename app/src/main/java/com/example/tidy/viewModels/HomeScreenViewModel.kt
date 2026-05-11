@@ -75,7 +75,7 @@ class HomeScreenViewModel(
 
     private suspend fun allParentDone(task: Task): Boolean {
         val parentId = task.parent.target?.id ?: return true
-        val parent = dbOperation.getTask(parentId)
+        val parent = dbOperation.getTask(parentId)?: return false
         val parentDoneStatus = parent.done
         if (parentDoneStatus) allParentDone(parent)
         return false
@@ -104,7 +104,7 @@ class HomeScreenViewModel(
     }
 
     private suspend fun deleteTaskAsync(id: Long, deleteSubtasks: Boolean) {
-        val task = dbOperation.getTask(id)
+        val task = dbOperation.getTask(id)?: return
         if (deleteSubtasks) {
             task.children.forEach { task ->
                 deleteTaskAsync(task.id, true)
@@ -117,7 +117,7 @@ class HomeScreenViewModel(
 
     private suspend fun updateParentStatus(parentId: Long?) {
         if (parentId != null) { // update parent status
-            val parent = dbOperation.getTask(parentId)
+            val parent = dbOperation.getTask(parentId)?: return
             parent.done = parent.children.all { it.done }
             dbOperation.saveTask(parent)
             dbOperation.updateParentDoneStatus(parentId)

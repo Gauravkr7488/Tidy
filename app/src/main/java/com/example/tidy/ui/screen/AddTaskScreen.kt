@@ -139,9 +139,16 @@ fun AddTaskScreen(
                                     repeatDays = repeatDays,
                                     description = description,
                                 )
-                                addTaskScreenViewModel.addTask(task) // once to attaching to objectbox
-                                task.children.addAll(taskChildren)
-                                addTaskScreenViewModel.addTask(task) // once for the children to persist
+                                val savedTaskId = addTaskScreenViewModel.addTask(task) // once to attaching to objectbox
+                                var childIds = emptyList<Long>()
+                                taskChildren.forEach {
+                                    val i = addTaskScreenViewModel.addTask(it)
+                                    childIds = childIds + i
+                                }
+                                val childTasks = childIds.map { addTaskScreenViewModel.getTask(it) }
+                                val freshTask = addTaskScreenViewModel.getTask(savedTaskId) ?: return@launch
+                                freshTask.children.addAll(childTasks)
+                                addTaskScreenViewModel.addTask(freshTask) // once for the children to persist
                                 showFab = false
                                 navController.popBackStack()
                             } else {
