@@ -96,6 +96,7 @@ fun AddTaskScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     var note by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
+    var taskParent: Task? = null
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
@@ -108,6 +109,7 @@ fun AddTaskScreen(
             taskId = task.id
             taskChildren = task.children.toList()
             taskTitle = task.title
+            taskParent = task.parent.target
             description = task.description
             repeatType = task.repeatType
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
@@ -139,16 +141,15 @@ fun AddTaskScreen(
                                     repeatDays = repeatDays,
                                     description = description,
                                 )
-                                val savedTaskId = addTaskScreenViewModel.addTask(task) // once to attaching to objectbox
-                                var childIds = emptyList<Long>()
+                                addTaskScreenViewModel.attach(task)
+                                if (taskParent != null) task.parent.setAndPutTarget(taskParent)
+                                addTaskScreenViewModel.addTask(task)
                                 taskChildren.forEach {
-                                    val i = addTaskScreenViewModel.addTask(it)
-                                    childIds = childIds + i
+                                    addTaskScreenViewModel.attach(it)
+                                    it.parent.setAndPutTarget(task)
+                                    addTaskScreenViewModel.addTask(it)
                                 }
-                                val childTasks = childIds.map { addTaskScreenViewModel.getTask(it) }
-                                val freshTask = addTaskScreenViewModel.getTask(savedTaskId) ?: return@launch
-                                freshTask.children.addAll(childTasks)
-                                addTaskScreenViewModel.addTask(freshTask) // once for the children to persist
+
                                 showFab = false
                                 navController.popBackStack()
                             } else {

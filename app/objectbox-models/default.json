@@ -87,7 +87,7 @@
   ],
   "lastEntityId": "2:4134135661820847018",
   "lastIndexId": "1:5199213098813146411",
-  "lastRelationId": "2:6825170327699755278",
+  "lastRelationId": "3:4972112712845836376",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
@@ -98,7 +98,8 @@
   ],
   "retiredRelationUids": [
     6825170327699755278,
-    7388465258084781688
+    7388465258084781688,
+    4972112712845836376
   ],
   "version": 1
 }
