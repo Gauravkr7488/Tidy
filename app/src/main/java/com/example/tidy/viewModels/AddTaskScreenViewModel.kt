@@ -24,31 +24,13 @@ import com.example.tidy.Task
 class AddTaskScreenViewModel(
     private val dbOperation: DbOperation,
 ) : ViewModel() {
-    private var childFlag: Boolean = false
-    var parentTaskId: Long = 0
-        private set
-
     suspend fun getCurrentTask(taskId: Long): Task? {
-        if (parentTaskId != 0L && !childFlag) {
-            val id = parentTaskId
-            parentTaskId = 0
-            return dbOperation.getTask(id)
-        }
         if (taskId == 0L) return null
         return dbOperation.getTask(taskId)
-    }
-
-    suspend fun startAddNewChild(task: Task) {
-        childFlag = true
-        parentTaskId = dbOperation.saveTask(task)
     }
 
     suspend fun addTask(task: Task) {
         val i: Long = dbOperation.saveTask(task)
         dbOperation.updateChildrenRepeatStatus(i)
-        if (parentTaskId != 0L) {
-            dbOperation.addChild(childId = i, parentId = parentTaskId)
-            childFlag = false
-        }
     }
 }

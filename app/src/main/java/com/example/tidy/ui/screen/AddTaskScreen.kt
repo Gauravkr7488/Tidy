@@ -101,28 +101,26 @@ fun AddTaskScreen(
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
-    val task by remember { mutableStateOf(Task(title = "")) }
+    var task by remember { mutableStateOf(Task(title = "")) }
     var showAlertDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
-            if (task != null) {
-                taskId = task.id
-                taskChildren = task.children.toList()
-                taskTitle = task.title
-                description = task.description
-                repeatType = task.repeatType
-                repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
-                val readable = SimpleDateFormat(
-                    "MMM dd, yyyy hh:mm a",
-                    Locale.getDefault()
-                ).format(Date(task.createdAt))
-                createdAt = readable
-            }
-            if (taskTitle.isEmpty()) {
-                focusRequester.requestFocus()
-                keyboardController?.show()
-            }
+        val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
+        if (task != null) {
+            taskId = task.id
+            taskChildren = task.children.toList()
+            taskTitle = task.title
+            description = task.description
+            repeatType = task.repeatType
+            repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
+            val readable = SimpleDateFormat(
+                "MMM dd, yyyy hh:mm a",
+                Locale.getDefault()
+            ).format(Date(task.createdAt))
+            createdAt = readable
+        }
+        if (taskTitle.isEmpty()) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
@@ -150,12 +148,11 @@ fun AddTaskScreen(
                                 addTaskScreenViewModel.addTask(newTask) // once for the children to persist
                                 showFab = false
                                 navController.popBackStack()
-                            }else{
+                            } else {
                                 @Suppress("AssignedValueIsNeverRead")
                                 showAlertDialog = true
                             }
                         }
-
                     },
                     modifier = Modifier
                         .size(80.dp)
@@ -219,7 +216,7 @@ fun AddTaskScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
-            if (showAlertDialog){
+            if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
             }
         }
@@ -227,10 +224,10 @@ fun AddTaskScreen(
 }
 
 @Composable
-fun EmptyTitleDialog(onDismiss: () -> Unit){
+fun EmptyTitleDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {Text("Please Enter Title")},
+        title = { Text("Please Enter Title") },
         text = { Text("Task can not be saved without a title.") },
         confirmButton = {
             TextButton(onClick = onDismiss) {
