@@ -110,7 +110,7 @@ fun SubTaskCard(
         }
         if (task.children.isNotEmpty() && expanded) {
             val bool =
-                task == task.parents.lastOrNull()?.children?.lastOrNull() // is task last child
+                task == task.parent.target?.children?.lastOrNull() // is task last child
             val passingList =
                 if (depth > 0) list + !bool else list // if task is last child then add false no line would be needed
             task.children.forEach { child ->

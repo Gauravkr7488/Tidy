@@ -57,8 +57,7 @@ class HomeScreenViewModel(
 
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            tasks
-                .filter { it.done && it.parents.all { parent -> parent.done } }
+            tasks.filter { it.done && allParentDone(it) }
                 .forEach { task ->
                     if (task.repeatType != RepeatTypes.NONE) {
                         val updatedTask = task.copy(
@@ -72,6 +71,14 @@ class HomeScreenViewModel(
                 }
             refreshTasks()
         }
+    }
+
+    private suspend fun allParentDone(task: Task): Boolean {
+        val parentId = task.parent.target?.id ?: return true
+        val parent = dbOperation.getTask(parentId)
+        val parentDoneStatus = parent.done
+        if (parentDoneStatus) allParentDone(parent)
+        return false
     }
 
     fun toggleDoneStatus(task: Task) {
@@ -103,7 +110,7 @@ class HomeScreenViewModel(
                 deleteTaskAsync(task.id, true)
             }
         }
-        val parentId = task.parents.firstOrNull()?.id
+        val parentId = task.parent.target?.id
         dbOperation.deleteTask(task.id)
         updateParentStatus(parentId)
     }

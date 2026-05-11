@@ -38,14 +38,6 @@ class DbOperation(
         return@withContext taskBox.all
     }
 
-    suspend fun addChild(childId: Long, parentId: Long): Long? = withContext(Dispatchers.IO) {
-        if (childId == parentId) return@withContext null
-        val childTask = getTask(childId)
-        val parentTask = getTask(parentId)
-        parentTask.children.add(childTask)
-        return@withContext saveTask(parentTask)
-    }
-
 
     suspend fun updateChildrenRepeatStatus(parentId: Long): Unit = withContext(
         Dispatchers.IO
@@ -78,13 +70,13 @@ class DbOperation(
 
     suspend fun updateParentDoneStatus(id: Long): Unit = withContext(Dispatchers.IO) {
         val task = getTask(id)
-        task.parents.forEach { parent ->
-            val freshParent = getTask(parent.id)
-            val allChildrenDone = freshParent.children.all { it.done }
-            freshParent.done = allChildrenDone
-            saveTask(freshParent)
-            updateParentDoneStatus(freshParent.id)
-        }
+        val parentId = task.parent.target?.id ?: return@withContext
+        val freshParent = getTask(parentId)
+        val allChildrenDone = freshParent.children.all { it.done }
+        freshParent.done = allChildrenDone
+        saveTask(freshParent)
+        updateParentDoneStatus(freshParent.id)
+
     }
 
     suspend fun taskDeleteALl() = withContext(Dispatchers.IO) {

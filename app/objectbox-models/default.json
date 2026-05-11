@@ -24,7 +24,7 @@
     },
     {
       "id": "2:4134135661820847018",
-      "lastPropertyId": "9:2598485083078448473",
+      "lastPropertyId": "10:3403352391982937496",
       "name": "Task",
       "properties": [
         {
@@ -72,19 +72,21 @@
           "id": "9:2598485083078448473",
           "name": "createdAt",
           "type": 6
+        },
+        {
+          "id": "10:3403352391982937496",
+          "name": "parentId",
+          "indexId": "1:5199213098813146411",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "Task"
         }
       ],
-      "relations": [
-        {
-          "id": "1:7388465258084781688",
-          "name": "children",
-          "targetId": "2:4134135661820847018"
-        }
-      ]
+      "relations": []
     }
   ],
   "lastEntityId": "2:4134135661820847018",
-  "lastIndexId": "0:0",
+  "lastIndexId": "1:5199213098813146411",
   "lastRelationId": "2:6825170327699755278",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
@@ -95,7 +97,8 @@
     1299498313448653914
   ],
   "retiredRelationUids": [
-    6825170327699755278
+    6825170327699755278,
+    7388465258084781688
   ],
   "version": 1
 }

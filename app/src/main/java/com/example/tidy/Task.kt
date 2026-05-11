@@ -22,11 +22,12 @@ import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToMany
+import io.objectbox.relation.ToOne
 
 @Entity
 data class Task(
     @Id var id: Long = 0,
-    var title: String,
+    var title: String = "",
     var done: Boolean = false,
     var note: Boolean = false,
     var repeatType: String = RepeatTypes.NONE,
@@ -35,10 +36,10 @@ data class Task(
     var hide: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
 ) {
+    @Backlink(to = "parent")
     lateinit var children: ToMany<Task>
 
-    @Backlink(to = "children")
-    lateinit var parents: ToMany<Task>  // TODO
+    lateinit var parent: ToOne<Task>
 }
 
 @Entity
