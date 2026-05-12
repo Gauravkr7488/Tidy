@@ -27,6 +27,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,7 +67,8 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
             }
         }
     )
-    val backupOperations = BackupOperations(dbOperation)
+
+    val backupOperations = remember { BackupOperations(dbOperation) }
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -137,10 +139,6 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
 
             composable(Routes.BACKUP) {
                 BackupScreen(backupOperations)
-            }
-
-            composable(Routes.SEARCH) {
-                SearchScreen(homeScreenViewModel, navController)
             }
         }
     }
