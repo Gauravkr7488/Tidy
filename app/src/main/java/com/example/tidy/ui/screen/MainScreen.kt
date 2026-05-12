@@ -130,13 +130,6 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                 }
             }
 
-            composable(Routes.ADD_TASK) {
-                AddTaskScreen(
-                    addTaskScreenViewModel,
-                    navController,
-                )
-            }
-
             composable(Routes.BACKUP) {
                 BackupScreen(backupOperations)
             }
