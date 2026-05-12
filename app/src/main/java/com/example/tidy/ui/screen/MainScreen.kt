@@ -49,10 +49,8 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val addTaskScreenViewModel =
-        remember { AddTaskScreenViewModel(dbOperation) }
-    val homeScreenViewModel =
-        remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
+    val addTaskScreenViewModel = remember { AddTaskScreenViewModel(dbOperation) }
+    val homeScreenViewModel = remember { HomeScreenViewModel(dbOperation, exportManager) }
     val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)

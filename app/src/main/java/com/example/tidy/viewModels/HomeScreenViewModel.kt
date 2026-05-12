@@ -22,14 +22,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavController
 import com.example.tidy.DbOperation
 import com.example.tidy.ExportManager
 import com.example.tidy.Task
 import com.example.tidy.Utils.getCurrentDate
 import com.example.tidy.Utils.getCurrentDay
 import com.example.tidy.constants.RepeatTypes
-import com.example.tidy.constants.Routes
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -37,7 +35,6 @@ import kotlinx.coroutines.launch
 class HomeScreenViewModel(
     private val dbOperation: DbOperation,
     private val exportManager: ExportManager,
-    private val navController: NavController,
 ) : ViewModel() {
 
     var tasks by mutableStateOf<List<Task>>(emptyList())
@@ -152,10 +149,6 @@ class HomeScreenViewModel(
         GlobalScope.launch {
             exportManager.exportSilently()
         }
-    }
-
-    fun editTask(task: Task) {
-        navController.navigate("${Routes.ADD_TASK}/${task.id}")
     }
 
     suspend fun repeatFix(task: Task) {
