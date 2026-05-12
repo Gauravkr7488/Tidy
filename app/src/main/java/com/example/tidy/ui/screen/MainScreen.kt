@@ -27,9 +27,11 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -39,7 +41,7 @@ import com.example.tidy.ExportManager
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 import com.example.tidy.viewModels.AddTaskScreenViewModel
-import com.example.tidy.viewModels.BackupScreenViewModel
+import com.example.tidy.BackupOperations
 import com.example.tidy.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
 
@@ -49,11 +51,22 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val addTaskScreenViewModel =
-        remember { AddTaskScreenViewModel(dbOperation) }
-    val homeScreenViewModel =
-        remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
-    val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
+    val addTaskScreenViewModel = viewModel<AddTaskScreenViewModel>(
+        factory = viewModelFactory {
+            initializer { AddTaskScreenViewModel(dbOperation) }
+        }
+    )
+    val homeScreenViewModel = viewModel<HomeScreenViewModel>(
+        factory = viewModelFactory {
+            initializer {
+                HomeScreenViewModel(
+                    dbOperation,
+                    exportManager
+                )
+            }
+        }
+    )
+    val backupOperations = BackupOperations(dbOperation)
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -123,7 +136,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
             }
 
             composable(Routes.BACKUP) {
-                BackupScreen(backupScreenViewModel)
+                BackupScreen(backupOperations)
             }
 
             composable(Routes.SEARCH) {

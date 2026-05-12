@@ -143,7 +143,7 @@ fun HomeScreen(
                             task,
                             toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
                             deleteTask = homeScreenViewModel::deleteTask,
-                            onEdit = homeScreenViewModel::editTask,
+                            onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
                             modifier = Modifier.animateItem(),
                         )
@@ -156,7 +156,7 @@ fun HomeScreen(
                             task,
                             toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
                             deleteTask = homeScreenViewModel::deleteTask,
-                            onEdit = homeScreenViewModel::editTask,
+                            onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
                             modifier = Modifier.animateItem(),
                         )

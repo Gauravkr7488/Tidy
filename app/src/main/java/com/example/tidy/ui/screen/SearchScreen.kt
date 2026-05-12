@@ -164,7 +164,7 @@ fun SearchScreen(
                     items(filteredTasks, key = { it.id }) { task ->
                         TaskCard(
                             task = task,
-                            onClick = { homeScreenViewModel.editTask(task) },
+                            onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
                             trailingIcons = buildList {
                                 if (task.hide) {
                                     add(
