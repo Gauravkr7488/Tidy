@@ -57,7 +57,7 @@ class HomeScreenViewModel(
 
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            tasks.filter { it.done && allParentDone(it) }
+            tasks.filter { it.done && it.parent.isNull }
                 .forEach { task ->
                     if (task.repeatType != RepeatTypes.NONE) {
                         val updatedTask = task.copy(
@@ -66,19 +66,17 @@ class HomeScreenViewModel(
                         )
                         dbOperation.saveTask(updatedTask)
                     } else {
-                        dbOperation.deleteTask(task.id) // delete one time tasks
+                        deleteTaskAndChildren(task.id) // delete one time tasks
                     }
                 }
             refreshTasks()
         }
     }
 
-    private suspend fun allParentDone(task: Task): Boolean {
-        val parentId = task.parent.target?.id ?: return true
-        val parent = dbOperation.getTask(parentId)?: return false
-        val parentDoneStatus = parent.done
-        if (parentDoneStatus) allParentDone(parent)
-        return false
+    private suspend fun deleteTaskAndChildren(id: Long){
+        val task = dbOperation.getTask(id) ?: return
+        if (task.children.isNotEmpty()) task.children.forEach { deleteTaskAndChildren(it.id) }
+        dbOperation.deleteTask(id)
     }
 
     fun toggleDoneStatus(task: Task) {
