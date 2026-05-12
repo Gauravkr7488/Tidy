@@ -50,12 +50,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tidy.ui.component.SimpleCard
-import com.example.tidy.viewModels.BackupScreenViewModel
+import com.example.tidy.BackupOperations
 import kotlinx.coroutines.launch
 
 @Composable
 fun BackupScreen(
-    backupScreenViewModel: BackupScreenViewModel,
+    backupOperations: BackupOperations,
 
     modifier: Modifier = Modifier
 ) {
@@ -70,7 +70,7 @@ fun BackupScreen(
         ) { uri ->
             uri?.let {
                 coroutineScope.launch {
-                    backupScreenViewModel.createBackup(context, it)
+                    backupOperations.createBackup(context, it)
                 }
             }
         }
@@ -81,14 +81,14 @@ fun BackupScreen(
         ) { uri ->
             uri?.let {
                 coroutineScope.launch {
-                    backupScreenViewModel.importBackup(context, it)
+                    backupOperations.importBackup(context, it)
                 }
             }
         }
 
     // --- new: auto backup folder picker ---
     var autoBackupPath by remember {
-        mutableStateOf(backupScreenViewModel.getAutoBackupPath(context))
+        mutableStateOf(backupOperations.getAutoBackupPath(context))
     }
 
     val folderPickerLauncher =
@@ -102,8 +102,8 @@ fun BackupScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                backupScreenViewModel.setAutoBackupUri(context, it)
-                autoBackupPath = backupScreenViewModel.getAutoBackupPath(context)
+                backupOperations.setAutoBackupUri(context, it)
+                autoBackupPath = backupOperations.getAutoBackupPath(context)
             }
         }
 

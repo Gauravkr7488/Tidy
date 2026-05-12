@@ -41,7 +41,7 @@ import com.example.tidy.ExportManager
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 import com.example.tidy.viewModels.AddTaskScreenViewModel
-import com.example.tidy.viewModels.BackupScreenViewModel
+import com.example.tidy.BackupOperations
 import com.example.tidy.viewModels.HomeScreenViewModel
 import kotlinx.coroutines.launch
 
@@ -66,7 +66,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
             }
         }
     )
-    val backupScreenViewModel = BackupScreenViewModel(dbOperation)
+    val backupOperations = BackupOperations(dbOperation)
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -136,7 +136,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
             }
 
             composable(Routes.BACKUP) {
-                BackupScreen(backupScreenViewModel)
+                BackupScreen(backupOperations)
             }
 
             composable(Routes.SEARCH) {

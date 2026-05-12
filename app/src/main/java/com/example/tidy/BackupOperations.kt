@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.example.tidy.viewModels
+package com.example.tidy
 
 import android.content.Context
 import android.net.Uri
@@ -23,14 +23,10 @@ import android.widget.Toast
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import com.example.tidy.DbOperation
-import com.example.tidy.Task
-import com.example.tidy.TaskDto
 import com.example.tidy.Utils.createBackupJson
-import com.example.tidy.toTask
 import com.google.gson.Gson
 
-class BackupScreenViewModel(
+class BackupOperations(
     private val dbOperation: DbOperation
 ) {
     suspend fun createBackup(
