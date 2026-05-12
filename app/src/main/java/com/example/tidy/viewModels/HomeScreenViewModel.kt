@@ -57,8 +57,7 @@ class HomeScreenViewModel(
 
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            tasks
-                .filter { it.done && it.parents.all { parent -> parent.done } }
+            tasks.filter { it.done && it.parent.isNull }
                 .forEach { task ->
                     if (task.repeatType != RepeatTypes.NONE) {
                         val updatedTask = task.copy(
@@ -67,11 +66,17 @@ class HomeScreenViewModel(
                         )
                         dbOperation.saveTask(updatedTask)
                     } else {
-                        dbOperation.deleteTask(task.id) // delete one time tasks
+                        deleteTaskAndChildren(task.id) // delete one time tasks
                     }
                 }
             refreshTasks()
         }
+    }
+
+    private suspend fun deleteTaskAndChildren(id: Long){
+        val task = dbOperation.getTask(id) ?: return
+        if (task.children.isNotEmpty()) task.children.forEach { deleteTaskAndChildren(it.id) }
+        dbOperation.deleteTask(id)
     }
 
     fun toggleDoneStatus(task: Task) {
@@ -97,20 +102,20 @@ class HomeScreenViewModel(
     }
 
     private suspend fun deleteTaskAsync(id: Long, deleteSubtasks: Boolean) {
-        val task = dbOperation.getTask(id)
+        val task = dbOperation.getTask(id)?: return
         if (deleteSubtasks) {
             task.children.forEach { task ->
                 deleteTaskAsync(task.id, true)
             }
         }
-        val parentId = task.parents.firstOrNull()?.id
+        val parentId = task.parent.target?.id
         dbOperation.deleteTask(task.id)
         updateParentStatus(parentId)
     }
 
     private suspend fun updateParentStatus(parentId: Long?) {
         if (parentId != null) { // update parent status
-            val parent = dbOperation.getTask(parentId)
+            val parent = dbOperation.getTask(parentId)?: return
             parent.done = parent.children.all { it.done }
             dbOperation.saveTask(parent)
             dbOperation.updateParentDoneStatus(parentId)

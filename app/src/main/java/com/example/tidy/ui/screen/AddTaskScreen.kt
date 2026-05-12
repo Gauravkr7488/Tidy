@@ -96,12 +96,12 @@ fun AddTaskScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     var note by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
+    var taskParent: Task? = null
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
-    var task by remember { mutableStateOf(Task(title = "")) }
     var showAlertDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
@@ -109,6 +109,7 @@ fun AddTaskScreen(
             taskId = task.id
             taskChildren = task.children.toList()
             taskTitle = task.title
+            taskParent = task.parent.target
             description = task.description
             repeatType = task.repeatType
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
@@ -132,10 +133,7 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                task.children.forEach { child ->
-                                    addTaskScreenViewModel.addTask(child)
-                                }
-                                val newTask = task.copy(
+                                val task = Task(
                                     id = taskId,
                                     title = taskTitle,
                                     note = note,
@@ -143,9 +141,15 @@ fun AddTaskScreen(
                                     repeatDays = repeatDays,
                                     description = description,
                                 )
-                                addTaskScreenViewModel.addTask(newTask) // once to attaching to objectbox
-                                newTask.children.addAll(task.children)
-                                addTaskScreenViewModel.addTask(newTask) // once for the children to persist
+                                addTaskScreenViewModel.attach(task)
+                                if (taskParent != null) task.parent.setAndPutTarget(taskParent)
+                                addTaskScreenViewModel.addTask(task)
+                                taskChildren.forEach {
+                                    addTaskScreenViewModel.attach(it)
+                                    it.parent.setAndPutTarget(task)
+                                    addTaskScreenViewModel.addTask(it)
+                                }
+
                                 showFab = false
                                 navController.popBackStack()
                             } else {
@@ -205,7 +209,6 @@ fun AddTaskScreen(
             )
             NewSubTaskMenu(taskChildren) {
                 val childTask = Task(title = it)
-                task.children.add(childTask)
                 taskChildren = taskChildren + childTask
             }
             if (createdAt != "") {
