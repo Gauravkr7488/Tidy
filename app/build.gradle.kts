@@ -86,9 +86,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended.v20240900)
     implementation(libs.gson)
     implementation(libs.androidx.lifecycle.process)
-    implementation(libs.androidx.lifecycle.runtime.ktx.v280)
     implementation(libs.androidx.work.runtime.ktx)
-    implementation(libs.androidx.compose.foundation.v160)
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.core.splashscreen)
 }
