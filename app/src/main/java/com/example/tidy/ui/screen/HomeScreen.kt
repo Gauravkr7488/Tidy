@@ -18,6 +18,7 @@
 package com.example.tidy.ui.screen
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -145,7 +146,7 @@ fun HomeScreen(
                             deleteTask = homeScreenViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
-                            modifier = Modifier.animateItem(),
+                            modifier = Modifier.animateContentSize().animateItem(),
                         )
                     }
 
@@ -158,7 +159,7 @@ fun HomeScreen(
                             deleteTask = homeScreenViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
-                            modifier = Modifier.animateItem(),
+                            modifier = Modifier.animateContentSize().animateItem(),
                         )
                     }
                 }

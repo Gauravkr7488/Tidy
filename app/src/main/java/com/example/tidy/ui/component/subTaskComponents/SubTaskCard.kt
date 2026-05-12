@@ -113,19 +113,20 @@ fun SubTaskCard(
                 task == task.parent.target?.children?.lastOrNull() // is task last child
             val passingList =
                 if (depth > 0) list + !bool else list // if task is last child then add false no line would be needed
-            task.children.forEach { child ->
-                key(child.id) {
-                    SubTaskCard(
-                        task = child,
-                        depth = depth + 1,
-                        last = child == task.children.last(),
-                        list = passingList,
-                        toggleDoneStatus = toggleDoneStatus,
-                        deleteTask = deleteTask,
-                        onEdit = onEdit,
-                        onSkip = onSkip,
-                        modifier = modifier
-                    )
+            Column {
+                task.children.forEach { child ->
+                    key(child.id) {
+                        SubTaskCard(
+                            task = child,
+                            depth = depth + 1,
+                            last = child == task.children.last(),
+                            list = passingList,
+                            toggleDoneStatus = toggleDoneStatus,
+                            deleteTask = deleteTask,
+                            onEdit = onEdit,
+                            onSkip = onSkip,
+                        )
+                    }
                 }
             }
         }
