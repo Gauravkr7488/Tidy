@@ -21,6 +21,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.tidy.ui.theme.TidyTheme
 import io.objectbox.Box
 import com.example.tidy.ui.screen.MainScreen
@@ -31,6 +32,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         val app = application as App
         taskBox = app.boxStore.boxFor(Task::class.java)
         lastBoxReset = app.boxStore.boxFor(LastReset::class.java)
