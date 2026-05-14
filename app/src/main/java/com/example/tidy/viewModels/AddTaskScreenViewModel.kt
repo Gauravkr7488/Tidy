@@ -18,8 +18,10 @@
 package com.example.tidy.viewModels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
 import com.example.tidy.Task
+import kotlinx.coroutines.launch
 
 class AddTaskScreenViewModel(
     private val dbOperation: DbOperation,
@@ -35,11 +37,18 @@ class AddTaskScreenViewModel(
         return i
     }
 
-    suspend fun attach(task: Task){
+    suspend fun attach(task: Task) {
         dbOperation.attach(task)
     }
 
-    suspend fun getTask(id: Long): Task?{
-        return dbOperation.getTask(id)
+    fun deleteTask(task: Task, childrenList: List<Task>, deleteTask: Boolean): MutableList<Task> {
+        if (deleteTask){
+            viewModelScope.launch {
+                dbOperation.deleteTask(task.id)
+            }
+        }
+        val list: MutableList<Task> = childrenList as MutableList<Task>
+        list.remove(task)
+        return list
     }
 }

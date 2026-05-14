@@ -17,6 +17,7 @@
 
 package com.example.tidy.ui.component.taskComponents
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,6 +63,7 @@ fun TaskCard(
     onClick: (Task) -> Unit = {},
     leadingIcons: List<TaskIconAction> = emptyList(),
     trailingIcons: List<TaskIconAction> = emptyList(),
+    trailingIconButtons: List<TaskIconAction> = emptyList(),
     contextMenuOptions: List<TaskContextAction> = emptyList(),
 ) {
     var tapOffset by remember { mutableStateOf(Offset.Zero) }
@@ -152,6 +155,18 @@ fun TaskCard(
                     tint = tint,
                     modifier = modifier
                 )
+            }
+            trailingIconButtons.forEach { (icon, description, onCLick, tint, modifier) ->
+                IconButton(
+                    onClick = { onCLick(task) }
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = description,
+                        tint = tint,
+                        modifier = modifier
+                    )
+                }
             }
         }
         TaskContextMenu(

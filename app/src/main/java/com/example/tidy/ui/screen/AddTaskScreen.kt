@@ -17,6 +17,7 @@
 package com.example.tidy.ui.screen
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,9 +26,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -38,13 +41,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -64,17 +70,23 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.taskComponents.TaskCard
+import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.viewModels.AddTaskScreenViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -207,10 +219,16 @@ fun AddTaskScreen(
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it },
             )
-            NewSubTaskMenu(taskChildren) {
-                val childTask = Task(title = it)
-                taskChildren = taskChildren + childTask
-            }
+            SubTaskMenu(
+                taskChildren,
+                onRemoveSubTask = { task, bool ->
+                    taskChildren = addTaskScreenViewModel.deleteTask(task, taskChildren, bool)
+                },
+                addChildrenWithTitle = {
+                    val childTask = Task(title = it)
+                    taskChildren = taskChildren + childTask
+                }
+            )
             if (createdAt != "") {
                 Text(
                     text = "Created $createdAt",
@@ -390,11 +408,20 @@ fun RepeatMenu(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> Unit) {
+fun SubTaskMenu(
+    taskChildren: List<Task>,
+    addChildrenWithTitle: (String) -> Unit,
+    onRemoveSubTask: (Task, Boolean) -> Unit
+) {
     val listState = rememberLazyListState()
     var subTaskTitle by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
+    var subTaskForRemove by remember { mutableStateOf( Task(title = "")) }
+    var deleteTask by remember { mutableStateOf(false) }
+
     Column {
         Text("SubTasks")
         LazyColumn(
@@ -407,7 +434,18 @@ fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> U
             items(
                 items = taskChildren,
             ) { item ->
-                TaskCard(task = item)
+                TaskCard(task = item, trailingIconButtons = buildList {
+                    add(
+                        TaskIconAction(
+                            icon = Icons.Default.Close,
+                            description = "Remove Task",
+                            onClick = {
+                                showDialog = true
+                                subTaskForRemove = item
+                            },
+                        )
+                    )
+                })
             }
         }
         OutlinedTextField(
@@ -429,5 +467,55 @@ fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> U
             modifier = Modifier
                 .fillMaxWidth()
         )
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(text = "Remove SubTask") },
+                text = {
+                    Column {
+                        Text(
+                            text = buildAnnotatedString {
+                                append("Are you sure you want to remove '")
+                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(subTaskForRemove.title)
+                                }
+                                append("'?")
+                            }
+                        )
+                        if (subTaskForRemove.id != 0L) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(MaterialTheme.shapes.small)
+                                    .clickable { deleteTask = !deleteTask }
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Checkbox(
+                                    checked = deleteTask,
+                                    onCheckedChange = { deleteTask = it }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Also delete subtask")
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onRemoveSubTask(subTaskForRemove, deleteTask)
+                        showDialog = false
+                    }) {
+                        Text("Remove", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
 }
