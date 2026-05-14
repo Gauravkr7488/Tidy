@@ -415,16 +415,14 @@ fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> U
             onValueChange = { subTaskTitle = it },
             placeholder = { Text("Add Subtask") },
             keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next
+                imeAction = if (subTaskTitle != "") ImeAction.Next else ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
                 onNext = {
                     coroutineScope.launch {
-                        if (subTaskTitle != "") {
-                            addChildrenWithTitle(subTaskTitle)
-                            subTaskTitle = ""
-                            listState.animateScrollToItem(taskChildren.size)
-                        }
+                        addChildrenWithTitle(subTaskTitle)
+                        subTaskTitle = ""
+                        listState.animateScrollToItem(taskChildren.size)
                     }
                 }
             ),
