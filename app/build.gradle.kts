@@ -100,4 +100,5 @@ dependencies {
 
     implementation(libs.android.driver)
 //    implementation(libs.coroutines.extensions1) // for flow
+    implementation(libs.androidx.datastore.preferences)
 }
