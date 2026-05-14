@@ -18,9 +18,16 @@
 package com.example.tidy
 
 import android.app.Application
+import android.content.Context
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.yourapp.db.AppDatabase
 import io.objectbox.BoxStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 class App: Application() {
     lateinit var boxStore: BoxStore
@@ -41,9 +48,63 @@ class App: Application() {
             lastBoxReset = boxStore.boxFor(LastReset::class.java)
         )
 
+        CoroutineScope(Dispatchers.IO).launch {
+            runMigrationIfNeeded(
+                context = this@App,
+                objectBox = boxStore,
+                database = database
+            )
+        }
+
         ProcessLifecycleOwner.get().lifecycle.addObserver(
             AppLifecycleObserver(exportManager)
         )
+    }
+
+    suspend fun runMigrationIfNeeded(
+        context: Context,
+        objectBox: BoxStore,
+        database: AppDatabase
+    ) {
+
+        val migrated = context.dataStore.data
+            .map { prefs ->
+                prefs[MIGRATED_TO_SQL] ?: false
+            }
+            .first()
+
+        if (migrated) return
+
+        migrate(objectBox, database)
+
+        context.dataStore.edit { prefs ->
+            prefs[MIGRATED_TO_SQL] = true
+        }
+    }
+
+    fun migrate(
+        objectBox: BoxStore,
+        database: AppDatabase
+    ) {
+
+        val taskBox = objectBox.boxFor(Task::class.java)
+
+        taskBox.all.forEach { task ->
+
+            database.taskQueries.insertTask(
+                id = task.id,
+                title = task.title,
+                done = if (task.done) 1 else 0,
+                note = if (task.note) 1 else 0,
+                repeatType = task.repeatType,
+                repeatDays = task.repeatDays,
+                description = task.description,
+                hide = if (task.hide) 1 else 0,
+                createdAt = task.createdAt,
+                parentId = task.parent.targetId
+                    .takeIf { it != 0L }
+            )
+        }
     }
 }
 

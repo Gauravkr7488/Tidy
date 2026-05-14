@@ -14,6 +14,7 @@
 --  * You should have received a copy of the GNU General Public License
 --  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 --  */
+
 CREATE TABLE Task (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
@@ -26,4 +27,30 @@ CREATE TABLE Task (
     createdAt INTEGER NOT NULL,
     parentId INTEGER,                       -- NULL = root task, replaces ToOne<Task>
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
+);
+
+insertTask:
+INSERT INTO Task(
+    id,
+    title,
+    done,
+    note,
+    repeatType,
+    repeatDays,
+    description,
+    hide,
+    createdAt,
+    parentId
+)
+VALUES (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
 );
