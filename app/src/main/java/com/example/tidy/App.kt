@@ -19,6 +19,7 @@ package com.example.tidy
 
 import android.app.Application
 import androidx.lifecycle.ProcessLifecycleOwner
+import com.yourapp.db.AppDatabase
 import io.objectbox.BoxStore
 
 class App: Application() {
@@ -27,9 +28,11 @@ class App: Application() {
 
     lateinit var exportManager: ExportManager
         private set
-
+    lateinit var database: AppDatabase
     override fun onCreate() {
         super.onCreate()
+        database = createDatabase(this)
+
         boxStore = MyObjectBox.builder().androidContext(this).build()
 
         exportManager = ExportManager(
