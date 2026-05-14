@@ -42,12 +42,12 @@ class AddTaskScreenViewModel(
     }
 
     fun deleteTask(task: Task, childrenList: List<Task>, deleteTask: Boolean): MutableList<Task> {
-        if (deleteTask){
+        if (deleteTask) {
             viewModelScope.launch {
                 dbOperation.deleteTask(task.id)
             }
         }
-        val list: MutableList<Task> = childrenList as MutableList<Task>
+        val list = childrenList.toMutableList()
         list.remove(task)
         return list
     }
