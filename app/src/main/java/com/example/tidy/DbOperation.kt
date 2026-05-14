@@ -88,7 +88,7 @@ class DbOperation(
     }
 
     suspend fun getLastResetDate() = withContext(Dispatchers.IO) {
-        var lastResetDate = lastBoxReset.get(1).lastResetDate
+        var lastResetDate = lastBoxReset.get(1)?.lastResetDate
         if (lastResetDate == null) lastResetDate = getCurrentDate()
         return@withContext lastResetDate
     }
