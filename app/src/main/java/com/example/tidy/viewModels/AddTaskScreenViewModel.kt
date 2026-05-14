@@ -47,8 +47,13 @@ class AddTaskScreenViewModel(
         deleteTask: Boolean,
         deleteChildren: Boolean
     ): MutableList<Task> {
-        if (deleteTask) {
-            viewModelScope.launch {
+        val list = childrenList.toMutableList()
+
+        viewModelScope.launch {
+            list.remove(task)
+            task.parent.target.children.remove(task)
+            dbOperation.saveTask(task.parent.target)
+            if (deleteTask) {
                 if (deleteChildren) {
                     deleteTaskAndChildren(task.id)
                 } else {
@@ -56,8 +61,7 @@ class AddTaskScreenViewModel(
                 }
             }
         }
-        val list = childrenList.toMutableList()
-        list.remove(task)
+
         return list
     }
 
