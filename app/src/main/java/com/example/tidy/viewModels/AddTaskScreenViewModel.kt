@@ -61,7 +61,6 @@ class AddTaskScreenViewModel(
                 }
             }
         }
-
         return list
     }
 
