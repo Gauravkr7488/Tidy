@@ -221,8 +221,13 @@ fun AddTaskScreen(
             )
             SubTaskMenu(
                 taskChildren,
-                onRemoveSubTask = { task, bool ->
-                    taskChildren = addTaskScreenViewModel.deleteTask(task, taskChildren, bool)
+                onRemoveSubTask = { task, deleteTask, deleteChildren ->
+                    taskChildren = addTaskScreenViewModel.removeSubTask(
+                        task,
+                        taskChildren,
+                        deleteTask,
+                        deleteChildren
+                    )
                 },
                 addChildrenWithTitle = {
                     val childTask = Task(title = it)
@@ -413,15 +418,15 @@ fun RepeatMenu(
 fun SubTaskMenu(
     taskChildren: List<Task>,
     addChildrenWithTitle: (String) -> Unit,
-    onRemoveSubTask: (Task, Boolean) -> Unit
+    onRemoveSubTask: (Task, Boolean, Boolean) -> Unit
 ) {
     val listState = rememberLazyListState()
     var subTaskTitle by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     var showDialog by remember { mutableStateOf(false) }
-    var subTaskForRemove by remember { mutableStateOf( Task(title = "")) }
+    var subTaskForRemove by remember { mutableStateOf(Task(title = "")) }
     var deleteTask by remember { mutableStateOf(false) }
-
+    var deleteChildren by remember { mutableStateOf(false) }
     Column {
         Text("SubTasks")
         LazyColumn(
@@ -499,12 +504,27 @@ fun SubTaskMenu(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Also delete subtask")
                             }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(MaterialTheme.shapes.small)
+                                    .clickable { deleteChildren = !deleteChildren }
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Checkbox(
+                                    checked = deleteChildren,
+                                    onCheckedChange = { deleteChildren = it }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Also delete children")
+                            }
                         }
                     }
                 },
                 confirmButton = {
                     TextButton(onClick = {
-                        onRemoveSubTask(subTaskForRemove, deleteTask)
+                        onRemoveSubTask(subTaskForRemove, deleteTask, deleteChildren)
                         showDialog = false
                     }) {
                         Text("Remove", color = MaterialTheme.colorScheme.error)

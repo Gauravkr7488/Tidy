@@ -41,14 +41,29 @@ class AddTaskScreenViewModel(
         dbOperation.attach(task)
     }
 
-    fun deleteTask(task: Task, childrenList: List<Task>, deleteTask: Boolean): MutableList<Task> {
+    fun removeSubTask(
+        task: Task,
+        childrenList: List<Task>,
+        deleteTask: Boolean,
+        deleteChildren: Boolean
+    ): MutableList<Task> {
         if (deleteTask) {
             viewModelScope.launch {
-                dbOperation.deleteTask(task.id)
+                if (deleteChildren) {
+                    deleteTaskAndChildren(task.id)
+                } else {
+                    dbOperation.deleteTask(task.id)
+                }
             }
         }
         val list = childrenList.toMutableList()
         list.remove(task)
         return list
+    }
+
+    private suspend fun deleteTaskAndChildren(id: Long) {
+        val task = dbOperation.getTask(id) ?: return
+        if (task.children.isNotEmpty()) task.children.forEach { deleteTaskAndChildren(it.id) }
+        dbOperation.deleteTask(id)
     }
 }
