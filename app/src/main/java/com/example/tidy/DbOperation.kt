@@ -131,9 +131,7 @@ class DbOperation(
         db.taskQueries.getChildren(id).executeAsList()
     }
 
-    suspend fun updateParentDoneStatus(id: Long): Unit = withContext(Dispatchers.IO) {
-        val task = getTask(id) ?: return@withContext
-        val parentId = task.parentId ?: return@withContext
+    suspend fun updateParentDoneStatus(parentId: Long): Unit = withContext(Dispatchers.IO) {
         val freshParent = getTask(parentId) ?: return@withContext
         val children = getChildren(freshParent.id)
         val allChildrenDone = children.all { it.done == 1L }
@@ -142,7 +140,8 @@ class DbOperation(
                 done = if (allChildrenDone) 1L else 0L
             )
         )
-        updateParentDoneStatus(freshParent.id)
+        val grandParentId = freshParent.parentId?: return@withContext
+        updateParentDoneStatus(grandParentId)
 
     }
 

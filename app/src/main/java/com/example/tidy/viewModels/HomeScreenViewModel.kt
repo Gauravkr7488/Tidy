@@ -81,7 +81,8 @@ class HomeScreenViewModel(
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
             dbOperation.updateDoneStatus(task.id)
-            dbOperation.updateParentDoneStatus(task.id)
+            val parentId = task.parentId ?: return@launch refreshTasks()
+            dbOperation.updateParentDoneStatus(parentId)
             refreshTasks()
         }
     }
