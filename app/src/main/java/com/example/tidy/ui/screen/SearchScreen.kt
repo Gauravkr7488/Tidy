@@ -74,12 +74,8 @@ fun SearchScreen(
         val matchesQuery = query.isBlank() ||
                 task.title.contains(query, ignoreCase = true) ||
                 task.description.contains(query, ignoreCase = true)
-        val matchesFilter = when (selectedFilter) {
-            SearchFilter.ALL -> true
-//            SearchFilter.NOTES -> task.note
-            SearchFilter.TASKS -> !task.note
-        }
-        matchesQuery && matchesFilter
+
+        matchesQuery
     }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.SEARCH
