@@ -24,13 +24,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
 import com.example.tidy.ExportManager
-import com.example.tidy.Task
 import com.example.tidy.Utils.getCurrentDate
 import com.example.tidy.Utils.getCurrentDay
 import com.example.tidy.constants.RepeatTypes
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import com.tidy.sqldelight.Task
 
 class HomeScreenViewModel(
     private val dbOperation: DbOperation,
@@ -54,12 +54,12 @@ class HomeScreenViewModel(
 
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            tasks.filter { it.done && it.parent.isNull }
+            tasks.filter { it.done == 0L && it.parentId == null }
                 .forEach { task ->
                     if (task.repeatType != RepeatTypes.NONE) {
                         val updatedTask = task.copy(
-                            done = false,
-                            hide = true
+                            done = 0L,
+                            hide = 1L
                         )
                         dbOperation.saveTask(updatedTask)
                     } else {
@@ -70,9 +70,10 @@ class HomeScreenViewModel(
         }
     }
 
-    private suspend fun deleteTaskAndChildren(id: Long){
-        val task = dbOperation.getTask(id) ?: return
-        if (task.children.isNotEmpty()) task.children.forEach { deleteTaskAndChildren(it.id) }
+    private suspend fun deleteTaskAndChildren(id: Long) {
+        dbOperation.getTask(id) ?: return
+        val children = getChildren(id)
+        if (children.isNotEmpty()) children.forEach { deleteTaskAndChildren(it.id) }
         dbOperation.deleteTask(id)
     }
 
@@ -99,22 +100,24 @@ class HomeScreenViewModel(
     }
 
     private suspend fun deleteTaskAsync(id: Long, deleteSubtasks: Boolean) {
-        val task = dbOperation.getTask(id)?: return
+        val task = dbOperation.getTask(id) ?: return
+        val children = getChildren(id)
         if (deleteSubtasks) {
-            task.children.forEach { task ->
+            children.forEach { task ->
                 deleteTaskAsync(task.id, true)
             }
         }
-        val parentId = task.parent.target?.id
+        val parentId = task.parentId
         dbOperation.deleteTask(task.id)
         updateParentStatus(parentId)
     }
 
     private suspend fun updateParentStatus(parentId: Long?) {
         if (parentId != null) { // update parent status
-            val parent = dbOperation.getTask(parentId)?: return
-            parent.done = parent.children.all { it.done }
-            dbOperation.saveTask(parent)
+            val parent = dbOperation.getTask(parentId) ?: return
+            val parentChildren = getChildren(parentId)
+            val parentStatus = parentChildren.all { it.done == 0L }
+            dbOperation.saveTask(parent.copy(done = if (!parentStatus) 0L else 1L))
             dbOperation.updateParentDoneStatus(parentId)
         }
     }
@@ -128,7 +131,7 @@ class HomeScreenViewModel(
 
         dbOperation.setLastResetToday(todayDate = todayDate)
 
-        val hiddenTasks = dbOperation.taskGetAll().filter { task -> task.hide }
+        val hiddenTasks = dbOperation.taskGetAll().filter { task -> task.hide == 1L }
         hiddenTasks.forEach { task ->
             val shouldUnhide = when (task.repeatType) {
                 RepeatTypes.NONE, RepeatTypes.DAILY -> true
@@ -137,7 +140,7 @@ class HomeScreenViewModel(
                 else -> false
             }
             if (shouldUnhide) {
-                dbOperation.saveTask(task.copy(hide = false))
+                dbOperation.saveTask(task.copy(hide = 0L))
             }
         }
         refreshTasks()
@@ -159,5 +162,13 @@ class HomeScreenViewModel(
             "monthly" -> newTask = task.copy(repeatType = RepeatTypes.MONTHLY)
         }
         dbOperation.saveTask(newTask)
+    }
+
+    fun getChildren(id: Long): List<Task> {
+        var list = emptyList<Task>()
+        viewModelScope.launch {
+            list = dbOperation.getChildren(id)
+        }
+        return list
     }
 }
