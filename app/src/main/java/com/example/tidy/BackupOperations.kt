@@ -24,6 +24,7 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import com.example.tidy.Utils.createBackupJson
+import com.example.tidy.Utils.toTask
 import com.google.gson.Gson
 
 class BackupOperations(
@@ -34,7 +35,8 @@ class BackupOperations(
         uri: Uri
     ) {
         try {
-            val json = createBackupJson(dbOperation.taskGetAll(),dbOperation.getLastResetDate())
+            val lastResetDate = dbOperation.getLastResetDate() ?: Utils.getCurrentDate()
+            val json = createBackupJson(dbOperation.taskGetAll(), lastResetDate)
 
             context.contentResolver
                 .openOutputStream(uri)
@@ -49,12 +51,13 @@ class BackupOperations(
             e.printStackTrace()
         }
     }
+
     suspend fun importBackup(
         context: Context,
         uri: Uri
     ) {
-        val oldTasks = dbOperation.taskGetAll()
-        val oldResetDate = dbOperation.getLastResetDate()
+        val preImportTasks = dbOperation.taskGetAll()
+        val preImportResetDate = dbOperation.getLastResetDate()?: Utils.getCurrentDate()
 
         try {
             val json = context.contentResolver
@@ -72,26 +75,11 @@ class BackupOperations(
 
                 dbOperation.setLastResetToday(lastResetDate)
 
-                val idMap = mutableMapOf<Long, Task>()
-
                 val newTasks = taskDtos.map { dto ->
                     val task = dto.toTask()
-                    idMap[dto.id] = task // saves the map of dto.id and task
                     return@map task
                 }
                 dbOperation.taskDeleteALl()
-                dbOperation.taskSaveList(newTasks) // to get new ids
-
-//                  relation work
-                taskDtos.forEach { dto ->
-                    val task = idMap[dto.id] ?: return@forEach
-
-                    val children = dto.childTasks?.mapNotNull { oldChildId ->
-                        idMap[oldChildId]
-                    } ?: emptyList()
-
-                    task.children.addAll(children)
-                }
                 dbOperation.taskSaveList(newTasks)
 
                 Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
@@ -99,8 +87,8 @@ class BackupOperations(
 
         } catch (e: Exception) {
             dbOperation.taskDeleteALl()
-            dbOperation.taskSaveList(oldTasks)
-            dbOperation.setLastResetToday(oldResetDate)
+            dbOperation.taskSaveList(preImportTasks)
+            dbOperation.setLastResetToday(preImportResetDate)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
         }

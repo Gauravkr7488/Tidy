@@ -29,7 +29,6 @@ class DbOperation(
             db.taskQueries.saveTask(
                 title = task.title,
                 done = task.done,
-                note = task.note,
                 repeatType = task.repeatType,
                 repeatDays = task.repeatDays,
                 description = task.description,
@@ -45,7 +44,6 @@ class DbOperation(
                 id = task.id,
                 title = task.title,
                 done = task.done,
-                note = task.note,
                 repeatType = task.repeatType,
                 repeatDays = task.repeatDays,
                 description = task.description,
@@ -130,7 +128,7 @@ class DbOperation(
     }
 
     suspend fun getLastResetDate() = withContext(Dispatchers.IO) {
-        db.lastResetQueries.getLastReset().executeAsOneOrNull()
+        db.lastResetQueries.getLastReset().executeAsOneOrNull()?.lastResetDate
     }
 
     suspend fun setLastResetToday(todayDate: String) = withContext(Dispatchers.IO) {
