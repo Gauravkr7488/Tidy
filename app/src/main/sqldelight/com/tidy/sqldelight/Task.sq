@@ -1,0 +1,132 @@
+-- /*
+--  * Copyright (C) 2026  Gaurav Kumar
+--  *
+--  * This program is free software: you can redistribute it and/or modify
+--  * it under the terms of the GNU General Public License as published by
+--  * the Free Software Foundation, either version 3 of the License, or
+--  * (at your option) any later version.
+--  *
+--  * This program is distributed in the hope that it will be useful,
+--  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+--  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--  * GNU General Public License for more details.
+--  *
+--  * You should have received a copy of the GNU General Public License
+--  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+--  */
+
+CREATE TABLE Task (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    done INTEGER NOT NULL DEFAULT 0,
+    repeatType TEXT NOT NULL DEFAULT 'None', -- do not change
+    repeatDays TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    hide INTEGER NOT NULL DEFAULT 0,
+    createdAt INTEGER NOT NULL,
+    parentId INTEGER,                       -- NULL = root task, replaces ToOne<Task>
+    FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
+);
+
+insertTask:
+INSERT INTO Task(
+    id,
+    title,
+    done,
+    repeatType,
+    repeatDays,
+    description,
+    hide,
+    createdAt,
+    parentId
+)
+VALUES (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+);
+
+updateTask:
+UPDATE Task
+SET
+    title = ?,
+    done = ?,
+    repeatType = ?,
+    repeatDays = ?,
+    description = ?,
+    hide = ?,
+    parentId = ?
+WHERE id = ?;
+
+getTaskById:
+SELECT * FROM Task
+WHERE id = ?;
+
+getLastId:
+SELECT last_insert_rowid();
+
+saveTask:
+INSERT INTO Task(
+    title,
+    done,
+    repeatType,
+    repeatDays,
+    description,
+    hide,
+    createdAt,
+    parentId
+)
+VALUES (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+);
+
+getAll:
+SELECT * FROM Task;
+
+getChildren:
+SELECT * FROM Task
+WHERE parentId = ?;
+
+deleteTask:
+DELETE FROM Task
+WHERE id = ?;
+
+deleteAllTasks:
+DELETE FROM Task;
+
+saveNewTask:
+INSERT INTO Task(
+id,
+    title,
+    done,
+    repeatType,
+    repeatDays,
+    description,
+    hide,
+    createdAt,
+    parentId
+)
+VALUES (
+      ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+);

@@ -67,7 +67,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val tasks =
-        homeScreenViewModel.tasks.filter { task -> !task.note && task.parent.isNull && !task.hide }
+        homeScreenViewModel.tasks.filter { task -> task.parentId == null && task.hide == 0L }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
     val listState = rememberLazyListState()
@@ -77,7 +77,7 @@ fun HomeScreen(
             homeScreenViewModel.refreshTasks()
         }
     }
-    val hasDoneTask = tasks.any { it.done }
+    val hasDoneTask = tasks.any { it.done == 1L}
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
@@ -118,7 +118,7 @@ fun HomeScreen(
         topBar = {
             var doneTaskCount = 0
             tasks.forEach { task ->
-                if (task.done) doneTaskCount++
+                if (task.done == 1L) doneTaskCount++
             }
             TopAppBar("My Tasks", subtitle = "$doneTaskCount/${tasks.size} tasks Completed")
         }
@@ -138,7 +138,7 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(
-                        tasks.filter { !it.done },
+                        tasks.filter { it.done == 0L },
                         key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         SubTaskCard(
                             task,
@@ -146,20 +146,26 @@ fun HomeScreen(
                             deleteTask = homeScreenViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
-                            modifier = Modifier.animateContentSize().animateItem(),
+                            getChildren = { homeScreenViewModel.getChildren(it) },
+                            modifier = Modifier
+                                .animateContentSize()
+                                .animateItem(),
                         )
                     }
 
                     item { Spacer(modifier = Modifier.heightIn(10.dp)) }
 
-                    items(tasks.filter { it.done }, key = { it.id }) { task ->
+                    items(tasks.filter { it.done == 1L}, key = { it.id }) { task ->
                         SubTaskCard(
                             task,
                             toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
                             deleteTask = homeScreenViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
-                            modifier = Modifier.animateContentSize().animateItem(),
+                            getChildren = { homeScreenViewModel.getChildren(it) },
+                            modifier = Modifier
+                                .animateContentSize()
+                                .animateItem(),
                         )
                     }
                 }

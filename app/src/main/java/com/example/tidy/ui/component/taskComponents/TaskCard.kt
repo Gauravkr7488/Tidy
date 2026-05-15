@@ -17,7 +17,6 @@
 
 package com.example.tidy.ui.component.taskComponents
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,12 +52,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
+import com.tidy.sqldelight.Task
 
 @Composable
 fun TaskCard(
     task: Task,
+    children: List<Task>,
     modifier: Modifier = Modifier,
     onClick: (Task) -> Unit = {},
     leadingIcons: List<TaskIconAction> = emptyList(),
@@ -72,7 +72,7 @@ fun TaskCard(
     Card(
         colors =
             CardDefaults.cardColors(
-                containerColor = if (!task.done) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                containerColor = if (task.done == 0L) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant
             ),
         modifier = modifier
             .fillMaxWidth()
@@ -115,7 +115,7 @@ fun TaskCard(
                     text = task.title,
                     style = MaterialTheme.typography.bodyLarge,
                     overflow = TextOverflow.Ellipsis,
-                    textDecoration = if (task.done) TextDecoration.LineThrough else TextDecoration.None,
+                    textDecoration = if (task.done == 1L) TextDecoration.LineThrough else TextDecoration.None,
                 )
                 if (task.description.isNotBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
@@ -129,15 +129,15 @@ fun TaskCard(
                 }
             }
             Column { // For Badges
-                if (task.children.isNotEmpty()) {
+                if (children.isNotEmpty()) {
                     var doneChildrenCount = 0
-                    task.children.forEach { child ->
-                        if (child.done) doneChildrenCount++
+                    children.forEach { child ->
+                        if (child.done == 1L) doneChildrenCount++
                     }
                     Badge(
-                        text = "${doneChildrenCount}/${task.children.size}",
+                        text = "${doneChildrenCount}/${children.size}",
                         imageVector = Icons.Default.TaskAlt,
-                        contentDescription = "${doneChildrenCount}/${task.children.size} Done"
+                        contentDescription = "${doneChildrenCount}/${children.size} Done"
                     )
                 }
                 if (task.repeatType != RepeatTypes.NONE && task.repeatType != "none") {  // "none" to guard against old values

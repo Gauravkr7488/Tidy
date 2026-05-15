@@ -20,8 +20,8 @@ package com.example.tidy.viewModels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
-import com.example.tidy.Task
 import kotlinx.coroutines.launch
+import com.tidy.sqldelight.Task
 
 class AddTaskScreenViewModel(
     private val dbOperation: DbOperation,
@@ -31,14 +31,10 @@ class AddTaskScreenViewModel(
         return dbOperation.getTask(taskId)
     }
 
-    suspend fun addTask(task: Task): Long {
-        val i: Long = dbOperation.saveTask(task)
+    suspend fun addTask(task: Task): Long? {
+        val i = dbOperation.saveTask(task) ?: return null
         dbOperation.updateChildrenRepeatStatus(i)
         return i
-    }
-
-    suspend fun attach(task: Task) {
-        dbOperation.attach(task)
     }
 
     fun removeSubTask(
@@ -51,8 +47,7 @@ class AddTaskScreenViewModel(
 
         viewModelScope.launch {
             list.remove(task)
-            task.parent.target.children.remove(task)
-            dbOperation.saveTask(task.parent.target)
+            dbOperation.saveTask(task.copy(parentId = null))
             if (deleteTask) {
                 if (deleteChildren) {
                     deleteTaskAndChildren(task.id)
@@ -65,8 +60,17 @@ class AddTaskScreenViewModel(
     }
 
     private suspend fun deleteTaskAndChildren(id: Long) {
-        val task = dbOperation.getTask(id) ?: return
-        if (task.children.isNotEmpty()) task.children.forEach { deleteTaskAndChildren(it.id) }
+        dbOperation.getTask(id) ?: return
+        val children = dbOperation.getChildren(id)
+        if (children.isNotEmpty()) children.forEach { deleteTaskAndChildren(it.id) }
         dbOperation.deleteTask(id)
+    }
+
+    fun getChildren(id: Long): List<Task> {
+        var list = emptyList<Task>()
+        viewModelScope.launch {
+            list = dbOperation.getChildren(id)
+        }
+        return list
     }
 }

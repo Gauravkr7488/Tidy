@@ -74,12 +74,8 @@ fun SearchScreen(
         val matchesQuery = query.isBlank() ||
                 task.title.contains(query, ignoreCase = true) ||
                 task.description.contains(query, ignoreCase = true)
-        val matchesFilter = when (selectedFilter) {
-            SearchFilter.ALL -> true
-//            SearchFilter.NOTES -> task.note
-            SearchFilter.TASKS -> !task.note
-        }
-        matchesQuery && matchesFilter
+
+        matchesQuery
     }
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isOnTop = currentBackStackEntry?.destination?.route == Routes.SEARCH
@@ -139,7 +135,6 @@ fun SearchScreen(
                             Text(
                                 text = when (filter) {
                                     SearchFilter.ALL -> "All"
-//                                    SearchFilter.NOTES -> "Notes"
                                     SearchFilter.TASKS -> "Tasks"
                                 }
                             )
@@ -165,8 +160,9 @@ fun SearchScreen(
                         TaskCard(
                             task = task,
                             onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
+                            children = emptyList(),
                             trailingIcons = buildList {
-                                if (task.hide) {
+                                if (task.hide == 1L) {
                                     add(
                                         TaskIconAction(
                                             icon = Icons.Default.Archive,

@@ -48,45 +48,14 @@ data class LastReset(
     var lastResetDate: String?
 )
 
-data class TaskDto(
+data class TaskBackupDto(
     var id: Long = 0,
     var title: String,
     var done: Boolean = false,
-    var note: Boolean? = null,
     var repeatType: String = RepeatTypes.NONE,
     var repeatOn: String = "",
     var description: String? = null,
     var hide: Boolean = false,
-    var parentTasks: List<Long>? = emptyList(),
-    var childTasks: List<Long>? = emptyList(),
+    var parentId: Long? = null,
     var createdAt: Long = System.currentTimeMillis(),
 )
-
-fun Task.toTaskDto(): TaskDto {
-    return TaskDto(
-        id = id,
-        title = title,
-        done = done,
-        note = note,
-        repeatType = repeatType,
-        repeatOn = repeatDays,
-        description = description,
-        hide = hide,
-        createdAt = createdAt,
-        childTasks = children.map { it.id }
-    )
-}
-
-fun TaskDto.toTask(): Task {
-    return Task(
-        id = 0,
-        title = title,
-        done = done,
-        note = note ?: false,
-        repeatType = repeatType,
-        repeatDays = repeatOn,
-        description = description ?: "",
-        hide = hide,
-        createdAt = createdAt
-    )
-}

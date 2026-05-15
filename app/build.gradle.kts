@@ -4,7 +4,9 @@ plugins {
     id("io.objectbox")
     alias(libs.plugins.kotlin.kapt)
     kotlin("plugin.serialization") version "2.0.21"
+    id("app.cash.sqldelight")
 }
+
 val name = "com.Ace777.tidy"
 android {
     namespace = name
@@ -45,7 +47,13 @@ android {
         compose = true
     }
 }
-
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.yourapp.db")
+        }
+    }
+}
 dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.material3)
@@ -89,4 +97,8 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation(libs.androidx.core.splashscreen)
+
+    implementation(libs.android.driver)
+//    implementation(libs.coroutines.extensions1) // for flow
+    implementation(libs.androidx.datastore.preferences)
 }
