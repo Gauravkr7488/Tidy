@@ -41,7 +41,7 @@ object Utils {
 
     fun TaskBackupDto.toTask(): Task {
         return Task(
-            id = 0,
+            id = id,
             title = title,
             done = if (done) 1L else 0L,
             repeatType = repeatType,
