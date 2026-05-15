@@ -48,7 +48,7 @@ data class LastReset(
     var lastResetDate: String?
 )
 
-data class TaskDto(
+data class TaskBackupDto(
     var id: Long = 0,
     var title: String,
     var done: Boolean = false,

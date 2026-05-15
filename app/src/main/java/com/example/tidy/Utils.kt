@@ -25,8 +25,8 @@ object Utils {
         return json
     }
 
-    fun Task.toTaskDto(): TaskDto {
-        return TaskDto(
+    fun Task.toTaskDto(): TaskBackupDto {
+        return TaskBackupDto(
             id = id,
             title = title,
             done = done != 0L,
@@ -39,7 +39,7 @@ object Utils {
         )
     }
 
-    fun TaskDto.toTask(): Task {
+    fun TaskBackupDto.toTask(): Task {
         return Task(
             id = 0,
             title = title,
