@@ -241,7 +241,9 @@ fun AddTaskScreen(
                         parentId = null,
                     )
                     taskChildren = taskChildren + childTask
-                }
+                },
+                child =
+                    { addTaskScreenViewModel.getChildren(it) }
             )
             if (createdAt != "") {
                 Text(
@@ -427,7 +429,8 @@ fun RepeatMenu(
 fun SubTaskMenu(
     taskChildren: List<Task>,
     addChildrenWithTitle: (String) -> Unit,
-    onRemoveSubTask: (Task, Boolean, Boolean) -> Unit
+    onRemoveSubTask: (Task, Boolean, Boolean) -> Unit,
+    child: (Long) -> List<Task>
 ) {
     val listState = rememberLazyListState()
     var subTaskTitle by remember { mutableStateOf("") }
@@ -462,18 +465,22 @@ fun SubTaskMenu(
             items(
                 items = taskChildren,
             ) { item ->
-                TaskCard(task = item, trailingIconButtons = buildList {
-                    add(
-                        TaskIconAction(
-                            icon = Icons.Default.Close,
-                            description = "Remove Task",
-                            onClick = {
-                                showDialog = true
-                                subTaskForRemove = item
-                            },
+                TaskCard(
+                    task = item,
+                    trailingIconButtons = buildList {
+                        add(
+                            TaskIconAction(
+                                icon = Icons.Default.Close,
+                                description = "Remove Task",
+                                onClick = {
+                                    showDialog = true
+                                    subTaskForRemove = item
+                                },
+                            )
                         )
-                    )
-                })
+                    },
+                    children = child(item.id),
+                )
             }
         }
         OutlinedTextField(
@@ -511,6 +518,7 @@ fun SubTaskMenu(
                             }
                         )
                         if (subTaskForRemove.id != 0L) {
+                            val subTaskChildren = child(subTaskForRemove.id)
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -527,7 +535,7 @@ fun SubTaskMenu(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Also delete subtask")
                             }
-                            if (subTaskForRemove.children.isNotEmpty()) {
+                            if (subTaskChildren.isNotEmpty()) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier

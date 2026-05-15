@@ -66,7 +66,11 @@ class AddTaskScreenViewModel(
         dbOperation.deleteTask(id)
     }
 
-    suspend fun getChildren(id: Long): List<Task> {
-        return dbOperation.getChildren(id)
+    fun getChildren(id: Long): List<Task> {
+        var list = emptyList<Task>()
+        viewModelScope.launch {
+            list = dbOperation.getChildren(id)
+        }
+        return list
     }
 }
