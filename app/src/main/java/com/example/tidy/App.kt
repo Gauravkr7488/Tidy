@@ -44,8 +44,7 @@ class App: Application() {
 
         exportManager = ExportManager(
             context = this,
-            taskBox = boxStore.boxFor(Task::class.java),
-            lastBoxReset = boxStore.boxFor(LastReset::class.java)
+           database = database
         )
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -95,7 +94,6 @@ class App: Application() {
                 id = task.id,
                 title = task.title,
                 done = if (task.done) 1 else 0,
-                note = if (task.note) 1 else 0,
                 repeatType = task.repeatType,
                 repeatDays = task.repeatDays,
                 description = task.description,
