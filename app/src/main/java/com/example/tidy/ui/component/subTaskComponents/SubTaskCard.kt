@@ -110,7 +110,8 @@ fun SubTaskCard(
             TaskDeleteDialog(
                 task = task,
                 onDismiss = { showDeleteDialog = !showDeleteDialog },
-                onDeleteClick = { deleteTask(task.id, it) }
+                onDeleteClick = { deleteTask(task.id, it) },
+                children = getChildren(task.id)
             )
         }
         if (children.isNotEmpty() && expanded) {
