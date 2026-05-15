@@ -106,3 +106,27 @@ WHERE id = ?;
 
 deleteAllTasks:
 DELETE FROM Task;
+
+saveNewTask:
+INSERT INTO Task(
+id,
+    title,
+    done,
+    repeatType,
+    repeatDays,
+    description,
+    hide,
+    createdAt,
+    parentId
+)
+VALUES (
+      ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+);

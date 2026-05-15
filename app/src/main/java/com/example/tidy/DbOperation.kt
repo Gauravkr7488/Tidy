@@ -24,6 +24,21 @@ import com.tidy.sqldelight.Task
 class DbOperation(
     private val db: AppDatabase
 ) {
+    suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO){
+        list.forEach { task ->
+            db.taskQueries.saveNewTask(
+                id = task.id,
+                title = task.title,
+                done = task.done,
+                repeatType = task.repeatType,
+                repeatDays = task.repeatDays,
+                description = task.description,
+                hide = task.hide,
+                createdAt = task.createdAt,
+                parentId = task.parentId
+            )
+        }
+    }
     suspend fun saveTask(task: Task): Long? = withContext(Dispatchers.IO) {
         if (task.id == 0L) {
             db.taskQueries.saveTask(

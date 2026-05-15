@@ -57,7 +57,7 @@ class BackupOperations(
         uri: Uri
     ) {
         val preImportTasks = dbOperation.taskGetAll()
-        val preImportResetDate = dbOperation.getLastResetDate()?: Utils.getCurrentDate()
+        val preImportResetDate = dbOperation.getLastResetDate() ?: Utils.getCurrentDate()
 
         try {
             val json = context.contentResolver
@@ -77,10 +77,19 @@ class BackupOperations(
 
                 val newTasks = taskDtos.map { dto ->
                     val task = dto.toTask()
-                    return@map task
+                    return@map task.copy(parentId = null)
                 }
                 dbOperation.taskDeleteALl()
-                dbOperation.taskSaveList(newTasks)
+                dbOperation.saveNewTaskList(newTasks)
+                val list = dbOperation.taskGetAll()
+                val tasksWithParentId = taskDtos.map { dto ->
+                    val task = dto.toTask()
+                    return@map task
+                }
+
+                dbOperation.taskSaveList(tasksWithParentId)
+                val list2 = dbOperation.taskGetAll()
+
 
                 Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
             }
