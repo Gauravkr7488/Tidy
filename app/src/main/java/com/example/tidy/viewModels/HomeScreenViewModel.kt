@@ -31,6 +31,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import com.tidy.sqldelight.Task
+import kotlinx.coroutines.runBlocking
 
 class HomeScreenViewModel(
     private val dbOperation: DbOperation,
@@ -164,11 +165,9 @@ class HomeScreenViewModel(
         dbOperation.saveTask(newTask)
     }
 
-    fun getChildren(id: Long): List<Task> {
-        var list = emptyList<Task>()
-        viewModelScope.launch {
-            list = dbOperation.getChildren(id)
+    fun getChildren(id: Long): List<Task> { // todo remove with flow
+        return runBlocking {
+            dbOperation.getChildren(id)
         }
-        return list
     }
 }
