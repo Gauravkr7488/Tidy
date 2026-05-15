@@ -20,7 +20,7 @@ package com.example.tidy.ui.component.taskComponents
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.example.tidy.Task
+import com.tidy.sqldelight.Task
 
 data class TaskIconAction(
     val icon: ImageVector,
