@@ -54,7 +54,7 @@ class HomeScreenViewModel(
 
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            tasks.filter { it.done == 0L && it.parentId == null }
+            tasks.filter { it.done == 1L && it.parentId == null }
                 .forEach { task ->
                     if (task.repeatType != RepeatTypes.NONE) {
                         val updatedTask = task.copy(
