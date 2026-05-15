@@ -82,7 +82,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.taskComponents.TaskCard
@@ -93,6 +92,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import com.tidy.sqldelight.Task
 
 @Composable
 fun AddTaskScreen(
@@ -106,9 +106,7 @@ fun AddTaskScreen(
     var description by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    var note by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
-    var taskParent: Task? = null
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
@@ -119,9 +117,8 @@ fun AddTaskScreen(
         val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
         if (task != null) {
             taskId = task.id
-            taskChildren = task.children.toList()
+            taskChildren = addTaskScreenViewModel.getChildren(task.id)
             taskTitle = task.title
-            taskParent = task.parent.target
             description = task.description
             repeatType = task.repeatType
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
@@ -145,21 +142,23 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                val task = Task(
-                                    id = taskId,
-                                    title = taskTitle,
-                                    note = note,
-                                    repeatType = repeatType,
-                                    repeatDays = repeatDays,
-                                    description = description,
+                                val savedTaskId = addTaskScreenViewModel.addTask(
+                                    Task(
+                                        id = taskId,
+                                        title = taskTitle,
+                                        repeatType = repeatType,
+                                        repeatDays = repeatDays,
+                                        description = description,
+                                        done = 0,
+                                        hide = 0,
+                                        createdAt = System.currentTimeMillis(),
+                                        parentId = null,
+                                    )
                                 )
-                                addTaskScreenViewModel.attach(task)
-                                if (taskParent != null) task.parent.setAndPutTarget(taskParent)
-                                addTaskScreenViewModel.addTask(task)
                                 taskChildren.forEach {
-                                    addTaskScreenViewModel.attach(it)
-                                    it.parent.setAndPutTarget(task)
-                                    addTaskScreenViewModel.addTask(it)
+                                    addTaskScreenViewModel.addTask(
+                                        it.copy(parentId = savedTaskId)
+                                    )
                                 }
 
                                 showFab = false
@@ -230,7 +229,17 @@ fun AddTaskScreen(
                     )
                 },
                 addChildrenWithTitle = {
-                    val childTask = Task(title = it)
+                    val childTask = Task(
+                        id = 0,
+                        title = it,
+                        repeatType = RepeatTypes.NONE,
+                        repeatDays = "",
+                        description = "",
+                        done = 0,
+                        hide = 0,
+                        createdAt = System.currentTimeMillis(),
+                        parentId = null,
+                    )
                     taskChildren = taskChildren + childTask
                 }
             )
@@ -424,7 +433,21 @@ fun SubTaskMenu(
     var subTaskTitle by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
     var showDialog by remember { mutableStateOf(false) }
-    var subTaskForRemove by remember { mutableStateOf(Task(title = "")) }
+    var subTaskForRemove by remember {
+        mutableStateOf(
+            Task(
+                title = "",
+                id = 0,
+                repeatType = RepeatTypes.NONE,
+                repeatDays = "",
+                description = "",
+                done = 0,
+                hide = 0,
+                createdAt = System.currentTimeMillis(),
+                parentId = null,
+            )
+        )
+    }
     var deleteTask by remember { mutableStateOf(false) }
     var deleteChildren by remember { mutableStateOf(false) }
     Column {
@@ -504,7 +527,7 @@ fun SubTaskMenu(
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Also delete subtask")
                             }
-                            if (subTaskForRemove.children.isNotEmpty()){
+                            if (subTaskForRemove.children.isNotEmpty()) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
