@@ -24,7 +24,7 @@ import com.tidy.sqldelight.Task
 class DbOperation(
     private val db: AppDatabase
 ) {
-    suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO){
+    suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO) {
         list.forEach { task ->
             db.taskQueries.saveNewTask(
                 id = task.id,
@@ -39,7 +39,19 @@ class DbOperation(
             )
         }
     }
+
+    suspend fun isChildAncestorOfParent(parentId: Long, childId: Long): Boolean = withContext(Dispatchers.IO)  { // Guard against loops
+        if (parentId == childId) return@withContext true
+        val grandParentId = getTask(parentId)?.parentId ?: return@withContext false
+        return@withContext isChildAncestorOfParent(grandParentId, childId)
+    }
+
     suspend fun saveTask(task: Task): Long? = withContext(Dispatchers.IO) {
+        if (task.parentId != null && isChildAncestorOfParent(
+                task.parentId,
+                task.id
+            )
+        ) return@withContext null // todo should return some kind of error or warning
         if (task.id == 0L) {
             db.taskQueries.saveTask(
                 title = task.title,
