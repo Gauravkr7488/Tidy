@@ -38,11 +38,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import com.example.tidy.Task
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
+import com.tidy.sqldelight.Task
 
 
 @Composable
@@ -56,10 +56,14 @@ fun SubTaskCard(
     depth: Int = 0,
     last: Boolean = false,
     list: List<Boolean> = listOf(),
+    getChildren: (Long) -> List<Task>,
+    getSiblings: (Long) -> List<Task>
+
 ) {
     Column(
         modifier = modifier
     ) {
+        val children = getChildren(task.id)
         var expanded by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(
             targetValue = if (expanded) 90f else 0f,
@@ -71,7 +75,7 @@ fun SubTaskCard(
             TaskCard(
                 task = task,
                 onClick = {
-                    if (task.children.isNotEmpty()) expanded =
+                    if (children.isNotEmpty()) expanded =
                         !expanded else toggleDoneStatus(task)
                 },
                 contextMenuOptions = contextMenuOptions(
@@ -80,7 +84,7 @@ fun SubTaskCard(
                 ) { showDeleteDialog = true },
                 leadingIcons =
                     buildList {
-                        if (task.children.isNotEmpty()) {
+                        if (children.isNotEmpty()) {
                             add(
                                 TaskIconAction(
                                     icon = Icons.Default.ChevronRight,
@@ -92,13 +96,14 @@ fun SubTaskCard(
                         } else {
                             add(
                                 TaskIconAction(
-                                    icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
+                                    icon = if (task.done == 0L) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
                                     description = "",
                                     onClick = { toggleDoneStatus(task) },
                                 )
                             )
                         }
                     },
+                children = children,
             )
         }
         if (showDeleteDialog) {
@@ -108,23 +113,26 @@ fun SubTaskCard(
                 onDeleteClick = { deleteTask(task.id, it) }
             )
         }
-        if (task.children.isNotEmpty() && expanded) {
+        if (children.isNotEmpty() && expanded) {
+            val siblings = getSiblings(task.id)
             val bool =
-                task == task.parent.target?.children?.lastOrNull() // is task last child
+                task == siblings.lastOrNull() // is task last child
             val passingList =
                 if (depth > 0) list + !bool else list // if task is last child then add false no line would be needed
             Column {
-                task.children.forEach { child ->
+                children.forEach { child ->
                     key(child.id) {
                         SubTaskCard(
                             task = child,
                             depth = depth + 1,
-                            last = child == task.children.last(),
+                            last = child == children.last(),
                             list = passingList,
                             toggleDoneStatus = toggleDoneStatus,
                             deleteTask = deleteTask,
                             onEdit = onEdit,
                             onSkip = onSkip,
+                            getChildren = getChildren,
+                            getSiblings = getSiblings,
                         )
                     }
                 }
