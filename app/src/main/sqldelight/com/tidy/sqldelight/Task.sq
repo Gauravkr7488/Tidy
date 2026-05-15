@@ -54,3 +54,61 @@ VALUES (
     ?,
     ?
 );
+
+updateTask:
+UPDATE Task
+SET
+    title = ?,
+    done = ?,
+    note = ?,
+    repeatType = ?,
+    repeatDays = ?,
+    description = ?,
+    hide = ?,
+    parentId = ?
+WHERE id = ?;
+
+getTaskById:
+SELECT * FROM Task
+WHERE id = ?;
+
+getLastId:
+SELECT last_insert_rowid();
+
+saveTask:
+INSERT INTO Task(
+    title,
+    done,
+    note,
+    repeatType,
+    repeatDays,
+    description,
+    hide,
+    createdAt,
+    parentId
+)
+VALUES (
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
+);
+
+getAll:
+SELECT * FROM Task;
+
+getChildren:
+SELECT * FROM Task
+WHERE parentId = ?;
+
+deleteTask:
+DELETE FROM Task
+WHERE id = ?;
+
+deleteAllTasks:
+DELETE FROM Task;

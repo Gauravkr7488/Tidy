@@ -17,3 +17,10 @@
 CREATE TABLE LastReset (
     lastResetDate TEXT
 );
+
+getLastReset:
+SELECT lastResetDate FROM LastReset;
+
+setLastReset:
+INSERT INTO LastReset(lastResetDate)
+VALUES (?);
