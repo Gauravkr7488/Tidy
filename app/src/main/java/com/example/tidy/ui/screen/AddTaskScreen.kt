@@ -242,7 +242,7 @@ fun AddTaskScreen(
                     )
                     taskChildren = taskChildren + childTask
                 },
-                child =
+                getChild =
                     { addTaskScreenViewModel.getChildren(it) }
             )
             if (createdAt != "") {
@@ -430,7 +430,7 @@ fun SubTaskMenu(
     taskChildren: List<Task>,
     addChildrenWithTitle: (String) -> Unit,
     onRemoveSubTask: (Task, Boolean, Boolean) -> Unit,
-    child: (Long) -> List<Task>
+    getChild: (Long) -> List<Task>
 ) {
     val listState = rememberLazyListState()
     var subTaskTitle by remember { mutableStateOf("") }
@@ -479,7 +479,7 @@ fun SubTaskMenu(
                             )
                         )
                     },
-                    children = child(item.id),
+                    children = getChild(item.id),
                 )
             }
         }
@@ -518,7 +518,7 @@ fun SubTaskMenu(
                             }
                         )
                         if (subTaskForRemove.id != 0L) {
-                            val subTaskChildren = child(subTaskForRemove.id)
+                            val subTaskChildren = getChild(subTaskForRemove.id)
                             Spacer(modifier = Modifier.height(12.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,

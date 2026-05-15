@@ -57,8 +57,6 @@ fun SubTaskCard(
     last: Boolean = false,
     list: List<Boolean> = listOf(),
     getChildren: (Long) -> List<Task>,
-    getSiblings: (Long) -> List<Task>
-
 ) {
     Column(
         modifier = modifier
@@ -115,7 +113,7 @@ fun SubTaskCard(
             )
         }
         if (children.isNotEmpty() && expanded) {
-            val siblings = getSiblings(task.id)
+            val siblings = if (task.parentId != null) getChildren(task.parentId) else emptyList()
             val bool =
                 task == siblings.lastOrNull() // is task last child
             val passingList =
@@ -133,7 +131,6 @@ fun SubTaskCard(
                             onEdit = onEdit,
                             onSkip = onSkip,
                             getChildren = getChildren,
-                            getSiblings = getSiblings,
                         )
                     }
                 }
