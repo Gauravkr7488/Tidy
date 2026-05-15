@@ -113,11 +113,13 @@ fun AddTaskScreen(
     var repeatDays by remember { mutableStateOf("") }
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
+    var parentId: Long? by remember { mutableStateOf(null) }
     LaunchedEffect(Unit) {
         val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
         if (task != null) {
             taskId = task.id
             taskChildren = addTaskScreenViewModel.getChildren(task.id)
+            parentId = task.parentId
             taskTitle = task.title
             description = task.description
             repeatType = task.repeatType
@@ -152,7 +154,7 @@ fun AddTaskScreen(
                                         done = 0,
                                         hide = 0,
                                         createdAt = System.currentTimeMillis(),
-                                        parentId = null,
+                                        parentId = parentId,
                                     )
                                 )
                                 taskChildren.forEach {
