@@ -128,7 +128,7 @@ class DbOperation(
     }
 
     suspend fun getLastResetDate() = withContext(Dispatchers.IO) {
-        db.lastResetQueries.getLastReset().executeAsOneOrNull()?.lastResetDate
+        db.lastResetQueries.getLastReset().executeAsOneOrNull()
     }
 
     suspend fun setLastResetToday(todayDate: String) = withContext(Dispatchers.IO) {

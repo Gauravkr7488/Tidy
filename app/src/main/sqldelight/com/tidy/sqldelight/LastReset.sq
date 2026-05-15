@@ -15,12 +15,13 @@
 --  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 --  */
 CREATE TABLE LastReset (
-    lastResetDate TEXT
+    id INTEGER NOT NULL PRIMARY KEY CHECK (id = 1),
+    lastResetDate TEXT NOT NULL
 );
 
 getLastReset:
-SELECT lastResetDate FROM LastReset;
+SELECT lastResetDate FROM LastReset WHERE id = 1;
 
 setLastReset:
-INSERT INTO LastReset(lastResetDate)
-VALUES (?);
+INSERT OR REPLACE INTO LastReset(id, lastResetDate)
+VALUES (1, ?);
