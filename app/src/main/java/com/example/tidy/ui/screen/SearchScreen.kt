@@ -31,7 +31,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
@@ -53,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCard
-import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 
@@ -152,19 +150,7 @@ fun SearchScreen(
                         TaskCard(
                             task = task,
                             onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
-                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
-                            trailingIcons = buildList {
-                                if (task.hide == 1L) {
-                                    add(
-                                        TaskIconAction(
-                                            icon = Icons.Default.Archive,
-                                            description = "Archived",
-                                            onClick = {},
-                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        )
-                                    )
-                                }
-                            }
+                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id }
                         )
                     }
                 }
