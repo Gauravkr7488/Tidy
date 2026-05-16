@@ -18,26 +18,33 @@
 package com.example.tidy
 
 import android.content.Context
+import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import com.google.gson.Gson
-import io.objectbox.Box
+import com.example.tidy.Utils.createBackupJson
+import com.example.tidy.Utils.getCurrentDate
+import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import androidx.core.net.toUri
 
 class ExportManager(
     private val context: Context,
-    private val taskBox: Box<Task>
+    private val database: AppDatabase
 ) {
     private val prefs = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
 
     suspend fun exportSilently(): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val json = Gson().toJson(taskBox.all.map { it.toDto() })
+            // TODO FIX
+            val dbOperation = DbOperation(database)
+            val tasks = dbOperation.taskGetAll()
+            var lastResetDate = dbOperation.getLastResetDate()
+            if (lastResetDate == null) lastResetDate = getCurrentDate()
+            val json = createBackupJson(tasks, lastResetDate)
+
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             val fileName = "backup_$timestamp.json"
 

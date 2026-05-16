@@ -17,6 +17,7 @@
 package com.example.tidy.ui.screen
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,9 +26,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -38,13 +41,16 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -64,18 +70,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.tidy.Task
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.taskComponents.TaskCard
-import com.example.tidy.viewModels.AddTaskScreenViewModel
+import com.example.tidy.ui.component.taskComponents.TaskIconAction
+import com.example.tidy.viewModels.SharedViewModel
+import com.tidy.sqldelight.Task
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -84,7 +96,7 @@ import java.util.Locale
 
 @Composable
 fun AddTaskScreen(
-    addTaskScreenViewModel: AddTaskScreenViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController,
     modifier: Modifier = Modifier,
     taskId: Long = 0,
@@ -94,35 +106,33 @@ fun AddTaskScreen(
     var description by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    var note by remember { mutableStateOf(false) }
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
-    val task by remember { mutableStateOf(Task(title = "")) }
     var showAlertDialog by remember { mutableStateOf(false) }
+    var parentId: Long? by remember { mutableStateOf(null) }
     LaunchedEffect(Unit) {
-        coroutineScope.launch {
-            val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
-            if (task != null) {
-                taskId = task.id
-                taskChildren = task.children.toList()
-                taskTitle = task.title
-                description = task.description
-                repeatType = task.repeatType
-                repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
-                val readable = SimpleDateFormat(
-                    "MMM dd, yyyy hh:mm a",
-                    Locale.getDefault()
-                ).format(Date(task.createdAt))
-                createdAt = readable
-            }
-            if (taskTitle.isEmpty()) {
-                focusRequester.requestFocus()
-                keyboardController?.show()
-            }
+        val task = sharedViewModel.getCurrentTask(taskId = taskId)
+        if (task != null) {
+            taskId = task.id
+            taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
+            parentId = task.parentId
+            taskTitle = task.title
+            description = task.description
+            repeatType = task.repeatType
+            repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
+            val readable = SimpleDateFormat(
+                "MMM dd, yyyy hh:mm a",
+                Locale.getDefault()
+            ).format(Date(task.createdAt))
+            createdAt = readable
+        }
+        if (taskTitle.isEmpty()) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
@@ -134,28 +144,32 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                task.children.forEach { child ->
-                                    addTaskScreenViewModel.addTask(child)
-                                }
-                                val newTask = task.copy(
-                                    id = taskId,
-                                    title = taskTitle,
-                                    note = note,
-                                    repeatType = repeatType,
-                                    repeatDays = repeatDays,
-                                    description = description,
+                                val savedTaskId = sharedViewModel.addTask(
+                                    Task(
+                                        id = taskId,
+                                        title = taskTitle,
+                                        repeatType = repeatType,
+                                        repeatDays = repeatDays,
+                                        description = description,
+                                        done = 0,
+                                        hide = 0,
+                                        createdAt = System.currentTimeMillis(),
+                                        parentId = parentId,
+                                    )
                                 )
-                                addTaskScreenViewModel.addTask(newTask) // once to attaching to objectbox
-                                newTask.children.addAll(task.children)
-                                addTaskScreenViewModel.addTask(newTask) // once for the children to persist
+                                taskChildren.forEach {
+                                    sharedViewModel.addTask(
+                                        it.copy(parentId = savedTaskId)
+                                    )
+                                }
+
                                 showFab = false
                                 navController.popBackStack()
-                            }else{
+                            } else {
                                 @Suppress("AssignedValueIsNeverRead")
                                 showAlertDialog = true
                             }
                         }
-
                     },
                     modifier = Modifier
                         .size(80.dp)
@@ -206,11 +220,35 @@ fun AddTaskScreen(
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it },
             )
-            NewSubTaskMenu(taskChildren) {
-                val childTask = Task(title = it)
-                task.children.add(childTask)
-                taskChildren = taskChildren + childTask
-            }
+            SubTaskMenu(
+                taskChildren,
+                onRemoveSubTask = { task, deleteTask, deleteChildren ->
+                    taskChildren = sharedViewModel.removeSubTask(
+                        task,
+                        taskChildren,
+                        deleteTask,
+                        deleteChildren
+                    )
+                },
+                addChildrenWithTitle = {
+                    val childTask = Task(
+                        id = 0,
+                        title = it,
+                        repeatType = RepeatTypes.NONE,
+                        repeatDays = "",
+                        description = "",
+                        done = 0,
+                        hide = 0,
+                        createdAt = System.currentTimeMillis(),
+                        parentId = null,
+                    )
+                    taskChildren = taskChildren + childTask
+                },
+                getChild =
+                    { id ->
+                        sharedViewModel.tasks.value.filter { it.parentId == id }
+                    }
+            )
             if (createdAt != "") {
                 Text(
                     text = "Created $createdAt",
@@ -219,7 +257,7 @@ fun AddTaskScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
-            if (showAlertDialog){
+            if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
             }
         }
@@ -227,10 +265,10 @@ fun AddTaskScreen(
 }
 
 @Composable
-fun EmptyTitleDialog(onDismiss: () -> Unit){
+fun EmptyTitleDialog(onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = {Text("Please Enter Title")},
+        title = { Text("Please Enter Title") },
         text = { Text("Task can not be saved without a title.") },
         confirmButton = {
             TextButton(onClick = onDismiss) {
@@ -390,11 +428,35 @@ fun RepeatMenu(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> Unit) {
+fun SubTaskMenu(
+    taskChildren: List<Task>,
+    addChildrenWithTitle: (String) -> Unit,
+    onRemoveSubTask: (Task, Boolean, Boolean) -> Unit,
+    getChild: (Long) -> List<Task>
+) {
     val listState = rememberLazyListState()
     var subTaskTitle by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
+    var showDialog by remember { mutableStateOf(false) }
+    var subTaskForRemove by remember {
+        mutableStateOf(
+            Task(
+                title = "",
+                id = 0,
+                repeatType = RepeatTypes.NONE,
+                repeatDays = "",
+                description = "",
+                done = 0,
+                hide = 0,
+                createdAt = System.currentTimeMillis(),
+                parentId = null,
+            )
+        )
+    }
+    var deleteTask by remember { mutableStateOf(false) }
+    var deleteChildren by remember { mutableStateOf(false) }
     Column {
         Text("SubTasks")
         LazyColumn(
@@ -407,7 +469,22 @@ fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> U
             items(
                 items = taskChildren,
             ) { item ->
-                TaskCard(task = item)
+                TaskCard(
+                    task = item,
+                    trailingIconButtons = buildList {
+                        add(
+                            TaskIconAction(
+                                icon = Icons.Default.Close,
+                                description = "Remove Task",
+                                onClick = {
+                                    showDialog = true
+                                    subTaskForRemove = item
+                                },
+                            )
+                        )
+                    },
+                    children = getChild(item.id),
+                )
             }
         }
         OutlinedTextField(
@@ -415,21 +492,87 @@ fun NewSubTaskMenu(taskChildren: List<Task>, addChildrenWithTitle: (String) -> U
             onValueChange = { subTaskTitle = it },
             placeholder = { Text("Add Subtask") },
             keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next
+                imeAction = if (subTaskTitle != "") ImeAction.Next else ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
                 onNext = {
                     coroutineScope.launch {
-                        if (subTaskTitle != "") {
-                            addChildrenWithTitle(subTaskTitle)
-                            subTaskTitle = ""
-                            listState.animateScrollToItem(taskChildren.size)
-                        }
+                        addChildrenWithTitle(subTaskTitle)
+                        subTaskTitle = ""
+                        listState.animateScrollToItem(taskChildren.size)
                     }
                 }
             ),
             modifier = Modifier
                 .fillMaxWidth()
         )
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text(text = "Remove SubTask") },
+                text = {
+                    Column {
+                        Text(
+                            text = buildAnnotatedString {
+                                append("Are you sure you want to remove '")
+                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append(subTaskForRemove.title)
+                                }
+                                append("'?")
+                            }
+                        )
+                        if (subTaskForRemove.id != 0L) {
+                            val subTaskChildren = getChild(subTaskForRemove.id)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(MaterialTheme.shapes.small)
+                                    .clickable { deleteTask = !deleteTask }
+                                    .padding(vertical = 4.dp)
+                            ) {
+                                Checkbox(
+                                    checked = deleteTask,
+                                    onCheckedChange = { deleteTask = it }
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Also delete subtask")
+                            }
+                            if (subTaskChildren.isNotEmpty()) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(MaterialTheme.shapes.small)
+                                        .clickable { deleteChildren = !deleteChildren }
+                                        .padding(vertical = 4.dp)
+                                ) {
+                                    Checkbox(
+                                        checked = deleteChildren,
+                                        onCheckedChange = { deleteChildren = it }
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Also delete children")
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onRemoveSubTask(subTaskForRemove, deleteTask, deleteChildren)
+                        showDialog = false
+                    }) {
+                        Text("Remove", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
 }

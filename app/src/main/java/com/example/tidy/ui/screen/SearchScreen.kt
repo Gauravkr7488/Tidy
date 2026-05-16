@@ -31,7 +31,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
@@ -42,7 +41,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,22 +50,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCard
-import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.ui.component.topAppBar.TopAppBar
-import com.example.tidy.viewModels.HomeScreenViewModel
+import com.example.tidy.viewModels.SharedViewModel
 
 enum class SearchFilter { ALL, TASKS }
 
 @Composable
 fun SearchScreen(
-    homeScreenViewModel: HomeScreenViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController,
     modifier: Modifier = Modifier,
 ) {
-    val tasks = homeScreenViewModel.tasks
+    val taskState = sharedViewModel.tasks.collectAsState()
+    val tasks = taskState.value
     var query by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(SearchFilter.ALL) }
 
@@ -74,20 +72,8 @@ fun SearchScreen(
         val matchesQuery = query.isBlank() ||
                 task.title.contains(query, ignoreCase = true) ||
                 task.description.contains(query, ignoreCase = true)
-        val matchesFilter = when (selectedFilter) {
-            SearchFilter.ALL -> true
-//            SearchFilter.NOTES -> task.note
-            SearchFilter.TASKS -> !task.note
-        }
-        matchesQuery && matchesFilter
-    }
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val isOnTop = currentBackStackEntry?.destination?.route == Routes.SEARCH
 
-    LaunchedEffect(isOnTop) {
-        if (isOnTop) {
-            homeScreenViewModel.refreshTasks()
-        }
+        matchesQuery
     }
 
     Scaffold(topBar = { TopAppBar("Search") }, modifier = modifier.fillMaxSize()) { innerPadding ->
@@ -139,7 +125,6 @@ fun SearchScreen(
                             Text(
                                 text = when (filter) {
                                     SearchFilter.ALL -> "All"
-//                                    SearchFilter.NOTES -> "Notes"
                                     SearchFilter.TASKS -> "Tasks"
                                 }
                             )
@@ -164,19 +149,8 @@ fun SearchScreen(
                     items(filteredTasks, key = { it.id }) { task ->
                         TaskCard(
                             task = task,
-                            onClick = { homeScreenViewModel.editTask(task) },
-                            trailingIcons = buildList {
-                                if (task.hide) {
-                                    add(
-                                        TaskIconAction(
-                                            icon = Icons.Default.Archive,
-                                            description = "Archived",
-                                            onClick = {},
-                                            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        )
-                                    )
-                                }
-                            }
+                            onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
+                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id }
                         )
                     }
                 }

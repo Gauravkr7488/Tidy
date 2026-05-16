@@ -4,7 +4,9 @@ plugins {
     id("io.objectbox")
     alias(libs.plugins.kotlin.kapt)
     kotlin("plugin.serialization") version "2.0.21"
+    id("app.cash.sqldelight")
 }
+
 val name = "com.Ace777.tidy"
 android {
     namespace = name
@@ -15,9 +17,10 @@ android {
     defaultConfig {
         applicationId = name
         minSdk = 24
+        //noinspection OldTargetApi
         targetSdk = 36
-        versionCode = 9
-        versionName = "2.27.18"
+        versionCode = 12
+        versionName = "3.0.0-alpha"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -44,29 +47,34 @@ android {
         compose = true
     }
 }
-
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.yourapp.db")
+        }
+    }
+}
 dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.ui.graphics)
-    val nav_version = "2.9.7"
 
     // Jetpack Compose integration
-    implementation("androidx.navigation:navigation-compose:$nav_version")
+    implementation(libs.androidx.navigation.compose)
 
     // Views/Fragments integration
-    implementation("androidx.navigation:navigation-fragment:$nav_version")
-    implementation("androidx.navigation:navigation-ui:$nav_version")
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
 
     // Feature module support for Fragments
-    implementation("androidx.navigation:navigation-dynamic-features-fragment:$nav_version")
+    implementation(libs.androidx.navigation.dynamic.features.fragment)
 
     // Testing Navigation
-    androidTestImplementation("androidx.navigation:navigation-testing:$nav_version")
+    androidTestImplementation(libs.androidx.navigation.testing)
 
     // JSON serialization library, works with the Kotlin serialization plugin
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -83,12 +91,14 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation("androidx.compose.material:material-icons-extended:<2024.09.00>")
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("androidx.lifecycle:lifecycle-process:2.8.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
-    implementation("androidx.compose.foundation:foundation:1.6.0")
-    implementation("androidx.compose.ui:ui-text-google-fonts:1.11.0")
-    implementation("androidx.core:core-splashscreen:1.2.0")
+    implementation(libs.androidx.compose.material.icons.extended.v20240900)
+    implementation(libs.gson)
+    implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.compose.ui.text.google.fonts)
+    implementation(libs.androidx.core.splashscreen)
+
+    implementation(libs.android.driver)
+    implementation(libs.coroutines.extensions1) // for flow
+    implementation(libs.androidx.datastore.preferences)
 }

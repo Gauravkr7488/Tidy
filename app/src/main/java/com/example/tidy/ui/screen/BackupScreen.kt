@@ -42,44 +42,53 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.tidy.ui.component.SimpleCard
-import com.example.tidy.viewModels.BackupScreenViewModel
+import com.example.tidy.BackupOperations
+import kotlinx.coroutines.launch
 
 @Composable
 fun BackupScreen(
-    backupScreenViewModel: BackupScreenViewModel,
-    navController: NavController,
+    backupOperations: BackupOperations,
 
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     // --- existing launchers, unchanged ---
     val exportLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.CreateDocument("application/json")
         ) { uri ->
-            uri?.let { backupScreenViewModel.createBackup(context, it) }
+            uri?.let {
+                coroutineScope.launch {
+                    backupOperations.createBackup(context, it)
+                }
+            }
         }
 
     val importLauncher =
         rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocument()
         ) { uri ->
-            uri?.let { backupScreenViewModel.importBackup(context, it) }
+            uri?.let {
+                coroutineScope.launch {
+                    backupOperations.importBackup(context, it)
+                }
+            }
         }
 
     // --- new: auto backup folder picker ---
     var autoBackupPath by remember {
-        mutableStateOf(backupScreenViewModel.getAutoBackupPath(context))
+        mutableStateOf(backupOperations.getAutoBackupPath(context))
     }
 
     val folderPickerLauncher =
@@ -93,8 +102,8 @@ fun BackupScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                backupScreenViewModel.setAutoBackupUri(context, it)
-                autoBackupPath = backupScreenViewModel.getAutoBackupPath(context)
+                backupOperations.setAutoBackupUri(context, it)
+                autoBackupPath = backupOperations.getAutoBackupPath(context)
             }
         }
 

@@ -26,13 +26,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import com.example.tidy.Task
-
+import com.tidy.sqldelight.Task
 @Composable
 fun TaskDeleteDialog(
     task: Task,
+    children: List<Task>,
     onDismiss: () -> Unit,
-    onDeleteClick: (Long, Boolean) -> Unit,
+    onDeleteClick: (Boolean) -> Unit,
 ) {
     var deleteChildren by remember { mutableStateOf(false) }
 
@@ -50,7 +50,7 @@ fun TaskDeleteDialog(
                         append("'?")
                     }
                 )
-                if (task.children.isNotEmpty()){
+                if (children.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -72,7 +72,7 @@ fun TaskDeleteDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                onDeleteClick(task.id, deleteChildren)
+                onDeleteClick(deleteChildren)
                 onDismiss()
             }) {
                 Text("Delete", color = MaterialTheme.colorScheme.error)

@@ -30,17 +30,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.tidy.BackupOperations
 import com.example.tidy.DbOperation
 import com.example.tidy.ExportManager
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
-import com.example.tidy.viewModels.AddTaskScreenViewModel
-import com.example.tidy.viewModels.BackupScreenViewModel
-import com.example.tidy.viewModels.HomeScreenViewModel
+import com.example.tidy.viewModels.SharedViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -49,11 +51,18 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val addTaskScreenViewModel =
-        remember { AddTaskScreenViewModel(dbOperation) }
-    val homeScreenViewModel =
-        remember { HomeScreenViewModel(dbOperation, exportManager, navController = navController) }
-    val backupScreenViewModel = remember { BackupScreenViewModel(dbOperation) }
+    val sharedViewModel = viewModel<SharedViewModel>(
+        factory = viewModelFactory {
+            initializer {
+                SharedViewModel(
+                    dbOperation,
+                    exportManager
+                )
+            }
+        }
+    )
+
+    val backupOperations = remember { BackupOperations(dbOperation) }
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -91,8 +100,8 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                         modifier = Modifier.fillMaxSize()
                     ) { page ->
                         when (page) {
-                            0 -> HomeScreen(homeScreenViewModel, navController)
-                            1 -> SearchScreen(homeScreenViewModel, navController)
+                            0 -> HomeScreen(sharedViewModel, navController)
+                            1 -> SearchScreen(sharedViewModel, navController)
                             2 -> SettingsScreen(navController)
                         }
                     }
@@ -103,31 +112,20 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                 val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
                 if (taskId == null) {
                     AddTaskScreen(
-                        addTaskScreenViewModel,
+                        sharedViewModel,
                         navController,
                     )
                 } else {
                     AddTaskScreen(
-                        addTaskScreenViewModel,
+                        sharedViewModel,
                         navController,
                         taskId = taskId,
                     )
                 }
             }
 
-            composable(Routes.ADD_TASK) {
-                AddTaskScreen(
-                    addTaskScreenViewModel,
-                    navController,
-                )
-            }
-
             composable(Routes.BACKUP) {
-                BackupScreen(backupScreenViewModel, navController)
-            }
-
-            composable(Routes.SEARCH) {
-                SearchScreen(homeScreenViewModel, navController)
+                BackupScreen(backupOperations)
             }
         }
     }

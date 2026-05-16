@@ -15,17 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.example.tidy.ui.component.taskComponents
+package com.example.tidy.ui.component.subTaskComponents.canvas
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import com.tidy.sqldelight.Task
+import androidx.compose.ui.unit.dp
 
-data class TaskIconAction(
-    val icon: ImageVector,
-    val description: String,
-    val onClick: (Task) -> Unit,
-    val tint: Color = Color.White, //TODO change this
-    val modifier: Modifier = Modifier,
-)
+@Composable
+fun NoLine() {
+    Box(
+        modifier = Modifier
+            .width(16.dp)
+            .fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {}
+}

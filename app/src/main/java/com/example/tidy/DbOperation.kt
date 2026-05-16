@@ -16,42 +16,91 @@
  */
 package com.example.tidy
 
-import io.objectbox.Box
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.tidy.sqldelight.Task
+import kotlinx.coroutines.flow.Flow
 
 class DbOperation(
-    private val taskBox: Box<Task>,
-    private val lastBoxReset: Box<LastReset>,
+    private val db: AppDatabase
 ) {
-    suspend fun saveTask(task: Task): Long = withContext(Dispatchers.IO) {
-        return@withContext taskBox.put(task)
+    suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO) {
+        list.forEach { task ->
+            db.taskQueries.saveNewTask(
+                id = task.id,
+                title = task.title,
+                done = task.done,
+                repeatType = task.repeatType,
+                repeatDays = task.repeatDays,
+                description = task.description,
+                hide = task.hide,
+                createdAt = task.createdAt,
+                parentId = task.parentId
+            )
+        }
     }
 
-    suspend fun getTask(id: Long): Task = withContext(Dispatchers.IO) {
-        val task = taskBox.get(id)
-        return@withContext task
+    suspend fun isChildAncestorOfParent(parentId: Long, childId: Long): Boolean =
+        withContext(Dispatchers.IO) { // Guard against loops
+            if (parentId == childId) return@withContext true
+            val grandParentId = getTask(parentId)?.parentId ?: return@withContext false
+            return@withContext isChildAncestorOfParent(grandParentId, childId)
+        }
+
+    suspend fun saveTask(task: Task): Long? = withContext(Dispatchers.IO) {
+        if (task.parentId != null && isChildAncestorOfParent(
+                task.parentId,
+                task.id
+            )
+        ) return@withContext null // todo should return some kind of error or warning
+        if (task.id == 0L) {
+            db.taskQueries.saveTask(
+                title = task.title,
+                done = task.done,
+                repeatType = task.repeatType,
+                repeatDays = task.repeatDays,
+                description = task.description,
+                hide = task.hide,
+                createdAt = task.createdAt,
+                parentId = task.parentId
+            )
+            val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
+            return@withContext id
+
+        } else {
+            db.taskQueries.updateTask(
+                id = task.id,
+                title = task.title,
+                done = task.done,
+                repeatType = task.repeatType,
+                repeatDays = task.repeatDays,
+                description = task.description,
+                hide = task.hide,
+                parentId = task.parentId
+            )
+            return@withContext task.id
+        }
+    }
+
+    suspend fun getTask(id: Long): Task? = withContext(Dispatchers.IO) {
+        db.taskQueries.getTaskById(id).executeAsOneOrNull()
     }
 
     suspend fun taskGetAll(): List<Task> = withContext(Dispatchers.IO) {
-        return@withContext taskBox.all
-    }
-
-    suspend fun addChild(childId: Long, parentId: Long): Long? = withContext(Dispatchers.IO) {
-        if (childId == parentId) return@withContext null
-        val childTask = getTask(childId)
-        val parentTask = getTask(parentId)
-        parentTask.children.add(childTask)
-        return@withContext saveTask(parentTask)
+        db.taskQueries.getAll().executeAsList()
     }
 
 
     suspend fun updateChildrenRepeatStatus(parentId: Long): Unit = withContext(
         Dispatchers.IO
     ) {
-        val task = getTask(parentId)
-        task.children.forEach { child ->
-            val freshChild = getTask(child.id)
+        val task = getTask(parentId) ?: return@withContext
+        val taskChildren = db.taskQueries.getChildren(task.id).executeAsList()
+        taskChildren.forEach { child ->
+            val freshChild = getTask(child.id) ?: return@withContext
             val newTask =
                 freshChild.copy(repeatType = task.repeatType, repeatDays = task.repeatDays)
             saveTask(newTask)
@@ -60,50 +109,62 @@ class DbOperation(
     }
 
     suspend fun updateDoneStatus(id: Long) = withContext(Dispatchers.IO) {
-        val task = getTask(id)
-        task.done = !task.done
-        return@withContext saveTask(task)
+
+        val task = getTask(id) ?: return@withContext
+        saveTask(
+            task.copy(
+                done = if (task.done == 1L) 0L else 1L
+            )
+        )
     }
 
     suspend fun skipTask(id: Long) = withContext(Dispatchers.IO) {
-        val task = getTask(id)
-        task.hide = true
-        return@withContext saveTask(task)
+        val task = getTask(id) ?: return@withContext
+        saveTask(
+            task.copy(hide = 1L)
+        )
     }
 
     suspend fun deleteTask(id: Long) = withContext(Dispatchers.IO) {
-        return@withContext taskBox.remove(id)
+        db.taskQueries.deleteTask(id)
     }
 
-    suspend fun updateParentDoneStatus(id: Long): Unit = withContext(Dispatchers.IO) {
-        val task = getTask(id)
-        task.parents.forEach { parent ->
-            val freshParent = getTask(parent.id)
-            val allChildrenDone = freshParent.children.all { it.done }
-            freshParent.done = allChildrenDone
-            saveTask(freshParent)
-            updateParentDoneStatus(freshParent.id)
-        }
+    suspend fun getChildren(id: Long) = withContext(Dispatchers.IO) {
+        db.taskQueries.getChildren(id).executeAsList()
+    }
+
+    suspend fun updateParentDoneStatus(parentId: Long): Unit = withContext(Dispatchers.IO) {
+        val freshParent = getTask(parentId) ?: return@withContext
+        val children = getChildren(freshParent.id)
+        val allChildrenDone = children.all { it.done == 1L }
+        saveTask(
+            freshParent.copy(
+                done = if (allChildrenDone) 1L else 0L
+            )
+        )
+        val grandParentId = freshParent.parentId ?: return@withContext
+        updateParentDoneStatus(grandParentId)
+
     }
 
     suspend fun taskDeleteALl() = withContext(Dispatchers.IO) {
-        return@withContext taskBox.removeAll()
+        db.taskQueries.deleteAllTasks()
     }
 
     suspend fun taskSaveList(tasks: List<Task>) = withContext(Dispatchers.IO) {
-        return@withContext taskBox.put(tasks)
+        tasks.forEach { saveTask(it) }
     }
 
-    suspend fun getLastReset(): LastReset? = withContext(Dispatchers.IO) {
-        return@withContext lastBoxReset.get(1)
+    suspend fun getLastResetDate() = withContext(Dispatchers.IO) {
+        db.lastResetQueries.getLastReset().executeAsOneOrNull()
     }
 
-    suspend fun setLastResetToday(todayDate: String): Long = withContext(Dispatchers.IO) {
-        val l = lastBoxReset.all
-        if (l.isNullOrEmpty()) {
-            return@withContext lastBoxReset.put(LastReset(lastResetAt = todayDate))
-        } else {
-            return@withContext lastBoxReset.put(LastReset(id = 1, lastResetAt = todayDate))
-        }
+    suspend fun setLastResetToday(todayDate: String) = withContext(Dispatchers.IO) {
+        db.lastResetQueries.setLastReset(todayDate)
     }
+
+    fun observeTasks(): Flow<List<Task>> =
+        db.taskQueries.getAll()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
 }

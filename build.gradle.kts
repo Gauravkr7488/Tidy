@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.kapt) apply false
+    id("app.cash.sqldelight") version "2.3.2" apply false
 }
 
 // build.gradle.kts
@@ -20,4 +21,5 @@ buildscript {
         // Add the plugin
         classpath("io.objectbox:objectbox-gradle-plugin:$objectboxVersion")
     }
+
 }
