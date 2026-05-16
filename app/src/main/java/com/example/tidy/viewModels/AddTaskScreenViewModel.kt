@@ -22,6 +22,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
 import kotlinx.coroutines.launch
 import com.tidy.sqldelight.Task
+import kotlinx.coroutines.runBlocking
 
 class AddTaskScreenViewModel(
     private val dbOperation: DbOperation,
@@ -66,11 +67,9 @@ class AddTaskScreenViewModel(
         dbOperation.deleteTask(id)
     }
 
-    fun getChildren(id: Long): List<Task> {
-        var list = emptyList<Task>()
-        viewModelScope.launch {
-            list = dbOperation.getChildren(id)
+    fun getChildren(id: Long): List<Task> { // todo remove with flow
+        return runBlocking {
+            dbOperation.getChildren(id)
         }
-        return list
     }
 }
