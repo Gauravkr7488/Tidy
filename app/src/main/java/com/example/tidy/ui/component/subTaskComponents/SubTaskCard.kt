@@ -48,6 +48,7 @@ import com.tidy.sqldelight.Task
 @Composable
 fun SubTaskCard(
     task: Task,
+    children: List<Task>,
     toggleDoneStatus: (Task) -> Unit,
     deleteTask: (Long, Boolean) -> Unit,
     onEdit: (Task) -> Unit,
@@ -61,7 +62,6 @@ fun SubTaskCard(
     Column(
         modifier = modifier
     ) {
-        val children = getChildren(task.id)
         var expanded by remember { mutableStateOf(false) }
         val rotation by animateFloatAsState(
             targetValue = if (expanded) 90f else 0f,
@@ -131,6 +131,7 @@ fun SubTaskCard(
                             onEdit = onEdit,
                             onSkip = onSkip,
                             getChildren = getChildren,
+                            children = getChildren(child.id),
                         )
                     }
                 }

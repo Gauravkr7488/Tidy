@@ -77,7 +77,7 @@ fun HomeScreen(
             homeScreenViewModel.refreshTasks()
         }
     }
-    val hasDoneTask = tasks.any { it.done == 1L}
+    val hasDoneTask = tasks.any { it.done == 1L }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
@@ -147,6 +147,7 @@ fun HomeScreen(
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
                             getChildren = { homeScreenViewModel.getChildren(it) },
+                            children = homeScreenViewModel.getChildren(task.id),
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
@@ -155,7 +156,7 @@ fun HomeScreen(
 
                     item { Spacer(modifier = Modifier.heightIn(10.dp)) }
 
-                    items(tasks.filter { it.done == 1L}, key = { it.id }) { task ->
+                    items(tasks.filter { it.done == 1L }, key = { it.id }) { task ->
                         SubTaskCard(
                             task,
                             toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
@@ -163,6 +164,7 @@ fun HomeScreen(
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
                             getChildren = { homeScreenViewModel.getChildren(it) },
+                            children = homeScreenViewModel.getChildren(task.id),
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
