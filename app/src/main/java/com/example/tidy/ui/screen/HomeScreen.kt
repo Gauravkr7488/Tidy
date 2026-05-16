@@ -46,13 +46,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.subTaskComponents.SubTaskCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
@@ -66,17 +64,11 @@ fun HomeScreen(
 
     modifier: Modifier = Modifier
 ) {
-    val tasks =
-        homeScreenViewModel.tasks.filter { task -> task.parentId == null && task.hide == 0L }
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
+    val taskState = homeScreenViewModel.visibleTasks.collectAsState()
+    val tasks = taskState.value
     val listState = rememberLazyListState()
 
-    LaunchedEffect(isOnTop) {
-        if (isOnTop) {
-            homeScreenViewModel.refreshTasks()
-        }
-    }
+
     val hasDoneTask = tasks.any { it.done == 1L }
     Scaffold(
         modifier = modifier.fillMaxSize(),

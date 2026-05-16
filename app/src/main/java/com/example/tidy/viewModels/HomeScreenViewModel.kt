@@ -17,9 +17,6 @@
 
 package com.example.tidy.viewModels
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
@@ -27,10 +24,13 @@ import com.example.tidy.ExportManager
 import com.example.tidy.Utils.getCurrentDate
 import com.example.tidy.Utils.getCurrentDay
 import com.example.tidy.constants.RepeatTypes
+import com.tidy.sqldelight.Task
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import com.tidy.sqldelight.Task
 import kotlinx.coroutines.runBlocking
 
 class HomeScreenViewModel(
@@ -38,24 +38,26 @@ class HomeScreenViewModel(
     private val exportManager: ExportManager,
 ) : ViewModel() {
 
-    var tasks by mutableStateOf<List<Task>>(emptyList())
-        private set
+    private val tasks = dbOperation.observeTasks()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000),
+            emptyList()
+        )
+    val visibleTasks = tasks
+        .map { it.filter { task ->  task.parentId == null && task.hide == 0L  } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         viewModelScope.launch {
-            tasks.forEach { task -> repeatFix(task) } // old repeat migration, can be removed after one run
-            refreshTasks()
+            tasks.value.forEach { task -> repeatFix(task) }
             resetTasksForToday()
         }
     }
 
-    suspend fun refreshTasks() {
-        tasks = dbOperation.taskGetAll()
-    }
-
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            tasks.filter { it.done == 1L && it.parentId == null }
+            tasks.value.filter { it.done == 1L && it.parentId == null }
                 .forEach { task ->
                     if (task.repeatType != RepeatTypes.NONE) {
                         val updatedTask = task.copy(
@@ -67,7 +69,7 @@ class HomeScreenViewModel(
                         deleteTaskAndChildren(task.id) // delete one time tasks
                     }
                 }
-            refreshTasks()
+            
         }
     }
 
@@ -81,23 +83,23 @@ class HomeScreenViewModel(
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
             dbOperation.updateDoneStatus(task.id)
-            val parentId = task.parentId ?: return@launch refreshTasks()
+            val parentId = task.parentId ?: return@launch 
             dbOperation.updateParentDoneStatus(parentId)
-            refreshTasks()
+            
         }
     }
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
             dbOperation.skipTask(task.id)
-            refreshTasks()
+            
         }
     }
 
     fun deleteTask(id: Long, deleteSubtasks: Boolean) {
         viewModelScope.launch {
             deleteTaskAsync(id, deleteSubtasks)
-            refreshTasks()
+            
         }
     }
 
@@ -145,7 +147,7 @@ class HomeScreenViewModel(
                 dbOperation.saveTask(task.copy(hide = 0L))
             }
         }
-        refreshTasks()
+        
     }
 
     @OptIn(DelicateCoroutinesApi::class)
