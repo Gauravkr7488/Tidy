@@ -27,6 +27,7 @@ import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -38,14 +39,14 @@ class HomeScreenViewModel(
     private val exportManager: ExportManager,
 ) : ViewModel() {
 
-    private val tasks = dbOperation.observeTasks()
+    val tasks = dbOperation.observeTasks()
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
             emptyList()
         )
     val visibleTasks = tasks
-        .map { it.filter { task ->  task.parentId == null && task.hide == 0L  } }
+        .map { it.filter { task -> task.parentId == null && task.hide == 0L } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
@@ -69,13 +70,13 @@ class HomeScreenViewModel(
                         deleteTaskAndChildren(task.id) // delete one time tasks
                     }
                 }
-            
+
         }
     }
 
     private suspend fun deleteTaskAndChildren(id: Long) {
         dbOperation.getTask(id) ?: return
-        val children = getChildren(id)
+        val children = tasks.value.filter { it.parentId == id }
         if (children.isNotEmpty()) children.forEach { deleteTaskAndChildren(it.id) }
         dbOperation.deleteTask(id)
     }
@@ -83,29 +84,29 @@ class HomeScreenViewModel(
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
             dbOperation.updateDoneStatus(task.id)
-            val parentId = task.parentId ?: return@launch 
+            val parentId = task.parentId ?: return@launch
             dbOperation.updateParentDoneStatus(parentId)
-            
+
         }
     }
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
             dbOperation.skipTask(task.id)
-            
+
         }
     }
 
     fun deleteTask(id: Long, deleteSubtasks: Boolean) {
         viewModelScope.launch {
             deleteTaskAsync(id, deleteSubtasks)
-            
+
         }
     }
 
     private suspend fun deleteTaskAsync(id: Long, deleteSubtasks: Boolean) {
         val task = dbOperation.getTask(id) ?: return
-        val children = getChildren(id)
+        val children = tasks.value.filter { it.parentId == id }
         if (deleteSubtasks) {
             children.forEach { task ->
                 deleteTaskAsync(task.id, true)
@@ -119,7 +120,7 @@ class HomeScreenViewModel(
     private suspend fun updateParentStatus(parentId: Long?) {
         if (parentId != null) { // update parent status
             val parent = dbOperation.getTask(parentId) ?: return
-            val parentChildren = getChildren(parentId)
+            val parentChildren = tasks.value.filter { it.parentId == parentId }
             val parentStatus = parentChildren.all { it.done == 0L }
             dbOperation.saveTask(parent.copy(done = if (!parentStatus) 0L else 1L))
             dbOperation.updateParentDoneStatus(parentId)
@@ -147,7 +148,7 @@ class HomeScreenViewModel(
                 dbOperation.saveTask(task.copy(hide = 0L))
             }
         }
-        
+
     }
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -168,9 +169,8 @@ class HomeScreenViewModel(
         dbOperation.saveTask(newTask)
     }
 
-    fun getChildren(id: Long): List<Task> { // todo remove with flow
-        return runBlocking {
-            dbOperation.getChildren(id)
+    fun observeChildren(id: Long): Flow<List<Task>> =
+        tasks.map { list ->
+            list.filter { it.parentId == id }
         }
-    }
 }
