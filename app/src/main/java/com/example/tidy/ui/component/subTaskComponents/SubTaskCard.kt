@@ -31,7 +31,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -44,7 +43,6 @@ import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.tidy.sqldelight.Task
-import kotlinx.coroutines.flow.Flow
 
 
 @Composable
@@ -59,9 +57,8 @@ fun SubTaskCard(
     depth: Int = 0,
     last: Boolean = false,
     list: List<Boolean> = listOf(),
-    getChildren: (Long) -> Flow<List<Task>>,
-
-    ) {
+    getChildren: (Long) -> List<Task>,
+) {
     Column(
         modifier = modifier
     ) {
@@ -90,7 +87,7 @@ fun SubTaskCard(
                                 color = MaterialTheme.colorScheme.onTertiaryContainer
                             ),
                         )
-                        if (task.parentId == null) {
+                        if (task.parentId == null){
                             add(
                                 TaskContextAction(
                                     label = "Skip",
@@ -140,12 +137,11 @@ fun SubTaskCard(
                 task = task,
                 onDismiss = { showDeleteDialog = !showDeleteDialog },
                 onDeleteClick = { deleteTask(task.id, it) },
-                children = children
+                children = getChildren(task.id)
             )
         }
         if (children.isNotEmpty() && expanded) {
-            val siblings =
-                if (task.parentId != null) getChildren(task.parentId).collectAsState(initial = emptyList()).value else emptyList()
+            val siblings = if (task.parentId != null) getChildren(task.parentId) else emptyList()
             val bool =
                 task == siblings.lastOrNull() // is task last child
             val passingList =
@@ -163,7 +159,7 @@ fun SubTaskCard(
                             onEdit = onEdit,
                             onSkip = onSkip,
                             getChildren = getChildren,
-                            children = getChildren(child.id).collectAsState(initial = emptyList()).value,
+                            children = getChildren(child.id),
                         )
                     }
                 }

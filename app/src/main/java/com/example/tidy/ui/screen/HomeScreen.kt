@@ -138,8 +138,8 @@ fun HomeScreen(
                             deleteTask = homeScreenViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
-                            getChildren = {
-                                homeScreenViewModel.observeChildren(it)
+                            getChildren = { id ->
+                                homeScreenViewModel.tasks.value.filter { it.parentId == id }
                             },
                             children = homeScreenViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             modifier = Modifier
@@ -157,8 +157,8 @@ fun HomeScreen(
                             deleteTask = homeScreenViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = homeScreenViewModel::skipTask,
-                            getChildren = {
-                                homeScreenViewModel.observeChildren(it)
+                            getChildren = { id ->
+                                homeScreenViewModel.tasks.value.filter { it.parentId == id }
                             },
                             children = homeScreenViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             modifier = Modifier

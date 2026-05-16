@@ -27,12 +27,10 @@ import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class HomeScreenViewModel(
     private val dbOperation: DbOperation,
@@ -169,8 +167,4 @@ class HomeScreenViewModel(
         dbOperation.saveTask(newTask)
     }
 
-    fun observeChildren(id: Long): Flow<List<Task>> =
-        tasks.map { list ->
-            list.filter { it.parentId == id }
-        }
 }
