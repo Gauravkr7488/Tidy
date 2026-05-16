@@ -31,9 +31,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
-class HomeScreenViewModel(
+class SharedViewModel(
     private val dbOperation: DbOperation,
     private val exportManager: ExportManager,
 ) : ViewModel() {

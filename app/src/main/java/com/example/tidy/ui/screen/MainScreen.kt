@@ -37,13 +37,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.tidy.BackupOperations
 import com.example.tidy.DbOperation
 import com.example.tidy.ExportManager
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
-import com.example.tidy.viewModels.AddTaskScreenViewModel
-import com.example.tidy.BackupOperations
-import com.example.tidy.viewModels.HomeScreenViewModel
+import com.example.tidy.viewModels.SharedViewModel
 import kotlinx.coroutines.launch
 
 @Composable
@@ -52,15 +51,10 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
 
-    val addTaskScreenViewModel = viewModel<AddTaskScreenViewModel>(
-        factory = viewModelFactory {
-            initializer { AddTaskScreenViewModel(dbOperation) }
-        }
-    )
-    val homeScreenViewModel = viewModel<HomeScreenViewModel>(
+    val sharedViewModel = viewModel<SharedViewModel>(
         factory = viewModelFactory {
             initializer {
-                HomeScreenViewModel(
+                SharedViewModel(
                     dbOperation,
                     exportManager
                 )
@@ -106,8 +100,8 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                         modifier = Modifier.fillMaxSize()
                     ) { page ->
                         when (page) {
-                            0 -> HomeScreen(homeScreenViewModel, navController)
-                            1 -> SearchScreen(homeScreenViewModel, navController)
+                            0 -> HomeScreen(sharedViewModel, navController)
+                            1 -> SearchScreen(sharedViewModel, navController)
                             2 -> SettingsScreen(navController)
                         }
                     }
@@ -118,12 +112,12 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                 val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
                 if (taskId == null) {
                     AddTaskScreen(
-                        homeScreenViewModel,
+                        sharedViewModel,
                         navController,
                     )
                 } else {
                     AddTaskScreen(
-                        homeScreenViewModel,
+                        sharedViewModel,
                         navController,
                         taskId = taskId,
                     )

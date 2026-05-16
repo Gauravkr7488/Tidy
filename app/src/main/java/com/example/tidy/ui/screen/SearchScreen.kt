@@ -55,17 +55,17 @@ import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.ui.component.topAppBar.TopAppBar
-import com.example.tidy.viewModels.HomeScreenViewModel
+import com.example.tidy.viewModels.SharedViewModel
 
 enum class SearchFilter { ALL, TASKS }
 
 @Composable
 fun SearchScreen(
-    homeScreenViewModel: HomeScreenViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController,
     modifier: Modifier = Modifier,
 ) {
-    val taskState = homeScreenViewModel.visibleTasks.collectAsState()
+    val taskState = sharedViewModel.visibleTasks.collectAsState()
     val tasks = taskState.value
     var query by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(SearchFilter.ALL) }

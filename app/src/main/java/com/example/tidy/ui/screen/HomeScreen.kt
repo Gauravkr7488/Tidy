@@ -54,17 +54,17 @@ import androidx.navigation.NavController
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.subTaskComponents.SubTaskCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
-import com.example.tidy.viewModels.HomeScreenViewModel
+import com.example.tidy.viewModels.SharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    homeScreenViewModel: HomeScreenViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController,
 
     modifier: Modifier = Modifier
 ) {
-    val taskState = homeScreenViewModel.visibleTasks.collectAsState()
+    val taskState = sharedViewModel.visibleTasks.collectAsState()
     val tasks = taskState.value
     val listState = rememberLazyListState()
 
@@ -82,7 +82,7 @@ fun HomeScreen(
                     exit = slideOutVertically { it } + fadeOut()
                 ) {
                     FloatingActionButton(
-                        onClick = { homeScreenViewModel.cleanCompletedTasks() },
+                        onClick = { sharedViewModel.cleanCompletedTasks() },
                         modifier = Modifier.padding(
                             bottom = 16.dp,
                             start = 5.dp,
@@ -134,14 +134,14 @@ fun HomeScreen(
                         key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         SubTaskCard(
                             task,
-                            toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
-                            deleteTask = homeScreenViewModel::deleteTask,
+                            toggleDoneStatus = sharedViewModel::toggleDoneStatus,
+                            deleteTask = sharedViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
-                            onSkip = homeScreenViewModel::skipTask,
+                            onSkip = sharedViewModel::skipTask,
                             getChildren = { id ->
-                                homeScreenViewModel.tasks.value.filter { it.parentId == id }
+                                sharedViewModel.tasks.value.filter { it.parentId == id }
                             },
-                            children = homeScreenViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
+                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
@@ -153,14 +153,14 @@ fun HomeScreen(
                     items(tasks.filter { it.done == 1L }, key = { it.id }) { task ->
                         SubTaskCard(
                             task,
-                            toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
-                            deleteTask = homeScreenViewModel::deleteTask,
+                            toggleDoneStatus = sharedViewModel::toggleDoneStatus,
+                            deleteTask = sharedViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
-                            onSkip = homeScreenViewModel::skipTask,
+                            onSkip = sharedViewModel::skipTask,
                             getChildren = { id ->
-                                homeScreenViewModel.tasks.value.filter { it.parentId == id }
+                                sharedViewModel.tasks.value.filter { it.parentId == id }
                             },
-                            children = homeScreenViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
+                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
