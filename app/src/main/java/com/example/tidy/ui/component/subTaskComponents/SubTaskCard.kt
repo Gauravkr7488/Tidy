@@ -76,10 +76,38 @@ fun SubTaskCard(
                     if (children.isNotEmpty()) expanded =
                         !expanded else toggleDoneStatus(task)
                 },
-                contextMenuOptions = contextMenuOptions(
-                    { onEdit(task) },
-                    { onSkip(task) }
-                ) { showDeleteDialog = true },
+                contextMenuOptions =
+                    buildList {
+                        add(
+                            TaskContextAction(
+                                label = "Edit",
+                                icon = Icons.Default.Create,
+                                description = "Edit Task",
+                                onClick = { onEdit(task) },
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            ),
+                        )
+                        if (task.parentId == null){
+                            add(
+                                TaskContextAction(
+                                    label = "Skip",
+                                    icon = Icons.Default.SkipNext,
+                                    description = "Skip Task",
+                                    onClick = { onSkip(task) },
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            )
+                        }
+                        add(
+                            TaskContextAction(
+                                label = "Delete",
+                                icon = Icons.Default.Delete,
+                                description = "Delete Task",
+                                onClick = { showDeleteDialog = true },
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        )
+                    },
                 leadingIcons =
                     buildList {
                         if (children.isNotEmpty()) {
@@ -138,37 +166,4 @@ fun SubTaskCard(
             }
         }
     }
-}
-
-
-@Composable
-fun contextMenuOptions(
-    onEdit: () -> Unit,
-    onSkip: () -> Unit,
-    onDelete: () -> Unit,
-): List<TaskContextAction> {
-    return listOf(
-        TaskContextAction(
-            label = "Edit",
-            icon = Icons.Default.Create,
-            description = "Edit Task",
-            onClick = onEdit,
-            color = MaterialTheme.colorScheme.onTertiaryContainer
-        ),
-        TaskContextAction(
-            label = "Skip",
-            icon = Icons.Default.SkipNext,
-            description = "Skip Task",
-            onClick = onSkip,
-            color = MaterialTheme.colorScheme.onTertiaryContainer
-
-        ),
-        TaskContextAction(
-            label = "Delete",
-            icon = Icons.Default.Delete,
-            description = "Delete Task",
-            onClick = onDelete,
-            color = MaterialTheme.colorScheme.error
-        )
-    )
 }

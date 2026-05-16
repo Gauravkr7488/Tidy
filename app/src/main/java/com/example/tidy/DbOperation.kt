@@ -40,11 +40,12 @@ class DbOperation(
         }
     }
 
-    suspend fun isChildAncestorOfParent(parentId: Long, childId: Long): Boolean = withContext(Dispatchers.IO)  { // Guard against loops
-        if (parentId == childId) return@withContext true
-        val grandParentId = getTask(parentId)?.parentId ?: return@withContext false
-        return@withContext isChildAncestorOfParent(grandParentId, childId)
-    }
+    suspend fun isChildAncestorOfParent(parentId: Long, childId: Long): Boolean =
+        withContext(Dispatchers.IO) { // Guard against loops
+            if (parentId == childId) return@withContext true
+            val grandParentId = getTask(parentId)?.parentId ?: return@withContext false
+            return@withContext isChildAncestorOfParent(grandParentId, childId)
+        }
 
     suspend fun saveTask(task: Task): Long? = withContext(Dispatchers.IO) {
         if (task.parentId != null && isChildAncestorOfParent(
@@ -117,9 +118,7 @@ class DbOperation(
     suspend fun skipTask(id: Long) = withContext(Dispatchers.IO) {
         val task = getTask(id) ?: return@withContext
         saveTask(
-            task.copy(
-                done = if (task.hide == 1L) 0L else 1L
-            )
+            task.copy(hide = 1L)
         )
     }
 
@@ -140,7 +139,7 @@ class DbOperation(
                 done = if (allChildrenDone) 1L else 0L
             )
         )
-        val grandParentId = freshParent.parentId?: return@withContext
+        val grandParentId = freshParent.parentId ?: return@withContext
         updateParentDoneStatus(grandParentId)
 
     }
