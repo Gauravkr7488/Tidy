@@ -152,7 +152,7 @@ fun SearchScreen(
                         TaskCard(
                             task = task,
                             onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
-                            children = emptyList(),
+                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             trailingIcons = buildList {
                                 if (task.hide == 1L) {
                                     add(
