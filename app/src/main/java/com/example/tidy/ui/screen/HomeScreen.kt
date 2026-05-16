@@ -64,8 +64,8 @@ fun HomeScreen(
 
     modifier: Modifier = Modifier
 ) {
-    val taskState = sharedViewModel.visibleTasks.collectAsState()
-    val tasks = taskState.value
+    val taskState = sharedViewModel.tasks.collectAsState()
+    val tasks = taskState.value.filter { task -> task.parentId == null && task.hide == 0L }
     val listState = rememberLazyListState()
 
 
