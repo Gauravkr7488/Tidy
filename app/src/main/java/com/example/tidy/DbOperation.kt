@@ -16,10 +16,13 @@
  */
 package com.example.tidy
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.tidy.sqldelight.Task
+import kotlinx.coroutines.flow.Flow
 
 class DbOperation(
     private val db: AppDatabase
@@ -159,4 +162,9 @@ class DbOperation(
     suspend fun setLastResetToday(todayDate: String) = withContext(Dispatchers.IO) {
         db.lastResetQueries.setLastReset(todayDate)
     }
+
+    fun observeTasks(): Flow<List<Task>> =
+        db.taskQueries.getAll()
+            .asFlow()
+            .mapToList(Dispatchers.IO)
 }

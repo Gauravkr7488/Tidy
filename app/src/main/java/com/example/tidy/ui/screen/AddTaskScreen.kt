@@ -86,17 +86,17 @@ import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
-import com.example.tidy.viewModels.AddTaskScreenViewModel
+import com.example.tidy.viewModels.SharedViewModel
+import com.tidy.sqldelight.Task
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import com.tidy.sqldelight.Task
 
 @Composable
 fun AddTaskScreen(
-    addTaskScreenViewModel: AddTaskScreenViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController,
     modifier: Modifier = Modifier,
     taskId: Long = 0,
@@ -115,10 +115,10 @@ fun AddTaskScreen(
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
     LaunchedEffect(Unit) {
-        val task = addTaskScreenViewModel.getCurrentTask(taskId = taskId)
+        val task = sharedViewModel.getCurrentTask(taskId = taskId)
         if (task != null) {
             taskId = task.id
-            taskChildren = addTaskScreenViewModel.getChildren(task.id)
+            taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
             parentId = task.parentId
             taskTitle = task.title
             description = task.description
@@ -144,7 +144,7 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                val savedTaskId = addTaskScreenViewModel.addTask(
+                                val savedTaskId = sharedViewModel.addTask(
                                     Task(
                                         id = taskId,
                                         title = taskTitle,
@@ -158,7 +158,7 @@ fun AddTaskScreen(
                                     )
                                 )
                                 taskChildren.forEach {
-                                    addTaskScreenViewModel.addTask(
+                                    sharedViewModel.addTask(
                                         it.copy(parentId = savedTaskId)
                                     )
                                 }
@@ -223,7 +223,7 @@ fun AddTaskScreen(
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { task, deleteTask, deleteChildren ->
-                    taskChildren = addTaskScreenViewModel.removeSubTask(
+                    taskChildren = sharedViewModel.removeSubTask(
                         task,
                         taskChildren,
                         deleteTask,
@@ -245,7 +245,9 @@ fun AddTaskScreen(
                     taskChildren = taskChildren + childTask
                 },
                 getChild =
-                    { addTaskScreenViewModel.getChildren(it) }
+                    { id ->
+                        sharedViewModel.tasks.value.filter { it.parentId == id }
+                    }
             )
             if (createdAt != "") {
                 Text(

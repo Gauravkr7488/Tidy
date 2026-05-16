@@ -99,6 +99,6 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.android.driver)
-//    implementation(libs.coroutines.extensions1) // for flow
+    implementation(libs.coroutines.extensions1) // for flow
     implementation(libs.androidx.datastore.preferences)
 }

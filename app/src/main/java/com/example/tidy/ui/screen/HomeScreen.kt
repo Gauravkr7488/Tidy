@@ -46,37 +46,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.subTaskComponents.SubTaskCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
-import com.example.tidy.viewModels.HomeScreenViewModel
+import com.example.tidy.viewModels.SharedViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    homeScreenViewModel: HomeScreenViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController,
 
     modifier: Modifier = Modifier
 ) {
-    val tasks =
-        homeScreenViewModel.tasks.filter { task -> task.parentId == null && task.hide == 0L }
-    val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val isOnTop = currentBackStackEntry?.destination?.route == Routes.HOME
+    val taskState = sharedViewModel.visibleTasks.collectAsState()
+    val tasks = taskState.value
     val listState = rememberLazyListState()
 
-    LaunchedEffect(isOnTop) {
-        if (isOnTop) {
-            homeScreenViewModel.refreshTasks()
-        }
-    }
+
     val hasDoneTask = tasks.any { it.done == 1L }
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -90,7 +82,7 @@ fun HomeScreen(
                     exit = slideOutVertically { it } + fadeOut()
                 ) {
                     FloatingActionButton(
-                        onClick = { homeScreenViewModel.cleanCompletedTasks() },
+                        onClick = { sharedViewModel.cleanCompletedTasks() },
                         modifier = Modifier.padding(
                             bottom = 16.dp,
                             start = 5.dp,
@@ -142,12 +134,14 @@ fun HomeScreen(
                         key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         SubTaskCard(
                             task,
-                            toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
-                            deleteTask = homeScreenViewModel::deleteTask,
+                            toggleDoneStatus = sharedViewModel::toggleDoneStatus,
+                            deleteTask = sharedViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
-                            onSkip = homeScreenViewModel::skipTask,
-                            getChildren = { homeScreenViewModel.getChildren(it) },
-                            children = homeScreenViewModel.getChildren(task.id),
+                            onSkip = sharedViewModel::skipTask,
+                            getChildren = { id ->
+                                sharedViewModel.tasks.value.filter { it.parentId == id }
+                            },
+                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
@@ -159,12 +153,14 @@ fun HomeScreen(
                     items(tasks.filter { it.done == 1L }, key = { it.id }) { task ->
                         SubTaskCard(
                             task,
-                            toggleDoneStatus = homeScreenViewModel::toggleDoneStatus,
-                            deleteTask = homeScreenViewModel::deleteTask,
+                            toggleDoneStatus = sharedViewModel::toggleDoneStatus,
+                            deleteTask = sharedViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
-                            onSkip = homeScreenViewModel::skipTask,
-                            getChildren = { homeScreenViewModel.getChildren(it) },
-                            children = homeScreenViewModel.getChildren(task.id),
+                            onSkip = sharedViewModel::skipTask,
+                            getChildren = { id ->
+                                sharedViewModel.tasks.value.filter { it.parentId == id }
+                            },
+                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
