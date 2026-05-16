@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.TaskAlt
+import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -145,6 +146,13 @@ fun TaskCard(
                         text = task.repeatType,
                         imageVector = Icons.Default.Repeat,
                         contentDescription = "Repeats ${task.repeatType}"
+                    )
+                }
+                if (task.hide == 1L){
+                    Badge(
+                        text = "Archived",
+                        imageVector = Icons.Outlined.Archive,
+                        contentDescription = "Archived"
                     )
                 }
             }
