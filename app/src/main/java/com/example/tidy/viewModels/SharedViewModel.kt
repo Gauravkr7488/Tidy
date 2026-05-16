@@ -28,7 +28,6 @@ import com.tidy.sqldelight.Task
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -43,9 +42,6 @@ class SharedViewModel(
             SharingStarted.WhileSubscribed(5000),
             emptyList()
         )
-    val visibleTasks = tasks
-        .map { it.filter { task -> task.parentId == null && task.hide == 0L } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         viewModelScope.launch {

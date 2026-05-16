@@ -65,7 +65,7 @@ fun SearchScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
 ) {
-    val taskState = sharedViewModel.visibleTasks.collectAsState()
+    val taskState = sharedViewModel.tasks.collectAsState()
     val tasks = taskState.value
     var query by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(SearchFilter.ALL) }
