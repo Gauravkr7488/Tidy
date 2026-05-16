@@ -118,12 +118,12 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                 val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
                 if (taskId == null) {
                     AddTaskScreen(
-                        addTaskScreenViewModel,
+                        homeScreenViewModel,
                         navController,
                     )
                 } else {
                     AddTaskScreen(
-                        addTaskScreenViewModel,
+                        homeScreenViewModel,
                         navController,
                         taskId = taskId,
                     )

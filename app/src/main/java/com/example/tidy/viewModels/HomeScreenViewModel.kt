@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class HomeScreenViewModel(
     private val dbOperation: DbOperation,
@@ -167,4 +168,36 @@ class HomeScreenViewModel(
         dbOperation.saveTask(newTask)
     }
 
+    suspend fun getCurrentTask(taskId: Long): Task? {
+        if (taskId == 0L) return null
+        return dbOperation.getTask(taskId)
+    }
+
+    suspend fun addTask(task: Task): Long? {
+        val i = dbOperation.saveTask(task) ?: return null
+        dbOperation.updateChildrenRepeatStatus(i)
+        return i
+    }
+
+    fun removeSubTask(
+        task: Task,
+        childrenList: List<Task>,
+        deleteTask: Boolean,
+        deleteChildren: Boolean
+    ): MutableList<Task> {
+        val list = childrenList.toMutableList()
+
+        viewModelScope.launch {
+            list.remove(task)
+            dbOperation.saveTask(task.copy(parentId = null))
+            if (deleteTask) {
+                if (deleteChildren) {
+                    deleteTaskAndChildren(task.id)
+                } else {
+                    dbOperation.deleteTask(task.id)
+                }
+            }
+        }
+        return list
+    }
 }
