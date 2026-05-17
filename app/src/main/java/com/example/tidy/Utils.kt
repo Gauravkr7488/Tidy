@@ -1,10 +1,10 @@
 package com.example.tidy
 
 import com.google.gson.Gson
+import com.tidy.sqldelight.Task
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import com.tidy.sqldelight.Task
 
 object Utils {
     fun getCurrentDate(): String {
@@ -44,7 +44,7 @@ object Utils {
             id = id,
             title = title,
             done = if (done) 1L else 0L,
-            repeatType = repeatType,
+            repeatType = repeatType.uppercase(),
             repeatDays = repeatOn,
             description = description ?: "",
             hide = if (hide) 1L else 0L,
