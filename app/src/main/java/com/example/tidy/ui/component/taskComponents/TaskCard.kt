@@ -141,9 +141,9 @@ fun TaskCard(
                         contentDescription = "${doneChildrenCount}/${children.size} Done"
                     )
                 }
-                if (task.repeatType != RepeatTypes.NONE && task.repeatType != "none") {  // "none" to guard against old values
+                if (task.repeatType != RepeatTypes.NONE) {
                     Badge(
-                        text = task.repeatType,
+                        text = task.repeatType.lowercase().replaceFirstChar { it.uppercase() } ,
                         imageVector = Icons.Default.Repeat,
                         contentDescription = "Repeats ${task.repeatType}"
                     )

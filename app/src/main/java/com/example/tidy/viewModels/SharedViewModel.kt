@@ -45,7 +45,6 @@ class SharedViewModel(
 
     init {
         viewModelScope.launch {
-            tasks.value.forEach { task -> repeatFix(task) }
             resetTasksForToday()
         }
     }
@@ -151,16 +150,6 @@ class SharedViewModel(
         GlobalScope.launch {
             exportManager.exportSilently()
         }
-    }
-
-    suspend fun repeatFix(task: Task) {
-        var newTask: Task = task
-        when (task.repeatType) {
-            "daily" -> newTask = task.copy(repeatType = RepeatTypes.DAILY)
-            "weekly" -> newTask = task.copy(repeatType = RepeatTypes.WEEKLY)
-            "monthly" -> newTask = task.copy(repeatType = RepeatTypes.MONTHLY)
-        }
-        dbOperation.saveTask(newTask)
     }
 
     suspend fun getCurrentTask(taskId: Long): Task? {

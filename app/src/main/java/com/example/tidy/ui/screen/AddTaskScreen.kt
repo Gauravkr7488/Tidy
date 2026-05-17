@@ -303,7 +303,8 @@ fun RepeatMenu(
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(repeatType, modifier = Modifier.widthIn(min = 60.dp))
+                        Text(repeatType.lowercase().replaceFirstChar { it.uppercase() },
+                            modifier = Modifier.widthIn(min = 60.dp))
                         Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -314,7 +315,7 @@ fun RepeatMenu(
                             RepeatTypes.MONTHLY
                         ).forEach { t ->
                             DropdownMenuItem(
-                                text = { Text(t) },
+                                text = { Text(t.lowercase().replaceFirstChar { it.uppercase() } ) },
                                 onClick = {
                                     onRepeatTypeChange(t)
                                     expanded = false
