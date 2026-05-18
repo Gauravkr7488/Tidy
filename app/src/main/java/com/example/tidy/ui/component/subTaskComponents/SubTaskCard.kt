@@ -50,10 +50,12 @@ fun SubTaskCard(
     task: Task,
     children: List<Task>,
     toggleDoneStatus: (Task) -> Unit,
+    toggleExpandStatus: (Long) -> Unit,
     deleteTask: (Long, Boolean) -> Unit,
     onEdit: (Task) -> Unit,
     onSkip: (Task) -> Unit,
     modifier: Modifier = Modifier,
+    expandList: Set<Long>,
     depth: Int = 0,
     last: Boolean = false,
     list: List<Boolean> = listOf(),
@@ -62,7 +64,7 @@ fun SubTaskCard(
     Column(
         modifier = modifier
     ) {
-        var expanded by remember { mutableStateOf(false) }
+        val expanded = task.id in expandList
         val rotation by animateFloatAsState(
             targetValue = if (expanded) 90f else 0f,
             label = "iconRotation"
@@ -73,8 +75,9 @@ fun SubTaskCard(
             TaskCard(
                 task = task,
                 onClick = {
-                    if (children.isNotEmpty()) expanded =
-                        !expanded else toggleDoneStatus(task)
+                    if (children.isNotEmpty()) {
+                        toggleExpandStatus(task.id)
+                    } else toggleDoneStatus(task)
                 },
                 contextMenuOptions =
                     buildList {
@@ -87,7 +90,7 @@ fun SubTaskCard(
                                 color = MaterialTheme.colorScheme.onTertiaryContainer
                             ),
                         )
-                        if (task.parentId == null){
+                        if (task.parentId == null) {
                             add(
                                 TaskContextAction(
                                     label = "Skip",
@@ -115,7 +118,9 @@ fun SubTaskCard(
                                 TaskIconAction(
                                     icon = Icons.Default.ChevronRight,
                                     description = "Expand Subtask",
-                                    onClick = { expanded = !expanded },
+                                    onClick = {
+                                        toggleExpandStatus(task.id)
+                                    },
                                     modifier = Modifier.rotate(rotation)
                                 )
                             )
@@ -160,6 +165,8 @@ fun SubTaskCard(
                             onSkip = onSkip,
                             getChildren = getChildren,
                             children = getChildren(child.id),
+                            toggleExpandStatus = toggleExpandStatus,
+                            expandList = expandList
                         )
                     }
                 }

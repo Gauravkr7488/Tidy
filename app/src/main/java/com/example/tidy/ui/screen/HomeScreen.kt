@@ -142,6 +142,8 @@ fun HomeScreen(
                                 sharedViewModel.tasks.value.filter { it.parentId == id }
                             },
                             children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
+                            expandList = sharedViewModel.expandedTaskIds.collectAsState().value,
+                            toggleExpandStatus = { sharedViewModel.toggleExpanded(it) },
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
@@ -161,6 +163,8 @@ fun HomeScreen(
                                 sharedViewModel.tasks.value.filter { it.parentId == id }
                             },
                             children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
+                            expandList = sharedViewModel.expandedTaskIds.collectAsState().value,
+                            toggleExpandStatus = sharedViewModel::toggleExpanded,
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
