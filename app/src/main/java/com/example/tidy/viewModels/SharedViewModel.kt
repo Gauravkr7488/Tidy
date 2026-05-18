@@ -27,8 +27,11 @@ import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SharedViewModel(
@@ -183,5 +186,14 @@ class SharedViewModel(
             }
         }
         return list
+    }
+
+    private val _expandedTaskIds = MutableStateFlow<Set<Long>>(emptySet())
+    val expandedTaskIds: StateFlow<Set<Long>> = _expandedTaskIds
+
+    fun toggleExpanded(taskId: Long) {
+        _expandedTaskIds.update { current ->
+            if (taskId in current) current - taskId else current + taskId
+        }
     }
 }
