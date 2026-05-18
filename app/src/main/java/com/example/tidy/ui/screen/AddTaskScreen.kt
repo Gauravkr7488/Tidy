@@ -83,6 +83,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.constants.RepeatTypes
+import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
@@ -93,6 +94,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import androidx.compose.runtime.collectAsState
 
 @Composable
 fun AddTaskScreen(
@@ -114,6 +116,7 @@ fun AddTaskScreen(
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
+    val createMOreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
         val task = sharedViewModel.getCurrentTask(taskId = taskId)
         if (task != null) {
@@ -164,7 +167,7 @@ fun AddTaskScreen(
                                 }
 
                                 showFab = false
-                                navController.popBackStack()
+                                if (createMOreStaus.value)navController.navigate("${Routes.ADD_TASK}/${0}") else navController.navigate(Routes.HOME)
                             } else {
                                 @Suppress("AssignedValueIsNeverRead")
                                 showAlertDialog = true
@@ -257,10 +260,22 @@ fun AddTaskScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
+            Spacer(modifier = Modifier.weight(1f))
+            CreateMoreOption(checked = createMOreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
             }
         }
+    }
+}
+
+@Composable
+fun CreateMoreOption(checked: Boolean, onClick: () -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("Create More")
+        Checkbox(checked = checked, onCheckedChange = {
+            onClick()
+        })
     }
 }
 
@@ -303,8 +318,10 @@ fun RepeatMenu(
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text(repeatType.lowercase().replaceFirstChar { it.uppercase() },
-                            modifier = Modifier.widthIn(min = 60.dp))
+                        Text(
+                            repeatType.lowercase().replaceFirstChar { it.uppercase() },
+                            modifier = Modifier.widthIn(min = 60.dp)
+                        )
                         Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -315,7 +332,7 @@ fun RepeatMenu(
                             RepeatTypes.MONTHLY
                         ).forEach { t ->
                             DropdownMenuItem(
-                                text = { Text(t.lowercase().replaceFirstChar { it.uppercase() } ) },
+                                text = { Text(t.lowercase().replaceFirstChar { it.uppercase() }) },
                                 onClick = {
                                     onRepeatTypeChange(t)
                                     expanded = false
