@@ -95,6 +95,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.collectAsState
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
 fun AddTaskScreen(
@@ -116,7 +117,7 @@ fun AddTaskScreen(
     var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
-    val createMOreStaus = sharedViewModel.createMoreStatus.collectAsState()
+    val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
         val task = sharedViewModel.getCurrentTask(taskId = taskId)
         if (task != null) {
@@ -140,6 +141,8 @@ fun AddTaskScreen(
     }
 
     Scaffold(
+        topBar =
+            { TopAppBar(if (taskId == 0L) "Add Task" else "Edit Task") },
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             if (showFab) {
@@ -166,8 +169,9 @@ fun AddTaskScreen(
                                     )
                                 }
 
-                                showFab = false
-                                if (createMOreStaus.value)navController.navigate("${Routes.ADD_TASK}/${0}") else navController.navigate(Routes.HOME)
+                                showFab = createMoreStaus.value
+                                if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")
+                                else navController.navigate(Routes.HOME)
                             } else {
                                 @Suppress("AssignedValueIsNeverRead")
                                 showAlertDialog = true
@@ -195,12 +199,6 @@ fun AddTaskScreen(
                 },
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Text(
-                text = "Add Task",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
-
             TextField(
                 value = taskTitle,
                 onValueChange = { taskTitle = it },
@@ -261,7 +259,7 @@ fun AddTaskScreen(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            CreateMoreOption(checked = createMOreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
+            if (showFab) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
             }
