@@ -94,7 +94,7 @@ class App: Application() {
                 id = task.id,
                 title = task.title,
                 done = if (task.done) 1 else 0,
-                repeatType = task.repeatType,
+                repeatType = task.repeatType.uppercase(),
                 repeatDays = task.repeatDays,
                 description = task.description,
                 hide = if (task.hide) 1 else 0,

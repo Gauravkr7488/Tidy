@@ -50,12 +50,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 
-enum class SearchFilter { ALL, TASKS }
+enum class SearchFilter { ALL, REPEAT, ARCHIVED, PARENTS }
 
 @Composable
 fun SearchScreen(
@@ -72,8 +73,14 @@ fun SearchScreen(
         val matchesQuery = query.isBlank() ||
                 task.title.contains(query, ignoreCase = true) ||
                 task.description.contains(query, ignoreCase = true)
+        val matchesFilter = when (selectedFilter) {
+            SearchFilter.REPEAT -> task.repeatType != RepeatTypes.NONE
+            SearchFilter.PARENTS -> tasks.find { it.parentId == task.id } != null
+            SearchFilter.ARCHIVED -> task.hide == 1L
+            else -> true
+        }
 
-        matchesQuery
+        matchesQuery && matchesFilter
     }
 
     Scaffold(topBar = { TopAppBar("Search") }, modifier = modifier.fillMaxSize()) { innerPadding ->
@@ -125,7 +132,9 @@ fun SearchScreen(
                             Text(
                                 text = when (filter) {
                                     SearchFilter.ALL -> "All"
-                                    SearchFilter.TASKS -> "Tasks"
+                                    SearchFilter.REPEAT -> "Repeat"
+                                    SearchFilter.PARENTS -> "Parents"
+                                    SearchFilter.ARCHIVED -> "Archived"
                                 }
                             )
                         },

@@ -65,11 +65,12 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val taskState = sharedViewModel.tasks.collectAsState()
-    val tasks = taskState.value.filter { task -> task.parentId == null && task.hide == 0L }
+    val tasks = taskState.value
+    val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L }
     val listState = rememberLazyListState()
 
 
-    val hasDoneTask = tasks.any { it.done == 1L }
+    val hasDoneTask = activeTasks.any { it.done == 1L }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
@@ -109,10 +110,10 @@ fun HomeScreen(
         },
         topBar = {
             var doneTaskCount = 0
-            tasks.forEach { task ->
+            activeTasks.forEach { task ->
                 if (task.done == 1L) doneTaskCount++
             }
-            TopAppBar("My Tasks", subtitle = "$doneTaskCount/${tasks.size} tasks Completed")
+            TopAppBar("My Tasks", subtitle = "$doneTaskCount/${activeTasks.size} tasks Completed")
         }
     ) { innerPadding ->
         Column(
@@ -121,16 +122,17 @@ fun HomeScreen(
                 .padding(top = innerPadding.calculateTopPadding())
                 .padding(start = 5.dp, end = 5.dp)
         ) {
-            if (tasks.isEmpty()) {
+            if (activeTasks.isEmpty()) {
                 EmptyTaskList()
             } else {
+                val expandableList = sharedViewModel.expandedTaskIds.collectAsState().value
                 LazyColumn(
                     state = listState,
                     contentPadding = PaddingValues(bottom = 150.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(
-                        tasks.filter { it.done == 0L },
+                        activeTasks.filter { it.done == 0L },
                         key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         SubTaskCard(
                             task,
@@ -139,9 +141,11 @@ fun HomeScreen(
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = sharedViewModel::skipTask,
                             getChildren = { id ->
-                                sharedViewModel.tasks.value.filter { it.parentId == id }
+                                tasks.filter { it.parentId == id }
                             },
-                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
+                            children = tasks.filter { it.parentId == task.id },
+                            expandList = expandableList,
+                            toggleExpandStatus = { sharedViewModel.toggleExpanded(it) },
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
@@ -150,7 +154,7 @@ fun HomeScreen(
 
                     item { Spacer(modifier = Modifier.heightIn(10.dp)) }
 
-                    items(tasks.filter { it.done == 1L }, key = { it.id }) { task ->
+                    items(activeTasks.filter { it.done == 1L }, key = { it.id }) { task ->
                         SubTaskCard(
                             task,
                             toggleDoneStatus = sharedViewModel::toggleDoneStatus,
@@ -158,9 +162,11 @@ fun HomeScreen(
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = sharedViewModel::skipTask,
                             getChildren = { id ->
-                                sharedViewModel.tasks.value.filter { it.parentId == id }
+                                tasks.filter { it.parentId == id }
                             },
-                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
+                            children = tasks.filter { it.parentId == task.id },
+                            expandList = expandableList,
+                            toggleExpandStatus = sharedViewModel::toggleExpanded,
                             modifier = Modifier
                                 .animateContentSize()
                                 .animateItem(),
