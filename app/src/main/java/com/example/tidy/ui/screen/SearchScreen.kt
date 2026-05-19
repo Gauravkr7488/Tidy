@@ -75,7 +75,7 @@ fun SearchScreen(
                 task.description.contains(query, ignoreCase = true)
         val matchesFilter = when (selectedFilter) {
             SearchFilter.REPEAT -> task.repeatType != RepeatTypes.NONE
-            SearchFilter.PARENTS -> task.parentId == null
+            SearchFilter.PARENTS -> tasks.find { it.parentId == task.id } != null
             SearchFilter.ARCHIVED -> task.hide == 1L
             else -> true
         }
