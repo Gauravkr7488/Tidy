@@ -51,6 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tidy.ui.component.SimpleCard
 import com.example.tidy.BackupOperations
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 import kotlinx.coroutines.launch
 
 @Composable
@@ -107,22 +108,13 @@ fun BackupScreen(
             }
         }
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-    ) { innerPadding ->
-
+    Scaffold(topBar = { TopAppBar("Backup") }, modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
-                .padding(start = 16.dp, end = 16.dp)
+                .padding(start = 5.dp, end = 5.dp)
         ) {
-            Text(
-                text = "Backup",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
-
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(bottom = 80.dp),
