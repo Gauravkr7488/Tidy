@@ -16,6 +16,7 @@
  */
 package com.example.tidy.ui.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -140,6 +141,12 @@ fun AddTaskScreen(
         }
     }
 
+    BackHandler(
+        enabled = true
+    ) {
+        if (createMoreStaus.value) sharedViewModel.toggleCreateMoreStatus()
+        navController.navigate(Routes.HOME)
+    }
     Scaffold(
         topBar =
             { TopAppBar(if (taskId == 0L) "Add Task" else "Edit Task") },
