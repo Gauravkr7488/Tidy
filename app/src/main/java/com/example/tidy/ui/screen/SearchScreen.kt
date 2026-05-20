@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -41,6 +42,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +50,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.tidy.constants.RepeatTypes
@@ -55,6 +59,7 @@ import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
+import kotlinx.coroutines.delay
 
 enum class SearchFilter { ALL, REPEAT, ARCHIVED, PARENTS }
 
@@ -62,6 +67,7 @@ enum class SearchFilter { ALL, REPEAT, ARCHIVED, PARENTS }
 fun SearchScreen(
     sharedViewModel: SharedViewModel,
     navController: NavController,
+    pagerState: PagerState,
     modifier: Modifier = Modifier,
 ) {
     val taskState = sharedViewModel.tasks.collectAsState()
@@ -82,7 +88,14 @@ fun SearchScreen(
 
         matchesQuery && matchesFilter
     }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
+    LaunchedEffect(pagerState.settledPage) {
+        keyboardController?.hide()
+        delay(100)
+        focusManager.clearFocus()
+    }
     Scaffold(topBar = { TopAppBar("Search") }, modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier

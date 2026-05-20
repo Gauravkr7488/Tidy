@@ -101,7 +101,7 @@ fun MainScreen(dbOperation: DbOperation, exportManager: ExportManager) {
                     ) { page ->
                         when (page) {
                             0 -> HomeScreen(sharedViewModel, navController)
-                            1 -> SearchScreen(sharedViewModel, navController)
+                            1 -> SearchScreen(sharedViewModel, navController, pagerState)
                             2 -> SettingsScreen(navController)
                         }
                     }
