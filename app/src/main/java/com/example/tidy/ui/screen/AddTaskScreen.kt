@@ -115,7 +115,7 @@ fun AddTaskScreen(
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
-    var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
+    var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
@@ -152,7 +152,7 @@ fun AddTaskScreen(
             { TopAppBar(if (taskId == 0L) "Add Task" else "Edit Task") },
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            if (showFab) {
+            if (showBottomButtons) {
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
@@ -176,7 +176,7 @@ fun AddTaskScreen(
                                     )
                                 }
 
-                                showFab = createMoreStaus.value
+                                showBottomButtons = createMoreStaus.value
                                 if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")
                                 else navController.navigate(Routes.HOME)
                             } else {
@@ -266,7 +266,7 @@ fun AddTaskScreen(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            if (showFab) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
+            if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
             }
