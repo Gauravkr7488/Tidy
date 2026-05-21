@@ -96,6 +96,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.collectAsState
+import androidx.navigation.navOptions
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
@@ -178,7 +179,13 @@ fun AddTaskScreen(
 
                                 showBottomButtons = createMoreStaus.value
                                 if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")
-                                else navController.navigate(Routes.HOME)
+                                else navController.navigate(
+                                    Routes.HOME,
+                                    navOptions = navOptions {
+                                        popUpTo(Routes.HOME) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                )
                             } else {
                                 @Suppress("AssignedValueIsNeverRead")
                                 showAlertDialog = true

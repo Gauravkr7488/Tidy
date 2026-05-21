@@ -17,8 +17,6 @@
 
 package com.example.tidy.ui.screen
 
-import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
@@ -70,11 +68,6 @@ fun HomeScreen(
     val tasks = taskState.value
     val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L }
     val listState = rememberLazyListState()
-    val activity = LocalActivity.current
-
-    BackHandler(enabled = true) {
-        activity?.moveTaskToBack(true)
-    }
 
     val hasDoneTask = activeTasks.any { it.done == 1L }
     Scaffold(
