@@ -69,7 +69,6 @@ fun HomeScreen(
     val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L }
     val listState = rememberLazyListState()
 
-
     val hasDoneTask = activeTasks.any { it.done == 1L }
     Scaffold(
         modifier = modifier.fillMaxSize(),

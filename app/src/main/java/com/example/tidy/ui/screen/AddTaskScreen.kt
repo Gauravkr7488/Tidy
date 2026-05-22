@@ -16,6 +16,7 @@
  */
 package com.example.tidy.ui.screen
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -95,6 +96,8 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.collectAsState
+import androidx.navigation.navOptions
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
 fun AddTaskScreen(
@@ -113,10 +116,10 @@ fun AddTaskScreen(
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
     var repeatDays by remember { mutableStateOf("") }
-    var showFab by remember { mutableStateOf(true) } // to make the transition to the home look better
+    var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
-    val createMOreStaus = sharedViewModel.createMoreStatus.collectAsState()
+    val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
         val task = sharedViewModel.getCurrentTask(taskId = taskId)
         if (task != null) {
@@ -139,10 +142,18 @@ fun AddTaskScreen(
         }
     }
 
+    BackHandler(
+        enabled = true
+    ) {
+        if (createMoreStaus.value) sharedViewModel.toggleCreateMoreStatus()
+        navController.navigate(Routes.HOME)
+    }
     Scaffold(
+        topBar =
+            { TopAppBar(if (taskId == 0L) "Add Task" else "Edit Task") },
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
-            if (showFab) {
+            if (showBottomButtons) {
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
@@ -166,8 +177,15 @@ fun AddTaskScreen(
                                     )
                                 }
 
-                                showFab = false
-                                if (createMOreStaus.value)navController.navigate("${Routes.ADD_TASK}/${0}") else navController.navigate(Routes.HOME)
+                                showBottomButtons = createMoreStaus.value
+                                if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")
+                                else navController.navigate(
+                                    Routes.HOME,
+                                    navOptions = navOptions {
+                                        popUpTo(Routes.HOME) { inclusive = true }
+                                        launchSingleTop = true
+                                    }
+                                )
                             } else {
                                 @Suppress("AssignedValueIsNeverRead")
                                 showAlertDialog = true
@@ -195,12 +213,6 @@ fun AddTaskScreen(
                 },
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            Text(
-                text = "Add Task",
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
-
             TextField(
                 value = taskTitle,
                 onValueChange = { taskTitle = it },
@@ -261,7 +273,7 @@ fun AddTaskScreen(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            CreateMoreOption(checked = createMOreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
+            if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
             }
