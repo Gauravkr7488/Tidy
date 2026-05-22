@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.tidy.sqldelight.Task
 @Composable
 fun TaskDeleteDialog(
-    taskTitle: String,
+    task: Task,
     children: List<Task>,
     onDismiss: () -> Unit,
     onDeleteClick: (Boolean) -> Unit,
@@ -45,7 +45,7 @@ fun TaskDeleteDialog(
                     text = buildAnnotatedString {
                         append("Are you sure you want to delete '")
                         withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append(taskTitle)
+                            append(task.title)
                         }
                         append("'?")
                     }
