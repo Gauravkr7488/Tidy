@@ -14,8 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-@file:Suppress("AssignedValueIsNeverRead")
-
 package com.example.tidy.ui.screen
 
 import androidx.activity.compose.BackHandler
@@ -45,7 +43,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -58,7 +55,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -68,7 +64,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -88,14 +83,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.navOptions
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.taskComponents.TaskCard
-import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
-import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.launch
@@ -103,6 +95,9 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import androidx.compose.runtime.collectAsState
+import androidx.navigation.navOptions
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
 fun AddTaskScreen(
@@ -125,7 +120,6 @@ fun AddTaskScreen(
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
-    var showTaskDeleteDialog by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         val task = sharedViewModel.getCurrentTask(taskId = taskId)
         if (task != null) {
@@ -156,23 +150,7 @@ fun AddTaskScreen(
     }
     Scaffold(
         topBar =
-            {
-                if (taskId == 0L) {
-                    TopAppBar("Add Task")
-                } else {
-                    TopAppBar(
-                        "Edit Task",
-                        actions = {
-                            IconButton(onClick = { showTaskDeleteDialog = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "delete Task",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        })
-                }
-            },
+            { TopAppBar(if (taskId == 0L) "Add Task" else "Edit Task") },
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             if (showBottomButtons) {
@@ -304,20 +282,6 @@ fun AddTaskScreen(
             if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
-            }
-            if (showTaskDeleteDialog) {
-                TaskDeleteDialog(
-                    taskTitle = taskTitle,
-                    children = taskChildren,
-                    onDismiss = { showTaskDeleteDialog = false },
-                    onDeleteClick = {
-                        sharedViewModel.deleteTask(
-                            taskId,
-                            deleteSubtasks = it
-                        )
-                        showBottomButtons = createMoreStaus.value
-                        navController.popBackStack()
-                    })
             }
         }
     }
