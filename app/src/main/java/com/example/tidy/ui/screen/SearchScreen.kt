@@ -32,8 +32,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Unarchive
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +50,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,9 +61,12 @@ import androidx.navigation.NavController
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCard
+import com.example.tidy.ui.component.taskComponents.TaskContextAction
+import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 enum class SearchFilter { ALL, REPEAT, ARCHIVED, PARENTS }
 
@@ -74,6 +81,8 @@ fun SearchScreen(
     val tasks = taskState.value
     var query by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(SearchFilter.ALL) }
+    val coroutineScope = rememberCoroutineScope()
+    var showDeleteTaskDialog by remember { mutableStateOf(false) }
 
     val filteredTasks = tasks.filter { task ->
         val matchesQuery = query.isBlank() ||
@@ -172,8 +181,56 @@ fun SearchScreen(
                         TaskCard(
                             task = task,
                             onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
-                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id }
+                            children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
+                            contextMenuOptions =
+                                buildList {
+                                    if (task.hide == 0L) {
+                                        add(
+                                            TaskContextAction(
+                                                label = "Archive",
+                                                icon = Icons.Default.Archive,
+                                                description = "Archive Task",
+                                                onClick = {
+                                                    coroutineScope.launch {
+                                                        sharedViewModel.saveTask(task.copy(hide = 1L))
+                                                    }
+                                                },
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+                                        )
+                                    } else {
+                                        add(
+                                            TaskContextAction(
+                                                label = "Unarchive",
+                                                icon = Icons.Default.Unarchive,
+                                                description = "Unarchive Task",
+                                                onClick = {
+                                                    coroutineScope.launch {
+                                                        sharedViewModel.saveTask(task.copy(hide = 0L))
+                                                    }
+                                                },
+                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                            )
+                                        )
+                                    }
+                                    add(
+                                        TaskContextAction(
+                                            label = "Delete",
+                                            icon = Icons.Default.Delete,
+                                            description = "Delete Task",
+                                            onClick = { showDeleteTaskDialog = true },
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    )
+                                }
                         )
+                        if (showDeleteTaskDialog) {
+                            TaskDeleteDialog(
+                                task = task,
+                                children = tasks.filter { it.parentId == task.id },
+                                onDismiss = { showDeleteTaskDialog = false }
+                            ) { sharedViewModel.deleteTask(task.id, it) }
+                        }
                     }
                 }
             }
