@@ -373,7 +373,10 @@ fun RepeatMenu(
                 "F" to WeekDays.FRI,
                 "S" to WeekDays.SAT,
             )
-            Row {
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 chips.forEach { (label, day) ->
                     FilterChip(
                         onClick = {
@@ -388,8 +391,6 @@ fun RepeatMenu(
                         },
                         label = { Text(label) },
                         selected = day in selectedDays,
-                        modifier = Modifier.padding(end = 10.dp)
-
                     )
                 }
             }
