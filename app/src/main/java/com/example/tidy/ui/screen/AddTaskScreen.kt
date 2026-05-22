@@ -218,6 +218,9 @@ fun AddTaskScreen(
                 onValueChange = { taskTitle = it },
                 label = { Text("Title") },
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
@@ -226,6 +229,9 @@ fun AddTaskScreen(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
                 singleLine = false,
                 modifier = Modifier.fillMaxWidth()
             )
