@@ -87,7 +87,7 @@ fun SubTaskCard(
                                 icon = Icons.Default.Create,
                                 description = "Edit Task",
                                 onClick = { onEdit(task) },
-                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
                             ),
                         )
                         if (task.parentId == null) {
@@ -97,7 +97,7 @@ fun SubTaskCard(
                                     icon = Icons.Default.SkipNext,
                                     description = "Skip Task",
                                     onClick = { onSkip(task) },
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             )
                         }
