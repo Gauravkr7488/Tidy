@@ -387,7 +387,6 @@ fun RepeatMenu(
                                     ", "
                                 )
                             )
-
                         },
                         label = { Text(label) },
                         selected = day in selectedDays,
