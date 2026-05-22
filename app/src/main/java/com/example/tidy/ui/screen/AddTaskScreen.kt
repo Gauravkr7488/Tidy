@@ -158,7 +158,7 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                val savedTaskId = sharedViewModel.addTask(
+                                val savedTaskId = sharedViewModel.saveTask(
                                     Task(
                                         id = taskId,
                                         title = taskTitle,
@@ -172,7 +172,7 @@ fun AddTaskScreen(
                                     )
                                 )
                                 taskChildren.forEach {
-                                    sharedViewModel.addTask(
+                                    sharedViewModel.saveTask(
                                         it.copy(parentId = savedTaskId)
                                     )
                                 }
