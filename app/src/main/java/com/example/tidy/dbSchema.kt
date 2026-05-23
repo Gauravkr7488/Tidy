@@ -18,35 +18,6 @@
 package com.example.tidy
 
 import com.example.tidy.constants.RepeatTypes
-import io.objectbox.annotation.Backlink
-import io.objectbox.annotation.Entity
-import io.objectbox.annotation.Id
-import io.objectbox.relation.ToMany
-import io.objectbox.relation.ToOne
-
-@Entity
-data class Task(
-    @Id var id: Long = 0,
-    var title: String = "",
-    var done: Boolean = false,
-    var note: Boolean = false,
-    var repeatType: String = RepeatTypes.NONE,
-    var repeatDays: String = "",
-    var description: String = "",
-    var hide: Boolean = false,
-    var createdAt: Long = System.currentTimeMillis(),
-) {
-    @Backlink(to = "parent")
-    lateinit var children: ToMany<Task>
-
-    lateinit var parent: ToOne<Task>
-}
-
-@Entity
-data class LastReset(
-    @Id var id: Long = 1,
-    var lastResetDate: String?
-)
 
 data class TaskBackupDto(
     var id: Long = 0,

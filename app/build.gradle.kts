@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    id("io.objectbox")
     alias(libs.plugins.kotlin.kapt)
     kotlin("plugin.serialization") version "2.0.21"
     id("app.cash.sqldelight")
