@@ -81,14 +81,14 @@ class BackupOperations(
                 }
                 dbOperation.taskDeleteALl()
                 dbOperation.saveNewTaskList(newTasks)
-                val list = dbOperation.taskGetAll()
+                dbOperation.taskGetAll()
                 val tasksWithParentId = taskDtos.map { dto ->
                     val task = dto.toTask()
                     return@map task
                 }
 
                 dbOperation.taskSaveList(tasksWithParentId)
-                val list2 = dbOperation.taskGetAll()
+                dbOperation.taskGetAll()
 
 
                 Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
