@@ -1,0 +1,5 @@
+Features :
+    Repeating Tasks - Create tasks that repeat daily, weekly, or monthly.
+    Nested Subtasks with no Limit - Organize work with deeply nested subtasks — no limits.
+    Search - Quickly find tasks with built-in search.
+    Backup - Automatic and manual backup, export your data in a JSON file

@@ -158,7 +158,7 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                val savedTaskId = sharedViewModel.addTask(
+                                val savedTaskId = sharedViewModel.saveTask(
                                     Task(
                                         id = taskId,
                                         title = taskTitle,
@@ -172,7 +172,7 @@ fun AddTaskScreen(
                                     )
                                 )
                                 taskChildren.forEach {
-                                    sharedViewModel.addTask(
+                                    sharedViewModel.saveTask(
                                         it.copy(parentId = savedTaskId)
                                     )
                                 }
@@ -218,6 +218,9 @@ fun AddTaskScreen(
                 onValueChange = { taskTitle = it },
                 label = { Text("Title") },
                 singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Next
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
@@ -226,6 +229,9 @@ fun AddTaskScreen(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
                 singleLine = false,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -373,7 +379,10 @@ fun RepeatMenu(
                 "F" to WeekDays.FRI,
                 "S" to WeekDays.SAT,
             )
-            Row {
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 chips.forEach { (label, day) ->
                     FilterChip(
                         onClick = {
@@ -384,12 +393,9 @@ fun RepeatMenu(
                                     ", "
                                 )
                             )
-
                         },
                         label = { Text(label) },
                         selected = day in selectedDays,
-                        modifier = Modifier.padding(end = 10.dp)
-
                     )
                 }
             }

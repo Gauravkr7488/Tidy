@@ -161,7 +161,7 @@ class SharedViewModel(
         return dbOperation.getTask(taskId)
     }
 
-    suspend fun addTask(task: Task): Long? {
+    suspend fun saveTask(task: Task): Long? {
         val i = dbOperation.saveTask(task) ?: return null
         dbOperation.updateChildrenRepeatStatus(i)
         return i
