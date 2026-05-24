@@ -45,6 +45,11 @@ android {
     buildFeatures {
         compose = true
     }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 sqldelight {
     databases {
