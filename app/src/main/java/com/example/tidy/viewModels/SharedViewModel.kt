@@ -17,6 +17,7 @@
 
 package com.example.tidy.viewModels
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
@@ -204,4 +205,5 @@ class SharedViewModel(
     fun toggleCreateMoreStatus() {
         _createMoreStatus.value = !_createMoreStatus.value
     }
+     var listState:  LazyListState? = null
 }

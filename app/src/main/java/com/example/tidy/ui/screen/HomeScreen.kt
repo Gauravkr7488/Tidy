@@ -46,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,7 +68,6 @@ fun HomeScreen(
     val taskState = sharedViewModel.tasks.collectAsState()
     val tasks = taskState.value
     val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L }
-    val listState = rememberLazyListState()
 
     val hasDoneTask = activeTasks.any { it.done == 1L }
     Scaffold(
@@ -125,8 +125,16 @@ fun HomeScreen(
                 EmptyTaskList()
             } else {
                 val expandableList = sharedViewModel.expandedTaskIds.collectAsState().value
+                val listState = rememberLazyListState()
+                val storedListState = sharedViewModel.listState
+
+                LaunchedEffect(Unit) {
+                    if (storedListState == null) {
+                        sharedViewModel.listState = listState
+                    }
+                }
                 LazyColumn(
-                    state = listState,
+                    state = storedListState ?: listState,
                     contentPadding = PaddingValues(bottom = 150.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
