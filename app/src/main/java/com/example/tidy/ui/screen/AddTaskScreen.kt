@@ -221,7 +221,7 @@ fun AddTaskScreen(
                 label = { Text("Title") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
+                    imeAction = ImeAction.Done
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
