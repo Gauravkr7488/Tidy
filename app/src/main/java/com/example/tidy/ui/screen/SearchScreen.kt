@@ -58,6 +58,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.tidy.Utils
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.taskComponents.TaskCard
@@ -65,6 +66,7 @@ import com.example.tidy.ui.component.taskComponents.TaskContextAction
 import com.example.tidy.ui.component.taskComponents.TaskDeleteDialog
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
+import com.tidy.sqldelight.Task
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -83,7 +85,7 @@ fun SearchScreen(
     var selectedFilter by remember { mutableStateOf(SearchFilter.ALL) }
     val coroutineScope = rememberCoroutineScope()
     var showDeleteTaskDialog by remember { mutableStateOf(false) }
-
+    var deleteTask: Task = Utils.getEmptyTask()
     val filteredTasks = tasks.filter { task ->
         val matchesQuery = query.isBlank() ||
                 task.title.contains(query, ignoreCase = true) ||
@@ -218,21 +220,24 @@ fun SearchScreen(
                                             label = "Delete",
                                             icon = Icons.Default.Delete,
                                             description = "Delete Task",
-                                            onClick = { showDeleteTaskDialog = true },
+                                            onClick = {
+                                                deleteTask = task
+                                                showDeleteTaskDialog = true
+                                            },
                                             color = MaterialTheme.colorScheme.error
                                         )
                                     )
                                 }
                         )
-                        if (showDeleteTaskDialog) {
-                            TaskDeleteDialog(
-                                task = task,
-                                children = tasks.filter { it.parentId == task.id },
-                                onDismiss = { showDeleteTaskDialog = false }
-                            ) { sharedViewModel.deleteTask(task.id, it) }
-                        }
                     }
                 }
+            }
+            if (showDeleteTaskDialog) {
+                TaskDeleteDialog(
+                    task = deleteTask,
+                    children = tasks.filter { it.parentId == deleteTask.id },
+                    onDismiss = { showDeleteTaskDialog = false }
+                ) { sharedViewModel.deleteTask(deleteTask.id, it) }
             }
         }
     }
