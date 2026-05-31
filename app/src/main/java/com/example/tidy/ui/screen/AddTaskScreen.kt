@@ -14,6 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+@file:Suppress("AssignedValueIsNeverRead")
+
 package com.example.tidy.ui.screen
 
 import androidx.activity.compose.BackHandler
@@ -173,7 +175,7 @@ fun AddTaskScreen(
                                 )
                                 taskChildren.forEach {
                                     sharedViewModel.saveTask(
-                                        it.copy(parentId = savedTaskId)
+                                        it.copy(parentId = savedTaskId, repeatType = repeatType, repeatDays = repeatDays)
                                     )
                                 }
 
@@ -219,7 +221,7 @@ fun AddTaskScreen(
                 label = { Text("Title") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Next
+                    imeAction = ImeAction.Done
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -320,6 +322,8 @@ fun RepeatMenu(
     modifier: Modifier = Modifier,
 ) {
     var showDateDialog by remember { mutableStateOf(false) }
+    var showAlert by remember { mutableStateOf(false) }
+
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -449,7 +453,12 @@ fun RepeatMenu(
                             }
                             val formatted =
                                 "%02d".format(calendar.get(Calendar.DAY_OF_MONTH))
-                            onRepeatDaysChange("$repeatDays,$formatted")
+                            if (formatted in repeatDays) {
+                                showAlert = true
+                            } else {
+                                onRepeatDaysChange("$repeatDays,$formatted")
+                            }
+
                             showDateDialog = false
                         }) {
                             Text("OK")
@@ -460,6 +469,18 @@ fun RepeatMenu(
                 }
             }
         }
+    }
+    if (showAlert){
+        AlertDialog(
+            onDismissRequest = { showAlert = false },
+            title = { Text("Duplicate Date Chosen") },
+            text = { Text("You have already selected this date, please chose different one.") },
+            confirmButton = {
+                TextButton(onClick = { showAlert = false }) {
+                    Text("Ok")
+                }
+            }
+        )
     }
 }
 

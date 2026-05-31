@@ -94,7 +94,7 @@ class DbOperation(
     }
 
 
-    suspend fun updateChildrenRepeatStatus(parentId: Long): Unit = withContext(
+    suspend fun updateChildrenRepeatAndHideStatus(parentId: Long): Unit = withContext( // update the status of children to match the parent
         Dispatchers.IO
     ) {
         val task = getTask(parentId) ?: return@withContext
@@ -102,9 +102,9 @@ class DbOperation(
         taskChildren.forEach { child ->
             val freshChild = getTask(child.id) ?: return@withContext
             val newTask =
-                freshChild.copy(repeatType = task.repeatType, repeatDays = task.repeatDays)
+                freshChild.copy(repeatType = task.repeatType, repeatDays = task.repeatDays, hide = task.hide)
             saveTask(newTask)
-            updateChildrenRepeatStatus(freshChild.id)
+            updateChildrenRepeatAndHideStatus(freshChild.id)
         }
     }
 
