@@ -175,7 +175,7 @@ fun AddTaskScreen(
                                 )
                                 taskChildren.forEach {
                                     sharedViewModel.saveTask(
-                                        it.copy(parentId = savedTaskId)
+                                        it.copy(parentId = savedTaskId, repeatType = repeatType, repeatDays = repeatDays)
                                     )
                                 }
 

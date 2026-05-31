@@ -94,7 +94,7 @@ class DbOperation(
     }
 
 
-    suspend fun updateChildrenRepeatStatus(parentId: Long): Unit = withContext(
+    suspend fun updateChildrenRepeatStatus(parentId: Long): Unit = withContext( // update the status of children to match the parent
         Dispatchers.IO
     ) {
         val task = getTask(parentId) ?: return@withContext
