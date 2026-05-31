@@ -167,7 +167,7 @@ class SharedViewModel(
 
     suspend fun saveTask(task: Task): Long? {
         val i = dbOperation.saveTask(task) ?: return null
-        dbOperation.updateChildrenRepeatStatus(i) // todo is this in use?
+        dbOperation.updateChildrenRepeatStatus(i)
         return i
     }
 
