@@ -1,5 +1,6 @@
 package com.example.tidy
 
+import com.example.tidy.constants.RepeatTypes
 import com.google.gson.Gson
 import com.tidy.sqldelight.Task
 import java.text.SimpleDateFormat
@@ -23,6 +24,20 @@ object Utils {
         val backupDto = BackupDto(lastResetDate, taskDtos)
         val json = Gson().toJson(backupDto)
         return json
+    }
+
+    fun getEmptyTask(): Task {
+        return Task(
+            id = 0,
+            title = "",
+            repeatType = RepeatTypes.NONE,
+            repeatDays = "",
+            description = "",
+            done = 0,
+            hide = 0,
+            createdAt = System.currentTimeMillis(),
+            parentId = null,
+        )
     }
 
     fun Task.toTaskDto(): TaskBackupDto {
