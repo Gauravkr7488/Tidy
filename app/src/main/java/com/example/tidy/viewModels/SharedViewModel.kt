@@ -53,22 +53,25 @@ class SharedViewModel(
             resetTasksForToday()
         }
     }
-
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            tasks.value.filter { it.done == 1L && it.parentId == null }
-                .forEach { task ->
-                    if (task.repeatType != RepeatTypes.NONE) {
-                        val updatedTask = task.copy(
-                            done = 0L,
-                            hide = 1L
-                        )
-                        dbOperation.saveTask(updatedTask)
-                    } else {
-                        deleteTaskAndChildren(task.id) // delete one time tasks
-                    }
+            val doneTasks = tasks.value.filter { it.done == 1L }
+            doneTasks.forEach { task ->
+                val parentId = task.parentId
+                if (parentId != null) {
+                    val parent = dbOperation.getTask(parentId)
+                    if (parent?.done == 0L && parent.hide == 0L ) return@forEach // skip tasks whose parent are not done checking hide cause parent may go through this loop first
                 }
-
+                if (task.repeatType != RepeatTypes.NONE) {
+                    val updatedTask = task.copy(
+                        done = 0L,
+                        hide = 1L
+                    )
+                    dbOperation.saveTask(updatedTask)
+                } else {
+                    deleteTaskAndChildren(task.id) // delete one time tasks
+                }
+            }
         }
     }
 
@@ -164,7 +167,7 @@ class SharedViewModel(
 
     suspend fun saveTask(task: Task): Long? {
         val i = dbOperation.saveTask(task) ?: return null
-        dbOperation.updateChildrenRepeatStatus(i)
+        dbOperation.updateChildrenRepeatStatus(i) // todo is this in use?
         return i
     }
 
@@ -205,5 +208,6 @@ class SharedViewModel(
     fun toggleCreateMoreStatus() {
         _createMoreStatus.value = !_createMoreStatus.value
     }
-     var listState:  LazyListState? = null
+
+    var listState: LazyListState? = null
 }

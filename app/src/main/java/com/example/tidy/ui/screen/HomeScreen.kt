@@ -91,7 +91,7 @@ fun HomeScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete Completed"
+                            contentDescription = "Delete Completed tasks"
                         )
                     }
                 }
