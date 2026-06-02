@@ -80,6 +80,7 @@ class SharedViewModel(
         if (parent.done == 0L) isRootTaskDoneOrArchived(parent)
         return false
     }
+
     private suspend fun deleteTaskAndChildren(id: Long) {
         dbOperation.getTask(id) ?: return
         val children = tasks.value.filter { it.parentId == id }
@@ -142,16 +143,17 @@ class SharedViewModel(
 
         dbOperation.setLastResetToday(todayDate = todayDate)
 
-        val hiddenTasks = dbOperation.taskGetAll().filter { task -> task.hide == 1L }
-        hiddenTasks.forEach { task ->
-            val shouldUnhide = when (task.repeatType) {
+        val repeatTasks = tasks.value.filter { it.repeatType != RepeatTypes.NONE }
+
+        repeatTasks.forEach { task ->
+            val shouldReset = when (task.repeatType) {
                 RepeatTypes.NONE, RepeatTypes.DAILY -> true
                 RepeatTypes.WEEKLY -> task.repeatDays.contains(todayDay)
                 RepeatTypes.MONTHLY -> task.repeatDays.contains(todayDate)
                 else -> false
             }
-            if (shouldUnhide) {
-                dbOperation.saveTask(task.copy(hide = 0L))
+            if (shouldReset) {
+                dbOperation.saveTask(task.copy(hide = 0L, done = 0L))
             }
         }
 
