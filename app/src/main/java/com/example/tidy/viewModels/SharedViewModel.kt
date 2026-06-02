@@ -53,28 +53,33 @@ class SharedViewModel(
             resetTasksForToday()
         }
     }
+
     fun cleanCompletedTasks() {
         viewModelScope.launch {
             val doneTasks = tasks.value.filter { it.done == 1L }
             doneTasks.forEach { task ->
-                val parentId = task.parentId
-                if (parentId != null) {
-                    val parent = dbOperation.getTask(parentId)
-                    if (parent?.done == 0L && parent.hide == 0L ) return@forEach // skip tasks whose parent are not done checking hide cause parent may go through this loop first
-                }
-                if (task.repeatType != RepeatTypes.NONE) {
-                    val updatedTask = task.copy(
-                        done = 0L,
-                        hide = 1L
-                    )
-                    dbOperation.saveTask(updatedTask)
-                } else {
-                    deleteTaskAndChildren(task.id) // delete one time tasks
+                if (isRootTaskDoneOrArchived(task)) {
+                    if (task.repeatType != RepeatTypes.NONE) {
+                        val updatedTask = task.copy(
+                            done = 0L,
+                            hide = 1L
+                        )
+                        dbOperation.saveTask(updatedTask)
+                    } else {
+                        deleteTaskAndChildren(task.id)
+                    }
                 }
             }
         }
     }
 
+    private suspend fun isRootTaskDoneOrArchived(task: Task): Boolean {
+        if (task.parentId == null) return true
+        val parent = dbOperation.getTask(task.parentId) ?: return true
+        if (parent.hide == 1L) return true
+        if (parent.done == 0L) isRootTaskDoneOrArchived(parent)
+        return false
+    }
     private suspend fun deleteTaskAndChildren(id: Long) {
         dbOperation.getTask(id) ?: return
         val children = tasks.value.filter { it.parentId == id }
