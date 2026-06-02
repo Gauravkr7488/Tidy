@@ -154,7 +154,13 @@ fun AddTaskScreen(
         enabled = true
     ) {
         if (createMoreStaus.value) sharedViewModel.toggleCreateMoreStatus()
-        navController.navigate(Routes.HOME)
+        navController.navigate(
+            Routes.HOME,
+            navOptions = navOptions {
+                popUpTo(Routes.HOME) { inclusive = true }
+                launchSingleTop = true
+            }
+        )
     }
     Scaffold(
         topBar =
