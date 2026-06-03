@@ -98,6 +98,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.navigation.navOptions
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 
@@ -121,6 +122,9 @@ fun AddTaskScreen(
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
+    var hide: Long by remember { mutableLongStateOf(0) }
+    var done: Long by remember { mutableLongStateOf(0) }
+
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
         val task = sharedViewModel.getCurrentTask(taskId = taskId)
@@ -131,6 +135,8 @@ fun AddTaskScreen(
             taskTitle = task.title
             description = task.description
             repeatType = task.repeatType
+            hide = task.hide
+            done = task.done
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
             val readable = SimpleDateFormat(
                 "MMM dd, yyyy hh:mm a",
@@ -148,7 +154,13 @@ fun AddTaskScreen(
         enabled = true
     ) {
         if (createMoreStaus.value) sharedViewModel.toggleCreateMoreStatus()
-        navController.navigate(Routes.HOME)
+        navController.navigate(
+            Routes.HOME,
+            navOptions = navOptions {
+                popUpTo(Routes.HOME) { inclusive = true }
+                launchSingleTop = true
+            }
+        )
     }
     Scaffold(
         topBar =
@@ -167,8 +179,8 @@ fun AddTaskScreen(
                                         repeatType = repeatType,
                                         repeatDays = repeatDays,
                                         description = description,
-                                        done = 0,
-                                        hide = 0,
+                                        done = done,
+                                        hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
                                     )
@@ -245,9 +257,9 @@ fun AddTaskScreen(
             )
             SubTaskMenu(
                 taskChildren,
-                onRemoveSubTask = { task, deleteTask, deleteChildren ->
+                onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
                     taskChildren = sharedViewModel.removeSubTask(
-                        task,
+                        subTask,
                         taskChildren,
                         deleteTask,
                         deleteChildren

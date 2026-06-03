@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.Flow
 
 class DbOperation(
     private val db: AppDatabase
-) {
+) { // todo: here only db queries should be executed all the logical stuff should go to the viewmodel
     suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO) {
         list.forEach { task ->
             db.taskQueries.saveNewTask(
@@ -115,13 +115,6 @@ class DbOperation(
             task.copy(
                 done = if (task.done == 1L) 0L else 1L
             )
-        )
-    }
-
-    suspend fun skipTask(id: Long) = withContext(Dispatchers.IO) {
-        val task = getTask(id) ?: return@withContext
-        saveTask(
-            task.copy(hide = 1L)
         )
     }
 
