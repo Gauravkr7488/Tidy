@@ -99,8 +99,8 @@ class SharedViewModel(
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
-            dbOperation.skipTask(task.id)
-
+            dbOperation.saveTask(task.copy(hide = 1L))
+            dbOperation.updateChildrenRepeatAndHideStatus(task.id)
         }
     }
 
