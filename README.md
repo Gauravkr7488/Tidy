@@ -5,6 +5,8 @@
 # Tidy
 
 A task management app with all necessary features.
+[![playStoreBadge](app/src/main/res/drawable/playstore_1_.png)](https://play.google.com/store/apps/details?id=com.Ace777.tidy)
+[![fdroidBadge](app/src/main/res/drawable/fdroid.png)](https://f-droid.org/packages/com.Ace777.tidy)
 
 ## Features
 
