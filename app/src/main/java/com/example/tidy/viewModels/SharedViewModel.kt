@@ -188,7 +188,7 @@ class SharedViewModel(
 
         viewModelScope.launch {
             list.remove(task)
-            dbOperation.saveTask(task.copy(parentId = null))
+            if (task.parentId != null) dbOperation.saveTask(task.copy(parentId = null)) // to prevent saving of tasks that are removed before the saving of parent
             if (deleteTask) {
                 if (deleteChildren) {
                     deleteTaskAndChildren(task.id)

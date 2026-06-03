@@ -257,9 +257,9 @@ fun AddTaskScreen(
             )
             SubTaskMenu(
                 taskChildren,
-                onRemoveSubTask = { task, deleteTask, deleteChildren ->
+                onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
                     taskChildren = sharedViewModel.removeSubTask(
-                        task,
+                        subTask,
                         taskChildren,
                         deleteTask,
                         deleteChildren
