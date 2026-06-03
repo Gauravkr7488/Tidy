@@ -14,7 +14,7 @@ A task management app with all necessary features.
 - **Backup** — Automatic and manual backups; export your data as a JSON file.
 
 [<img alt="Get it on play" src="app/src/main/res/drawable/playstore_1_.png" width="180px">](https://play.google.com/store/apps/details?id=com.Ace777.tidy)
-[<img alt="Get it on fdroid" src="app/src/main/res/drawable/fdroid.png" width="180px">](https://play.google.com/store/apps/details?id=com.Ace777.tidy)
+[<img alt="Get it on fdroid" src="app/src/main/res/drawable/fdroid.png" width="180px">](https://f-droid.org/packages/com.Ace777.tidy)
 
 ## Screenshots
 
