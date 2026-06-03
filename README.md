@@ -4,7 +4,7 @@
 
 # Tidy
 
-A personal task management app built for simplicity and flexibility.
+A task management app with all necessary features.
 
 ## Features
 
