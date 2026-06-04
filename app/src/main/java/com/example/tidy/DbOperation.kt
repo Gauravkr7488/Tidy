@@ -65,7 +65,8 @@ class DbOperation(
                 description = task.description,
                 hide = task.hide,
                 createdAt = task.createdAt,
-                parentId = task.parentId
+                parentId = task.parentId,
+                serialNo = task.serialNo,
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
             return@withContext id
