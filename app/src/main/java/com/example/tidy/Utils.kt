@@ -37,6 +37,7 @@ object Utils {
             hide = 0,
             createdAt = System.currentTimeMillis(),
             parentId = null,
+            serialNo = null
         )
     }
 
@@ -50,7 +51,8 @@ object Utils {
             description = description,
             hide = hide != 0L,
             createdAt = createdAt,
-            parentId = parentId
+            parentId = parentId,
+            serialNo = serialNo
         )
     }
 
@@ -64,7 +66,8 @@ object Utils {
             description = description ?: "",
             hide = if (hide) 1L else 0L,
             parentId = parentId,
-            createdAt = createdAt
+            createdAt = createdAt,
+            serialNo = serialNo,
         )
     }
 }

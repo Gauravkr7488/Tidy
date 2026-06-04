@@ -183,6 +183,7 @@ fun AddTaskScreen(
                                         hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
+                                        serialNo = 1
                                     )
                                 )
                                 taskChildren.forEach {
@@ -276,6 +277,7 @@ fun AddTaskScreen(
                         hide = 0,
                         createdAt = System.currentTimeMillis(),
                         parentId = null,
+                        serialNo = null
                     )
                     taskChildren = taskChildren + childTask
                 },
@@ -521,6 +523,7 @@ fun SubTaskMenu(
                 hide = 0,
                 createdAt = System.currentTimeMillis(),
                 parentId = null,
+                serialNo = null
             )
         )
     }
