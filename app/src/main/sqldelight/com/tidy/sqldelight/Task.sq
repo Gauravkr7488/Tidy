@@ -59,9 +59,11 @@ INSERT INTO Task(
     hide,
     createdAt,
     parentId,
-    serialNo
+    serialNo,
+    priority
 )
 VALUES (
+    ?,
     ?,
     ?,
     ?,

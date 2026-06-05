@@ -100,6 +100,7 @@ import java.util.Locale
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.navigation.navOptions
+import com.example.tidy.Utils
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
@@ -183,12 +184,17 @@ fun AddTaskScreen(
                                         hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
-                                        serialNo = 1
+                                        serialNo = 1,
+                                        priority = 1,
                                     )
                                 )
                                 taskChildren.forEach {
                                     sharedViewModel.saveTask(
-                                        it.copy(parentId = savedTaskId, repeatType = repeatType, repeatDays = repeatDays)
+                                        it.copy(
+                                            parentId = savedTaskId,
+                                            repeatType = repeatType,
+                                            repeatDays = repeatDays
+                                        )
                                     )
                                 }
 
@@ -267,18 +273,7 @@ fun AddTaskScreen(
                     )
                 },
                 addChildrenWithTitle = {
-                    val childTask = Task(
-                        id = 0,
-                        title = it,
-                        repeatType = RepeatTypes.NONE,
-                        repeatDays = "",
-                        description = "",
-                        done = 0,
-                        hide = 0,
-                        createdAt = System.currentTimeMillis(),
-                        parentId = null,
-                        serialNo = null
-                    )
+                    val childTask = Utils.getEmptyTask().copy(title = it)
                     taskChildren = taskChildren + childTask
                 },
                 getChild =
@@ -484,7 +479,7 @@ fun RepeatMenu(
             }
         }
     }
-    if (showAlert){
+    if (showAlert) {
         AlertDialog(
             onDismissRequest = { showAlert = false },
             title = { Text("Duplicate Date Chosen") },
@@ -513,18 +508,7 @@ fun SubTaskMenu(
     var showDialog by remember { mutableStateOf(false) }
     var subTaskForRemove by remember {
         mutableStateOf(
-            Task(
-                title = "",
-                id = 0,
-                repeatType = RepeatTypes.NONE,
-                repeatDays = "",
-                description = "",
-                done = 0,
-                hide = 0,
-                createdAt = System.currentTimeMillis(),
-                parentId = null,
-                serialNo = null
-            )
+            Utils.getEmptyTask()
         )
     }
     var deleteTask by remember { mutableStateOf(false) }

@@ -37,7 +37,8 @@ object Utils {
             hide = 0,
             createdAt = System.currentTimeMillis(),
             parentId = null,
-            serialNo = null
+            serialNo = null,
+            priority = null,
         )
     }
 
@@ -52,8 +53,9 @@ object Utils {
             hide = hide != 0L,
             createdAt = createdAt,
             parentId = parentId,
-            serialNo = serialNo
-        )
+            serialNo = serialNo,
+            priority = priority,
+            )
     }
 
     fun TaskBackupDto.toTask(): Task {
@@ -68,6 +70,7 @@ object Utils {
             parentId = parentId,
             createdAt = createdAt,
             serialNo = serialNo,
+            priority = priority,
         )
     }
 }
