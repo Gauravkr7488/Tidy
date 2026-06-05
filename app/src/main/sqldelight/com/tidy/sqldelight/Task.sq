@@ -26,6 +26,7 @@ CREATE TABLE Task (
     createdAt INTEGER NOT NULL,
     parentId INTEGER,                       -- NULL = root task
     serialNo INTEGER,
+    priority INTEGER,
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
 );
 
