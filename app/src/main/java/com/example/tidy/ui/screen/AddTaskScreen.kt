@@ -100,6 +100,7 @@ import java.util.Locale
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.navigation.navOptions
+import com.example.tidy.Utils
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
@@ -124,6 +125,7 @@ fun AddTaskScreen(
     var parentId: Long? by remember { mutableStateOf(null) }
     var hide: Long by remember { mutableLongStateOf(0) }
     var done: Long by remember { mutableLongStateOf(0) }
+    var priority: Long? by remember { mutableStateOf(null) }
 
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
@@ -137,6 +139,7 @@ fun AddTaskScreen(
             repeatType = task.repeatType
             hide = task.hide
             done = task.done
+            priority = task.priority
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
             val readable = SimpleDateFormat(
                 "MMM dd, yyyy hh:mm a",
@@ -183,12 +186,16 @@ fun AddTaskScreen(
                                         hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
-                                        serialNo = 1
+                                        priority = priority,
                                     )
                                 )
                                 taskChildren.forEach {
                                     sharedViewModel.saveTask(
-                                        it.copy(parentId = savedTaskId, repeatType = repeatType, repeatDays = repeatDays)
+                                        it.copy(
+                                            parentId = savedTaskId,
+                                            repeatType = repeatType,
+                                            repeatDays = repeatDays
+                                        )
                                     )
                                 }
 
@@ -256,6 +263,10 @@ fun AddTaskScreen(
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it },
             )
+            PriorityMenu(
+                priorityValue = priority,
+                onPriorityValueChange = { priority = it },
+            )
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -267,18 +278,7 @@ fun AddTaskScreen(
                     )
                 },
                 addChildrenWithTitle = {
-                    val childTask = Task(
-                        id = 0,
-                        title = it,
-                        repeatType = RepeatTypes.NONE,
-                        repeatDays = "",
-                        description = "",
-                        done = 0,
-                        hide = 0,
-                        createdAt = System.currentTimeMillis(),
-                        parentId = null,
-                        serialNo = null
-                    )
+                    val childTask = Utils.getEmptyTask().copy(title = it)
                     taskChildren = taskChildren + childTask
                 },
                 getChild =
@@ -298,6 +298,56 @@ fun AddTaskScreen(
             if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
+            }
+        }
+    }
+}
+
+@Composable
+fun PriorityMenu(
+    priorityValue: Long?,
+    onPriorityValueChange: (Long?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            var expanded by remember { mutableStateOf(false) }
+            Text("Priority")
+            Spacer(modifier = Modifier.weight(1f))
+            Column {
+                Box {
+                    TextButton(
+                        onClick = { expanded = !expanded },
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            priorityValue?.toString() ?: "None",
+                            modifier = Modifier.widthIn(min = 60.dp)
+                        )
+                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        listOf(
+                            "None" to null,
+                            "1" to 1L,
+                            "2" to 2L,
+                            "3" to 3L,
+                            "4" to 4L
+                        ).forEach { (label, value) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    onPriorityValueChange(value)
+                                    expanded = false
+                                },
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -484,7 +534,7 @@ fun RepeatMenu(
             }
         }
     }
-    if (showAlert){
+    if (showAlert) {
         AlertDialog(
             onDismissRequest = { showAlert = false },
             title = { Text("Duplicate Date Chosen") },
@@ -513,18 +563,7 @@ fun SubTaskMenu(
     var showDialog by remember { mutableStateOf(false) }
     var subTaskForRemove by remember {
         mutableStateOf(
-            Task(
-                title = "",
-                id = 0,
-                repeatType = RepeatTypes.NONE,
-                repeatDays = "",
-                description = "",
-                done = 0,
-                hide = 0,
-                createdAt = System.currentTimeMillis(),
-                parentId = null,
-                serialNo = null
-            )
+            Utils.getEmptyTask()
         )
     }
     var deleteTask by remember { mutableStateOf(false) }
