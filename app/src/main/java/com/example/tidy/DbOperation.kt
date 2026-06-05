@@ -29,7 +29,7 @@ class DbOperation(
 ) { // todo: here only db queries should be executed all the logical stuff should go to the viewmodel
     suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO) {
         list.forEach { task ->
-            db.taskQueries.saveNewTask(
+            db.taskQueries.saveTaskWithId(
                 id = task.id,
                 title = task.title,
                 done = task.done,
@@ -38,7 +38,8 @@ class DbOperation(
                 description = task.description,
                 hide = task.hide,
                 createdAt = task.createdAt,
-                parentId = task.parentId
+                parentId = task.parentId,
+                priority = task.priority
             )
         }
     }
@@ -80,7 +81,8 @@ class DbOperation(
                 repeatDays = task.repeatDays,
                 description = task.description,
                 hide = task.hide,
-                parentId = task.parentId
+                parentId = task.parentId,
+                priority = task.priority
             )
             return@withContext task.id
         }

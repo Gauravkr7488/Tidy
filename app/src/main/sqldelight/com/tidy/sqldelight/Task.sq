@@ -38,7 +38,8 @@ SET
     repeatDays = ?,
     description = ?,
     hide = ?,
-    parentId = ?
+    parentId = ?,
+    priority = ?
 WHERE id = ?;
 
 getTaskById:
@@ -86,7 +87,7 @@ WHERE id = ?;
 deleteAllTasks:
 DELETE FROM Task;
 
-saveNewTask:
+saveTaskWithId:
 INSERT INTO Task(
 id,
     title,
@@ -96,9 +97,11 @@ id,
     description,
     hide,
     createdAt,
-    parentId
+    parentId,
+    priority
 )
 VALUES (
+    ?,
       ?,
     ?,
     ?,
