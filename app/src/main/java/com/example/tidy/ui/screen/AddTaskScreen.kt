@@ -186,7 +186,6 @@ fun AddTaskScreen(
                                         hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
-                                        serialNo = 1, // todo change this
                                         priority = priority,
                                     )
                                 )

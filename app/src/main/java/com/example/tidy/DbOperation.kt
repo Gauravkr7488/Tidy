@@ -66,7 +66,6 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
-                serialNo = task.serialNo,
                 priority = task.priority,
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
@@ -96,19 +95,24 @@ class DbOperation(
     }
 
 
-    suspend fun updateChildrenRepeatAndHideStatus(parentId: Long): Unit = withContext( // update the status of children to match the parent
-        Dispatchers.IO
-    ) {
-        val task = getTask(parentId) ?: return@withContext
-        val taskChildren = db.taskQueries.getChildren(task.id).executeAsList()
-        taskChildren.forEach { child ->
-            val freshChild = getTask(child.id) ?: return@withContext
-            val newTask =
-                freshChild.copy(repeatType = task.repeatType, repeatDays = task.repeatDays, hide = task.hide)
-            saveTask(newTask)
-            updateChildrenRepeatAndHideStatus(freshChild.id)
+    suspend fun updateChildrenRepeatAndHideStatus(parentId: Long): Unit =
+        withContext( // update the status of children to match the parent
+            Dispatchers.IO
+        ) {
+            val task = getTask(parentId) ?: return@withContext
+            val taskChildren = db.taskQueries.getChildren(task.id).executeAsList()
+            taskChildren.forEach { child ->
+                val freshChild = getTask(child.id) ?: return@withContext
+                val newTask =
+                    freshChild.copy(
+                        repeatType = task.repeatType,
+                        repeatDays = task.repeatDays,
+                        hide = task.hide
+                    )
+                saveTask(newTask)
+                updateChildrenRepeatAndHideStatus(freshChild.id)
+            }
         }
-    }
 
     suspend fun updateDoneStatus(id: Long) = withContext(Dispatchers.IO) {
 
