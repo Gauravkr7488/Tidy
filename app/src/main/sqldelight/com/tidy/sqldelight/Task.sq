@@ -26,6 +26,7 @@ CREATE TABLE Task (
     createdAt INTEGER NOT NULL,
     parentId INTEGER,                       -- NULL = root task
     priority INTEGER,
+    dateAndTime TEXT,
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
 );
 
@@ -39,7 +40,8 @@ SET
     description = ?,
     hide = ?,
     parentId = ?,
-    priority = ?
+    priority = ?,
+    dateAndTime = ?
 WHERE id = ?;
 
 getTaskById:
@@ -59,9 +61,11 @@ INSERT INTO Task(
     hide,
     createdAt,
     parentId,
-    priority
+    priority,
+    dateAndTime
 )
 VALUES (
+    ?,
     ?,
     ?,
     ?,
@@ -89,7 +93,7 @@ DELETE FROM Task;
 
 saveTaskWithId:
 INSERT INTO Task(
-id,
+    id,
     title,
     done,
     repeatType,
@@ -98,11 +102,13 @@ id,
     hide,
     createdAt,
     parentId,
-    priority
+    priority,
+    dateAndTime
 )
 VALUES (
     ?,
-      ?,
+    ?,
+    ?,
     ?,
     ?,
     ?,
