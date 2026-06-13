@@ -4,7 +4,7 @@
 
 # Tidy
 
-A personal task management app built for simplicity and flexibility.
+A task management app with all necessary features.
 
 ## Features
 
@@ -13,8 +13,10 @@ A personal task management app built for simplicity and flexibility.
 - **Search** — Quickly find any task with built-in search.
 - **Backup** — Automatic and manual backups; export your data as a JSON file.
 
-## Screenshots
+[<img alt="Get it on play" src="app/src/main/res/drawable/playstore_1_.png" width="180px">](https://play.google.com/store/apps/details?id=com.Ace777.tidy)
+[<img alt="Get it on fdroid" src="app/src/main/res/drawable/fdroid.png" width="180px">](https://f-droid.org/packages/com.Ace777.tidy)
 
+## Screenshots
 
 | ![Screen 1](fastlane/metadata/android/en-US/images/phoneScreenshots/1.png) | ![Screen 2](fastlane/metadata/android/en-US/images/phoneScreenshots/2.png) |
 |:---:|:---:|

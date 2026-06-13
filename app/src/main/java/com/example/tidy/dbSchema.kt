@@ -28,5 +28,6 @@ data class TaskBackupDto(
     var description: String? = null,
     var hide: Boolean = false,
     var parentId: Long? = null,
+    var priority: Long? = null,
     var createdAt: Long = System.currentTimeMillis(),
 )
