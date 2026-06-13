@@ -124,5 +124,5 @@ class BackupOperations(
 
 data class BackupDto(
     val lastResetDate: String,
-    val tasks: List<TaskDto>
+    val tasks: List<TaskBackupDto>
 )

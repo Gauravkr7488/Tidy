@@ -19,7 +19,7 @@ package com.example.tidy
 
 import com.example.tidy.constants.RepeatTypes
 
-data class TaskDto(
+data class TaskBackupDto(
     var id: Long = 0,
     var title: String,
     var done: Boolean = false,
@@ -29,6 +29,5 @@ data class TaskDto(
     var hide: Boolean = false,
     var parentId: Long? = null,
     var priority: Long? = null,
-    var dateAndTime: String? = null,
     var createdAt: Long = System.currentTimeMillis(),
 )
