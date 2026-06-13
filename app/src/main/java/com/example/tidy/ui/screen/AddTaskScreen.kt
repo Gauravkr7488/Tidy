@@ -126,7 +126,6 @@ fun AddTaskScreen(
     var hide: Long by remember { mutableLongStateOf(0) }
     var done: Long by remember { mutableLongStateOf(0) }
     var priority: Long? by remember { mutableStateOf(null) }
-    var dateAndTime: String? by remember { mutableStateOf(null) }
 
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
@@ -188,7 +187,6 @@ fun AddTaskScreen(
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
                                         priority = priority,
-                                        dateAndTime = dateAndTime
                                     )
                                 )
                                 taskChildren.forEach {
@@ -196,8 +194,7 @@ fun AddTaskScreen(
                                         it.copy(
                                             parentId = savedTaskId,
                                             repeatType = repeatType,
-                                            repeatDays = repeatDays,
-                                            dateAndTime = dateAndTime
+                                            repeatDays = repeatDays
                                         )
                                     )
                                 }
@@ -311,7 +308,7 @@ fun PriorityMenu(
     priorityValue: Long?,
     onPriorityValueChange: (Long?) -> Unit,
     modifier: Modifier = Modifier
-) {// todo: Make a proper UI
+) {
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

@@ -38,12 +38,11 @@ object Utils {
             createdAt = System.currentTimeMillis(),
             parentId = null,
             priority = null,
-            dateAndTime = null,
         )
     }
 
-    fun Task.toTaskDto(): TaskDto {
-        return TaskDto(
+    fun Task.toTaskDto(): TaskBackupDto {
+        return TaskBackupDto(
             id = id,
             title = title,
             done = done != 0L,
@@ -54,11 +53,10 @@ object Utils {
             createdAt = createdAt,
             parentId = parentId,
             priority = priority,
-            dateAndTime = dateAndTime
             )
     }
 
-    fun TaskDto.toTask(): Task {
+    fun TaskBackupDto.toTask(): Task {
         return Task(
             id = id,
             title = title,
@@ -70,7 +68,6 @@ object Utils {
             parentId = parentId,
             createdAt = createdAt,
             priority = priority,
-            dateAndTime = dateAndTime
         )
     }
 }
