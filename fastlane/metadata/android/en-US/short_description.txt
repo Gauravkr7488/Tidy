@@ -1,1 +1,1 @@
-A personal management app with all necessary features
+A task management app with all necessary features

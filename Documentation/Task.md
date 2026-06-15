@@ -32,3 +32,7 @@
     - Type: Integer
     - Nullable: true
     - Description: Identifier of the parent Task
+9. priority
+   - Type: Integer
+   - Nullable: true
+   - Description: Has one to four value for priority of a task
