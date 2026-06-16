@@ -43,6 +43,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
@@ -66,7 +67,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -85,11 +88,14 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.navOptions
+import com.example.tidy.Utils
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.launch
@@ -97,11 +103,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.navigation.navOptions
-import com.example.tidy.Utils
-import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
 fun AddTaskScreen(
@@ -267,6 +268,7 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
+            DueMenu()
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -304,6 +306,35 @@ fun AddTaskScreen(
 }
 
 @Composable
+fun DueMenu(
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            var expanded by remember { mutableStateOf(false) }
+            Text("Due On")
+            Spacer(modifier = Modifier.weight(1f))
+            Box {
+                TextButton(
+                    onClick = { expanded = !expanded },
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        "Pick",
+                        modifier = Modifier.widthIn(min = 60.dp)
+                    )
+                    Icon(Icons.Default.Add, contentDescription = null)
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun PriorityMenu(
     priorityValue: Long?,
     onPriorityValueChange: (Long?) -> Unit,
@@ -317,7 +348,7 @@ fun PriorityMenu(
             var expanded by remember { mutableStateOf(false) }
             Text("Priority")
             Spacer(modifier = Modifier.weight(1f))
-            Column {
+            Column { // todo if due is good delete this and its counterparts in other menus and maybe make a component out of this
                 Box {
                     TextButton(
                         onClick = { expanded = !expanded },
@@ -348,6 +379,7 @@ fun PriorityMenu(
                         }
                     }
                 }
+
             }
         }
     }
@@ -418,7 +450,10 @@ fun RepeatMenu(
                             RepeatTypes.MONTHLY
                         ).forEach { t ->
                             DropdownMenuItem(
-                                text = { Text(t.lowercase().replaceFirstChar { it.uppercase() }) },
+                                text = {
+                                    Text(
+                                        t.lowercase().replaceFirstChar { it.uppercase() })
+                                },
                                 onClick = {
                                     onRepeatTypeChange(t)
                                     expanded = false
@@ -470,7 +505,10 @@ fun RepeatMenu(
         }
         if (repeatType == RepeatTypes.MONTHLY) {
             if (repeatDays == "") {
-                Button(onClick = { showDateDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = { showDateDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text("Select Date")
                 }
             } else {
@@ -499,7 +537,10 @@ fun RepeatMenu(
                     }
                 }
 
-                Button(onClick = { showDateDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = { showDateDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text("Select more Dates")
                 }
             }
