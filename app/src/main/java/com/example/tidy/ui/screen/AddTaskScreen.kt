@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -49,6 +50,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -87,6 +89,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.navOptions
 import com.example.tidy.Utils
@@ -309,25 +312,69 @@ fun AddTaskScreen(
 fun DueMenu(
     modifier: Modifier = Modifier
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    var showTimeDialog by remember { mutableStateOf(false) }
+    var showDateDialog by remember { mutableStateOf(false) }
+
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            var expanded by remember { mutableStateOf(false) }
             Text("Due On")
             Spacer(modifier = Modifier.weight(1f))
-            Box {
-                TextButton(
-                    onClick = { expanded = !expanded },
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        "Pick",
-                        modifier = Modifier.widthIn(min = 60.dp)
-                    )
-                    Icon(Icons.Default.Add, contentDescription = null)
+            TextButton(
+                onClick = { expanded = !expanded },
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    "Pick",
+                    modifier = Modifier.widthIn(min = 60.dp)
+                )
+                Icon(Icons.Default.Add, contentDescription = null)
+            }
+            if (expanded) {
+                Dialog(onDismissRequest = { expanded = false }) {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 0.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text("Select Date and Time", modifier = Modifier.padding(5.dp))
+                            DropDownMenuTextButton(
+                                { showDateDialog = true },
+                                content = {
+                                    Text("Select Date")
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                                },
+                                modifier = Modifier.padding(5.dp)
+                            )
+                            DropDownMenuTextButton(
+                                { showTimeDialog = true },
+                                content = {
+                                    Text("Select Time")
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                                },
+                                modifier = Modifier.padding(5.dp)
+
+                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                SimpleTextButton("Cancel") { }
+                                SimpleTextButton("Ok") { }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -726,5 +773,34 @@ fun SubTaskMenu(
                 }
             )
         }
+    }
+}
+
+@Composable
+fun DropDownMenuTextButton(
+    onClick: () -> Unit,
+    content: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TextButton(
+        onClick = onClick,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun SimpleTextButton(
+    text: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier.padding(8.dp),
+    ) {
+        Text(text)
     }
 }
