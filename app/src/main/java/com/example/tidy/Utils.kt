@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 object Utils {
     fun getCurrentDate(): String {
@@ -21,18 +22,25 @@ object Utils {
     }
 
     fun changeDateFormat(date: Long, pattern: String): String {
-        return SimpleDateFormat(
-            pattern,
-            Locale.getDefault()
-        ).format(Date(date))
+        return SimpleDateFormat(pattern, Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.format(Date(date))
     }
 
     fun convertTimeToMillis(timeString: String): Long {
-        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
-        val date = sdf.parse(timeString) // e.g., "07:30 AM"
-        return date?.time ?: 0L
+        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault()).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+        return sdf.parse(timeString)?.time ?: 0L
     }
-
+    fun getCurrentDateMillis(): Long {
+        return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
     fun createBackupJson(tasks: List<Task>, lastResetDate: String): String {
         val taskDtos = tasks.map { it.toTaskDto() }
         val backupDto = BackupDto(lastResetDate, taskDtos)

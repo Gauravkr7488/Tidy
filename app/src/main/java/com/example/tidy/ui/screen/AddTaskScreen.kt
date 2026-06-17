@@ -381,25 +381,32 @@ fun DueMenu(
                         )
                     },
                     onConfirm = {
-                        val dateAndTime: Long? = if (date != null && time != null) {
-                            val dateCalendar = Calendar.getInstance().apply {
-                                timeInMillis = date!!
-                                set(Calendar.HOUR_OF_DAY, 0)
-                                set(Calendar.MINUTE, 0)
-                                set(Calendar.SECOND, 0)
-                                set(Calendar.MILLISECOND, 0)
-                            }
+                        val dateAndTime: Long? =
+                            if (date == null && time == null) dueDateAndTime else {
+                                val dateValue = date ?: Utils.getCurrentDateMillis()
+                                val timeValue = time ?: 0L
 
-                            val timeCalendar = Calendar.getInstance().apply {
-                                timeInMillis = time!!
-                            }
+                                val dateCalendar = Calendar.getInstance().apply {
+                                    timeInMillis = dateValue
+                                    set(Calendar.HOUR_OF_DAY, 0)
+                                    set(Calendar.MINUTE, 0)
+                                    set(Calendar.SECOND, 0)
+                                    set(Calendar.MILLISECOND, 0)
+                                }
 
-                            dateCalendar.apply {
-                                set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
-                                set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
-                                set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
-                            }.timeInMillis
-                        } else null
+                                val timeCalendar = Calendar.getInstance().apply {
+                                    timeInMillis = timeValue
+                                }
+
+                                dateCalendar.apply {
+                                    set(
+                                        Calendar.HOUR_OF_DAY,
+                                        timeCalendar.get(Calendar.HOUR_OF_DAY)
+                                    )
+                                    set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
+                                    set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
+                                }.timeInMillis
+                            }
                         onDueDateAndTimeChange(dateAndTime)
                     }
                 )
@@ -409,7 +416,11 @@ fun DueMenu(
     if (showDateDialog) {
         DatePickerTidy(
             onDismiss = { showDateDialog = false },
-            onDateSelected = { date = it },
+            onDateSelected = {
+                println(date)
+                println(it)
+                date = it
+            },
             date = date
         )
     }
