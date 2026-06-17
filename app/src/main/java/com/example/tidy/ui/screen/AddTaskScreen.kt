@@ -378,7 +378,10 @@ fun DueMenu(
 
                         )
                     },
-                    onConfirm = { }
+                    onConfirm = {
+                        val dateAndTime: Long? = if (date != null && time != null) date!! + time!! else null
+                        onDueDateAndTimeChange(dateAndTime)
+                    }
                 )
             }
         }
