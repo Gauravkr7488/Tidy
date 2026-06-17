@@ -25,6 +25,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -334,53 +335,38 @@ fun DueMenu(
                 Icon(Icons.Default.Add, contentDescription = null)
             }
             if (expanded) {
-                Dialog(onDismissRequest = { expanded = false }) {
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 0.dp),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            Text("Select Date and Time", modifier = Modifier.padding(5.dp))
-                            DropDownMenuTextButton(
-                                { showDateDialog = true },
-                                content = {
-                                    Text(
-                                        if (date != null) {
-                                            Utils.changeDateFormat(pattern = "MMM dd, yyyy", date)
-                                        } else {
-                                            "Today"
-                                        }
-                                    )
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                                },
-                                modifier = Modifier.padding(5.dp)
-                            )
-                            DropDownMenuTextButton(
-                                { showTimeDialog = true },
-                                content = {
-                                    Text("Select Time")
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                                },
-                                modifier = Modifier.padding(5.dp)
+                SimpleDialog(
+                    onDismissRequest = { expanded = false },
+                    content = {
+                        Text("Select Date and Time", modifier = Modifier.padding(5.dp))
+                        DropDownMenuTextButton(
+                            { showDateDialog = true },
+                            content = {
+                                Text(
+                                    if (date != null) {
+                                        Utils.changeDateFormat(pattern = "MMM dd, yyyy", date)
+                                    } else {
+                                        "Today"
+                                    }
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                            },
+                            modifier = Modifier.padding(5.dp)
+                        )
+                        DropDownMenuTextButton(
+                            { showTimeDialog = true },
+                            content = {
+                                Text("Select Time")
+                                Spacer(modifier = Modifier.weight(1f))
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                            },
+                            modifier = Modifier.padding(5.dp)
 
-                            )
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                SimpleTextButton("Cancel") { }
-                                SimpleTextButton("Ok") { }
-                            }
-                        }
-                    }
-                }
+                        )
+                    },
+                    onAccept = { }
+                )
             }
         }
     }
@@ -814,7 +800,7 @@ fun SimpleTextButton(
 ) {
     TextButton(
         onClick = onClick,
-        modifier = Modifier.padding(8.dp),
+//        modifier = Modifier.padding(8.dp),
     ) {
         Text(text)
     }
@@ -847,5 +833,38 @@ fun DatePickerTidy(
         DatePicker(
             state = datePickerState,
         )
+    }
+}
+
+@Composable
+fun SimpleDialog(
+    onDismissRequest: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+    onAccept: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                content()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    SimpleTextButton("Cancel") { onDismissRequest() }
+                    SimpleTextButton("Ok") {
+                        onAccept()
+                        onDismissRequest()
+                    }
+                }
+            }
+        }
     }
 }
