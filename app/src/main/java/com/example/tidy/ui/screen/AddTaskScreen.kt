@@ -53,7 +53,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerFormatter
+import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -271,7 +274,7 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
-            DueMenu(1,1, {}, {})
+            DueMenu(1, 1, {}, {})
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -384,7 +387,11 @@ fun DueMenu(
         }
     }
     if (showDateDialog) {
-        DatePickerTidy(onDismiss = { showDateDialog = false }, onDateSelected = onDateSelected)
+        DatePickerTidy(
+            onDismiss = { showDateDialog = false },
+            onDateSelected = onDateSelected,
+            date = date
+        )
     }
     if (showTimeDialog) {
 
@@ -817,10 +824,11 @@ fun SimpleTextButton(
 
 @Composable
 fun DatePickerTidy(
+    date: Long?,
     onDateSelected: (Long?) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val datePickerState = rememberDatePickerState()
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = date)
 
     DatePickerDialog(
         onDismissRequest = onDismiss,
@@ -838,6 +846,8 @@ fun DatePickerTidy(
             }
         }
     ) {
-        DatePicker(state = datePickerState)
+        DatePicker(
+            state = datePickerState,
+        )
     }
 }
