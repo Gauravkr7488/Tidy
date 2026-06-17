@@ -271,7 +271,7 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
-            DueMenu()
+            DueMenu(1,1, {}, {})
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -310,6 +310,10 @@ fun AddTaskScreen(
 
 @Composable
 fun DueMenu(
+    date: Long,
+    time: Long,
+    onDateSelected: (Long?) -> Unit,
+    onTimeSelected: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -378,6 +382,12 @@ fun DueMenu(
                 }
             }
         }
+    }
+    if (showDateDialog) {
+        DatePickerTidy(onDismiss = { showDateDialog = false }, onDateSelected = onDateSelected)
+    }
+    if (showTimeDialog) {
+
     }
 }
 
@@ -802,5 +812,32 @@ fun SimpleTextButton(
         modifier = Modifier.padding(8.dp),
     ) {
         Text(text)
+    }
+}
+
+@Composable
+fun DatePickerTidy(
+    onDateSelected: (Long?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState()
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onDateSelected(datePickerState.selectedDateMillis)
+                onDismiss()
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        DatePicker(state = datePickerState)
     }
 }
