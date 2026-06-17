@@ -53,10 +53,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePickerFormatter
-import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -105,10 +102,7 @@ import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun AddTaskScreen(
@@ -133,6 +127,8 @@ fun AddTaskScreen(
     var hide: Long by remember { mutableLongStateOf(0) }
     var done: Long by remember { mutableLongStateOf(0) }
     var priority: Long? by remember { mutableStateOf(null) }
+    var dueDate: Long? by remember { mutableStateOf(null) }
+    var dueTime: Long? by remember { mutableStateOf(null) }
 
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
@@ -148,11 +144,7 @@ fun AddTaskScreen(
             done = task.done
             priority = task.priority
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
-            val readable = SimpleDateFormat(
-                "MMM dd, yyyy hh:mm a",
-                Locale.getDefault()
-            ).format(Date(task.createdAt))
-            createdAt = readable
+            createdAt = Utils.changeDateFormat("MMM dd, yyyy hh:mm a", task.createdAt)
         }
         if (taskTitle.isEmpty()) {
             focusRequester.requestFocus()
@@ -274,7 +266,7 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
-            DueMenu(1, 1, {}, {})
+            DueMenu(dueDate, dueTime, { dueDate = it }, { dueTime = it })
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -313,8 +305,8 @@ fun AddTaskScreen(
 
 @Composable
 fun DueMenu(
-    date: Long,
-    time: Long,
+    date: Long?,
+    time: Long?,
     onDateSelected: (Long?) -> Unit,
     onTimeSelected: (Long?) -> Unit,
     modifier: Modifier = Modifier
@@ -356,7 +348,13 @@ fun DueMenu(
                             DropDownMenuTextButton(
                                 { showDateDialog = true },
                                 content = {
-                                    Text("Select Date")
+                                    Text(
+                                        if (date != null) {
+                                            Utils.changeDateFormat(pattern = "MMM dd, yyyy", date)
+                                        } else {
+                                            "Today"
+                                        }
+                                    )
                                     Spacer(modifier = Modifier.weight(1f))
                                     Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                                 },

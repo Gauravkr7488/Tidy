@@ -5,6 +5,7 @@ import com.google.gson.Gson
 import com.tidy.sqldelight.Task
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 object Utils {
@@ -17,6 +18,13 @@ object Utils {
         return SimpleDateFormat("EEE", Locale.getDefault())
             .format(Calendar.getInstance().time)
             .uppercase() // gives "MON", "TUE" etc.
+    }
+
+    fun changeDateFormat(pattern: String, date: Long): String {
+        return SimpleDateFormat(
+            pattern,
+            Locale.getDefault()
+        ).format(Date(date))
     }
 
     fun createBackupJson(tasks: List<Task>, lastResetDate: String): String {
@@ -53,7 +61,7 @@ object Utils {
             createdAt = createdAt,
             parentId = parentId,
             priority = priority,
-            )
+        )
     }
 
     fun TaskBackupDto.toTask(): Task {
