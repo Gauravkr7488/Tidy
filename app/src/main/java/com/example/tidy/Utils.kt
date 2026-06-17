@@ -52,6 +52,7 @@ object Utils {
             createdAt = System.currentTimeMillis(),
             parentId = null,
             priority = null,
+            dueDateAndTime = null
         )
     }
 
@@ -67,6 +68,7 @@ object Utils {
             createdAt = createdAt,
             parentId = parentId,
             priority = priority,
+            dueDateAndTime = dueDateAndTime
         )
     }
 
@@ -82,6 +84,7 @@ object Utils {
             parentId = parentId,
             createdAt = createdAt,
             priority = priority,
+            dueDateAndTime = dueDateAndTime
         )
     }
 }

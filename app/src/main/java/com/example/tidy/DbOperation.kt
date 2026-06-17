@@ -39,7 +39,8 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
-                priority = task.priority
+                priority = task.priority,
+                dueDateAndTime = task.dueDateAndTime
             )
         }
     }
@@ -68,6 +69,7 @@ class DbOperation(
                 createdAt = task.createdAt,
                 parentId = task.parentId,
                 priority = task.priority,
+                dueDateAndTime = task.dueDateAndTime
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
             return@withContext id
@@ -82,7 +84,8 @@ class DbOperation(
                 description = task.description,
                 hide = task.hide,
                 parentId = task.parentId,
-                priority = task.priority
+                priority = task.priority,
+                dueDateAndTime = task.dueDateAndTime
             )
             return@withContext task.id
         }

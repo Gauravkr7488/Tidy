@@ -148,6 +148,7 @@ fun AddTaskScreen(
             done = task.done
             priority = task.priority
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
+            dueDateAndTime = task.dueDateAndTime
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -191,6 +192,7 @@ fun AddTaskScreen(
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
                                         priority = priority,
+                                        dueDateAndTime = dueDateAndTime
                                     )
                                 )
                                 taskChildren.forEach {
