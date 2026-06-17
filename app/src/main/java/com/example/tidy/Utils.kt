@@ -28,7 +28,7 @@ object Utils {
     }
 
     fun convertTimeToMillis(timeString: String): Long {
-        val sdf = SimpleDateFormat("hh:mm a", Locale.US)
+        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
         val date = sdf.parse(timeString) // e.g., "07:30 AM"
         return date?.time ?: 0L
     }

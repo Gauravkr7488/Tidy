@@ -320,8 +320,8 @@ fun DueMenu(
     var expanded by remember { mutableStateOf(false) }
     var showTimeDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
-    var date by remember { mutableStateOf(dueDateAndTime) }
-    var time by remember { mutableStateOf(dueDateAndTime) }
+    var date by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
+    var time by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -381,7 +381,25 @@ fun DueMenu(
                         )
                     },
                     onConfirm = {
-                        val dateAndTime: Long? = if (date != null && time != null) date!! + time!! else null
+                        val dateAndTime: Long? = if (date != null && time != null) {
+                            val dateCalendar = Calendar.getInstance().apply {
+                                timeInMillis = date!!
+                                set(Calendar.HOUR_OF_DAY, 0)
+                                set(Calendar.MINUTE, 0)
+                                set(Calendar.SECOND, 0)
+                                set(Calendar.MILLISECOND, 0)
+                            }
+
+                            val timeCalendar = Calendar.getInstance().apply {
+                                timeInMillis = time!!
+                            }
+
+                            dateCalendar.apply {
+                                set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
+                                set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
+                                set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
+                            }.timeInMillis
+                        } else null
                         onDueDateAndTimeChange(dateAndTime)
                     }
                 )
