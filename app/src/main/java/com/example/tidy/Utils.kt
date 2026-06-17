@@ -1,5 +1,7 @@
 package com.example.tidy
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TimePickerState
 import com.example.tidy.constants.RepeatTypes
 import com.google.gson.Gson
 import com.tidy.sqldelight.Task
@@ -20,11 +22,17 @@ object Utils {
             .uppercase() // gives "MON", "TUE" etc.
     }
 
-    fun changeDateFormat(pattern: String, date: Long): String {
+    fun changeDateFormat(date: Long, pattern: String): String {
         return SimpleDateFormat(
             pattern,
             Locale.getDefault()
         ).format(Date(date))
+    }
+
+    fun convertTimeToMillis(timeString: String): Long {
+        val sdf = SimpleDateFormat("hh:mm a", Locale.US)
+        val date = sdf.parse(timeString) // e.g., "07:30 AM"
+        return date?.time ?: 0L
     }
 
     fun createBackupJson(tasks: List<Task>, lastResetDate: String): String {

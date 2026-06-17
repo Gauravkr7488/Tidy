@@ -67,7 +67,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerState
+import androidx.compose.material3.isPm
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -128,8 +132,7 @@ fun AddTaskScreen(
     var hide: Long by remember { mutableLongStateOf(0) }
     var done: Long by remember { mutableLongStateOf(0) }
     var priority: Long? by remember { mutableStateOf(null) }
-    var dueDate: Long? by remember { mutableStateOf(null) }
-    var dueTime: Long? by remember { mutableStateOf(null) }
+    var dueDateAndTime: Long? by remember { mutableStateOf(null) }
 
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
@@ -145,7 +148,8 @@ fun AddTaskScreen(
             done = task.done
             priority = task.priority
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
-            createdAt = Utils.changeDateFormat("MMM dd, yyyy hh:mm a", task.createdAt)
+            createdAt =
+                Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
         if (taskTitle.isEmpty()) {
             focusRequester.requestFocus()
@@ -267,7 +271,7 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
-            DueMenu(dueDate, dueTime, { dueDate = it }, { dueTime = it })
+            DueMenu(dueDateAndTime, { dueDateAndTime = it })
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -304,18 +308,18 @@ fun AddTaskScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DueMenu(
-    date: Long?,
-    time: Long?,
-    onDateSelected: (Long?) -> Unit,
-    onTimeSelected: (Long?) -> Unit,
+    dueDateAndTime: Long?,
+    onDueDateAndTimeChange: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showTimeDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
-
+    var date by remember { mutableStateOf(dueDateAndTime) }
+    var time by remember { mutableStateOf(dueDateAndTime) }
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -344,7 +348,10 @@ fun DueMenu(
                             content = {
                                 Text(
                                     if (date != null) {
-                                        Utils.changeDateFormat(pattern = "MMM dd, yyyy", date)
+                                        Utils.changeDateFormat(
+                                            pattern = "MMM dd, yyyy",
+                                            date = date!!
+                                        )
                                     } else {
                                         "Today"
                                     }
@@ -357,7 +364,13 @@ fun DueMenu(
                         DropDownMenuTextButton(
                             { showTimeDialog = true },
                             content = {
-                                Text("Select Time")
+                                Text(
+                                    if (time != null) {
+                                        Utils.changeDateFormat(time!!, "hh:mm a")
+                                    } else {
+                                        "Select Time"
+                                    }
+                                )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Icon(Icons.Default.ArrowDropDown, contentDescription = null)
                             },
@@ -365,7 +378,7 @@ fun DueMenu(
 
                         )
                     },
-                    onAccept = { }
+                    onConfirm = { }
                 )
             }
         }
@@ -373,12 +386,31 @@ fun DueMenu(
     if (showDateDialog) {
         DatePickerTidy(
             onDismiss = { showDateDialog = false },
-            onDateSelected = onDateSelected,
+            onDateSelected = { date = it },
             date = date
         )
     }
     if (showTimeDialog) {
-
+        var hour: Int? = null
+        var minute: Int? = null
+        if (time != null) {
+            hour = Utils.changeDateFormat(time!!, "hh")
+                .toInt()
+            minute = Utils.changeDateFormat(time!!, "mm")
+                .toInt()
+        }
+        TimePickerTidy(
+            hour = hour,
+            minute = minute,
+            onTimeSelected = {
+                val hour = it.hour.toString()
+                val min = it.minute.toString()
+                val amPm = if (it.isPm) "PM" else "AM"
+                val timeString = "$hour:$min $amPm"
+                time = Utils.convertTimeToMillis(timeString = timeString)
+            },
+            onDismiss = { showTimeDialog = false }
+        )
     }
 }
 
@@ -839,8 +871,8 @@ fun DatePickerTidy(
 @Composable
 fun SimpleDialog(
     onDismissRequest: () -> Unit,
-    content: @Composable ColumnScope.() -> Unit,
-    onAccept: () -> Unit
+    onConfirm: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
@@ -860,11 +892,36 @@ fun SimpleDialog(
                 ) {
                     SimpleTextButton("Cancel") { onDismissRequest() }
                     SimpleTextButton("Ok") {
-                        onAccept()
+                        onConfirm()
                         onDismissRequest()
                     }
                 }
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimePickerTidy(
+    hour: Int?,
+    minute: Int?,
+    onTimeSelected: (TimePickerState) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val currentTime = Calendar.getInstance()
+    val timePickerState = rememberTimePickerState(
+        initialHour = hour ?: currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = minute ?: currentTime.get(Calendar.MINUTE),
+        is24Hour = false,
+    )
+    SimpleDialog(
+        onDismissRequest = onDismiss,
+        onConfirm = { onTimeSelected(timePickerState) },
+        content = {
+            TimePicker(
+                state = timePickerState
+            )
+        }
+    )
 }
