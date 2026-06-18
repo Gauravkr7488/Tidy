@@ -25,7 +25,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,11 +45,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -63,10 +67,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimePickerState
+import androidx.compose.material3.isPm
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -84,24 +94,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
+import androidx.navigation.navOptions
+import com.example.tidy.Utils
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
+import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.navigation.navOptions
-import com.example.tidy.Utils
-import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
 fun AddTaskScreen(
@@ -126,6 +132,7 @@ fun AddTaskScreen(
     var hide: Long by remember { mutableLongStateOf(0) }
     var done: Long by remember { mutableLongStateOf(0) }
     var priority: Long? by remember { mutableStateOf(null) }
+    var dueDateAndTime: Long? by remember { mutableStateOf(null) }
 
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
@@ -141,11 +148,9 @@ fun AddTaskScreen(
             done = task.done
             priority = task.priority
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
-            val readable = SimpleDateFormat(
-                "MMM dd, yyyy hh:mm a",
-                Locale.getDefault()
-            ).format(Date(task.createdAt))
-            createdAt = readable
+            dueDateAndTime = task.dueDateAndTime
+            createdAt =
+                Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
         if (taskTitle.isEmpty()) {
             focusRequester.requestFocus()
@@ -187,6 +192,7 @@ fun AddTaskScreen(
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
                                         priority = priority,
+                                        dueDateAndTime = dueDateAndTime
                                     )
                                 )
                                 taskChildren.forEach {
@@ -267,6 +273,7 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
+            DueMenu(dueDateAndTime, { dueDateAndTime = it })
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -303,6 +310,144 @@ fun AddTaskScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DueMenu(
+    dueDateAndTime: Long?,
+    onDueDateAndTimeChange: (Long?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var showTimeDialog by remember { mutableStateOf(false) }
+    var showDateDialog by remember { mutableStateOf(false) }
+    var date by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
+    var time by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Due On")
+            Spacer(modifier = Modifier.weight(1f))
+            TextButton(
+                onClick = { expanded = !expanded },
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    "Pick",
+                    modifier = Modifier.widthIn(min = 60.dp)
+                )
+                Icon(Icons.Default.Add, contentDescription = null)
+            }
+            if (expanded) {
+                SimpleDialog(
+                    onDismissRequest = { expanded = false },
+                    content = {
+                        Text("Select Date and Time", modifier = Modifier.padding(5.dp))
+                        DropDownMenuTextButton(
+                            { showDateDialog = true },
+                            content = {
+                                Text(
+                                    if (date != null) {
+                                        Utils.changeDateFormat(
+                                            pattern = "MMM dd, yyyy",
+                                            date = date!!
+                                        )
+                                    } else {
+                                        "Today"
+                                    }
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                            },
+                            modifier = Modifier.padding(5.dp)
+                        )
+                        DropDownMenuTextButton(
+                            { showTimeDialog = true },
+                            content = {
+                                Text(
+                                    if (time != null) {
+                                        Utils.changeDateFormat(time!!, "hh:mm a")
+                                    } else {
+                                        "Select Time"
+                                    }
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                            },
+                            modifier = Modifier.padding(5.dp)
+
+                        )
+                    },
+                    onConfirm = {
+                        val dateAndTime: Long? =
+                            if (date == null && time == null) dueDateAndTime else {
+                                val dateValue = date ?: Utils.getCurrentDateMillis()
+                                val timeValue = time ?: 0L
+
+                                val dateCalendar = Calendar.getInstance().apply {
+                                    timeInMillis = dateValue
+                                    set(Calendar.HOUR_OF_DAY, 0)
+                                    set(Calendar.MINUTE, 0)
+                                    set(Calendar.SECOND, 0)
+                                    set(Calendar.MILLISECOND, 0)
+                                }
+
+                                val timeCalendar = Calendar.getInstance().apply {
+                                    timeInMillis = timeValue
+                                }
+
+                                dateCalendar.apply {
+                                    set(
+                                        Calendar.HOUR_OF_DAY,
+                                        timeCalendar.get(Calendar.HOUR_OF_DAY)
+                                    )
+                                    set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
+                                    set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
+                                }.timeInMillis
+                            }
+                        onDueDateAndTimeChange(dateAndTime)
+                    }
+                )
+            }
+        }
+    }
+    if (showDateDialog) {
+        DatePickerTidy(
+            onDismiss = { showDateDialog = false },
+            onDateSelected = {
+                println(date)
+                println(it)
+                date = it
+            },
+            date = date
+        )
+    }
+    if (showTimeDialog) {
+        var hour: Int? = null
+        var minute: Int? = null
+        if (time != null) {
+            hour = Utils.changeDateFormat(time!!, "hh")
+                .toInt()
+            minute = Utils.changeDateFormat(time!!, "mm")
+                .toInt()
+        }
+        TimePickerTidy(
+            hour = hour,
+            minute = minute,
+            onTimeSelected = {
+                val hour = it.hour.toString()
+                val min = it.minute.toString()
+                val amPm = if (it.isPm) "PM" else "AM"
+                val timeString = "$hour:$min $amPm"
+                time = Utils.convertTimeToMillis(timeString = timeString)
+            },
+            onDismiss = { showTimeDialog = false }
+        )
+    }
+}
+
 @Composable
 fun PriorityMenu(
     priorityValue: Long?,
@@ -317,35 +462,33 @@ fun PriorityMenu(
             var expanded by remember { mutableStateOf(false) }
             Text("Priority")
             Spacer(modifier = Modifier.weight(1f))
-            Column {
-                Box {
-                    TextButton(
-                        onClick = { expanded = !expanded },
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            priorityValue?.toString() ?: "None",
-                            modifier = Modifier.widthIn(min = 60.dp)
+            Box {
+                TextButton(
+                    onClick = { expanded = !expanded },
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        priorityValue?.toString() ?: "None",
+                        modifier = Modifier.widthIn(min = 60.dp)
+                    )
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    listOf(
+                        "None" to null,
+                        "1" to 1L,
+                        "2" to 2L,
+                        "3" to 3L,
+                        "4" to 4L
+                    ).forEach { (label, value) ->
+                        DropdownMenuItem(
+                            text = { Text(label) },
+                            onClick = {
+                                onPriorityValueChange(value)
+                                expanded = false
+                            },
                         )
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        listOf(
-                            "None" to null,
-                            "1" to 1L,
-                            "2" to 2L,
-                            "3" to 3L,
-                            "4" to 4L
-                        ).forEach { (label, value) ->
-                            DropdownMenuItem(
-                                text = { Text(label) },
-                                onClick = {
-                                    onPriorityValueChange(value)
-                                    expanded = false
-                                },
-                            )
-                        }
                     }
                 }
             }
@@ -397,34 +540,35 @@ fun RepeatMenu(
 
             Text("Repeat")
             Spacer(modifier = Modifier.weight(1f))
-            Column {
-                Box {
-                    TextButton(
-                        onClick = { expanded = !expanded },
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            repeatType.lowercase().replaceFirstChar { it.uppercase() },
-                            modifier = Modifier.widthIn(min = 60.dp)
+            Box {
+                TextButton(
+                    onClick = { expanded = !expanded },
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        repeatType.lowercase().replaceFirstChar { it.uppercase() },
+                        modifier = Modifier.widthIn(min = 60.dp)
+                    )
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    listOf(
+                        RepeatTypes.NONE,
+                        RepeatTypes.DAILY,
+                        RepeatTypes.WEEKLY,
+                        RepeatTypes.MONTHLY
+                    ).forEach { t ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    t.lowercase().replaceFirstChar { it.uppercase() })
+                            },
+                            onClick = {
+                                onRepeatTypeChange(t)
+                                expanded = false
+                            },
                         )
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        listOf(
-                            RepeatTypes.NONE,
-                            RepeatTypes.DAILY,
-                            RepeatTypes.WEEKLY,
-                            RepeatTypes.MONTHLY
-                        ).forEach { t ->
-                            DropdownMenuItem(
-                                text = { Text(t.lowercase().replaceFirstChar { it.uppercase() }) },
-                                onClick = {
-                                    onRepeatTypeChange(t)
-                                    expanded = false
-                                },
-                            )
-                        }
                     }
                 }
             }
@@ -470,7 +614,10 @@ fun RepeatMenu(
         }
         if (repeatType == RepeatTypes.MONTHLY) {
             if (repeatDays == "") {
-                Button(onClick = { showDateDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = { showDateDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text("Select Date")
                 }
             } else {
@@ -499,7 +646,10 @@ fun RepeatMenu(
                     }
                 }
 
-                Button(onClick = { showDateDialog = true }, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = { showDateDialog = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text("Select more Dates")
                 }
             }
@@ -686,4 +836,120 @@ fun SubTaskMenu(
             )
         }
     }
+}
+
+@Composable
+fun DropDownMenuTextButton(
+    onClick: () -> Unit,
+    content: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier
+) {
+    TextButton(
+        onClick = onClick,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun SimpleTextButton(
+    text: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+    ) {
+        Text(text)
+    }
+}
+
+@Composable
+fun DatePickerTidy(
+    date: Long?,
+    onDateSelected: (Long?) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = date)
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = {
+                onDateSelected(datePickerState.selectedDateMillis)
+                onDismiss()
+            }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        DatePicker(
+            state = datePickerState,
+        )
+    }
+}
+
+@Composable
+fun SimpleDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Dialog(onDismissRequest = onDismissRequest) {
+        Card(
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                content()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    SimpleTextButton("Cancel") { onDismissRequest() }
+                    SimpleTextButton("Ok") {
+                        onConfirm()
+                        onDismissRequest()
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimePickerTidy(
+    hour: Int?,
+    minute: Int?,
+    onTimeSelected: (TimePickerState) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val currentTime = Calendar.getInstance()
+    val timePickerState = rememberTimePickerState(
+        initialHour = hour ?: currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = minute ?: currentTime.get(Calendar.MINUTE),
+        is24Hour = false,
+    )
+    SimpleDialog(
+        onDismissRequest = onDismiss,
+        onConfirm = { onTimeSelected(timePickerState) },
+        content = {
+            TimePicker(
+                state = timePickerState
+            )
+        }
+    )
 }

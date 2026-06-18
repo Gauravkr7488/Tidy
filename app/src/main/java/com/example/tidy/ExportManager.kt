@@ -39,7 +39,7 @@ class ExportManager(
     suspend fun exportSilently(): Result<Unit> = withContext(Dispatchers.IO) {
         return@withContext try {
             // TODO FIX
-            val dbOperation = DbOperation(database)
+            val dbOperation = DbOperation(database, context)
             val tasks = dbOperation.taskGetAll()
             var lastResetDate = dbOperation.getLastResetDate()
             if (lastResetDate == null) lastResetDate = getCurrentDate()
