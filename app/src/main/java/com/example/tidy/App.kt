@@ -19,12 +19,18 @@ package com.example.tidy
 
 import android.app.Application
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.work.Configuration
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.yourapp.db.AppDatabase
 
-class App: Application() {
+class App : Application() {
 
     lateinit var exportManager: ExportManager
         private set
+
+    lateinit var workManager: WorkManager
     lateinit var database: AppDatabase
     override fun onCreate() {
         super.onCreate()
@@ -33,13 +39,19 @@ class App: Application() {
 
         exportManager = ExportManager(
             context = this,
-           database = database
+            database = database
         )
 
         ProcessLifecycleOwner.get().lifecycle.addObserver(
             AppLifecycleObserver(exportManager)
         )
-    }
 
+        val dbOperation = DbOperation(database, this)
+        val config = Configuration.Builder()
+            .setWorkerFactory(DueDateWorkerFactory(dbOperation))
+            .build()
+        WorkManager.initialize(this, config)
+//        workManager = WorkManager.getInstance(this)
+    }
 }
 

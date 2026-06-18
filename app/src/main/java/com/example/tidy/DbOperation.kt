@@ -16,6 +16,7 @@
  */
 package com.example.tidy
 
+import android.content.Context
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.yourapp.db.AppDatabase
@@ -25,7 +26,7 @@ import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.Flow
 
 class DbOperation(
-    private val db: AppDatabase
+    private val db: AppDatabase, private val context: Context
 ) { // todo: here only db queries should be executed all the logical stuff should go to the viewmodel
     suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO) {
         list.forEach { task ->
@@ -72,6 +73,7 @@ class DbOperation(
                 dueDateAndTime = task.dueDateAndTime
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
+            if (task.dueDateAndTime != null && id != null) Utils.scheduleDueDateWork(context, id, task.dueDateAndTime)
             return@withContext id
 
         } else {
@@ -87,6 +89,10 @@ class DbOperation(
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
+            if (task.dueDateAndTime != null){
+                Utils.cancelDueDateWork(context, task.id)
+                Utils.scheduleDueDateWork(context, task.id, task.dueDateAndTime)
+            }
             return@withContext task.id
         }
     }
@@ -131,6 +137,7 @@ class DbOperation(
 
     suspend fun deleteTask(id: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.deleteTask(id)
+        Utils.cancelDueDateWork(context, id)
     }
 
     suspend fun getChildren(id: Long) = withContext(Dispatchers.IO) {
