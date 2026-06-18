@@ -462,38 +462,35 @@ fun PriorityMenu(
             var expanded by remember { mutableStateOf(false) }
             Text("Priority")
             Spacer(modifier = Modifier.weight(1f))
-            Column { // todo if due is good delete this and its counterparts in other menus and maybe make a component out of this
-                Box {
-                    TextButton(
-                        onClick = { expanded = !expanded },
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            priorityValue?.toString() ?: "None",
-                            modifier = Modifier.widthIn(min = 60.dp)
+            Box {
+                TextButton(
+                    onClick = { expanded = !expanded },
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        priorityValue?.toString() ?: "None",
+                        modifier = Modifier.widthIn(min = 60.dp)
+                    )
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    listOf(
+                        "None" to null,
+                        "1" to 1L,
+                        "2" to 2L,
+                        "3" to 3L,
+                        "4" to 4L
+                    ).forEach { (label, value) ->
+                        DropdownMenuItem(
+                            text = { Text(label) },
+                            onClick = {
+                                onPriorityValueChange(value)
+                                expanded = false
+                            },
                         )
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        listOf(
-                            "None" to null,
-                            "1" to 1L,
-                            "2" to 2L,
-                            "3" to 3L,
-                            "4" to 4L
-                        ).forEach { (label, value) ->
-                            DropdownMenuItem(
-                                text = { Text(label) },
-                                onClick = {
-                                    onPriorityValueChange(value)
-                                    expanded = false
-                                },
-                            )
-                        }
                     }
                 }
-
             }
         }
     }
@@ -543,37 +540,35 @@ fun RepeatMenu(
 
             Text("Repeat")
             Spacer(modifier = Modifier.weight(1f))
-            Column {
-                Box {
-                    TextButton(
-                        onClick = { expanded = !expanded },
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            repeatType.lowercase().replaceFirstChar { it.uppercase() },
-                            modifier = Modifier.widthIn(min = 60.dp)
+            Box {
+                TextButton(
+                    onClick = { expanded = !expanded },
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        repeatType.lowercase().replaceFirstChar { it.uppercase() },
+                        modifier = Modifier.widthIn(min = 60.dp)
+                    )
+                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+                }
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    listOf(
+                        RepeatTypes.NONE,
+                        RepeatTypes.DAILY,
+                        RepeatTypes.WEEKLY,
+                        RepeatTypes.MONTHLY
+                    ).forEach { t ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    t.lowercase().replaceFirstChar { it.uppercase() })
+                            },
+                            onClick = {
+                                onRepeatTypeChange(t)
+                                expanded = false
+                            },
                         )
-                        Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                    }
-                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                        listOf(
-                            RepeatTypes.NONE,
-                            RepeatTypes.DAILY,
-                            RepeatTypes.WEEKLY,
-                            RepeatTypes.MONTHLY
-                        ).forEach { t ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        t.lowercase().replaceFirstChar { it.uppercase() })
-                                },
-                                onClick = {
-                                    onRepeatTypeChange(t)
-                                    expanded = false
-                                },
-                            )
-                        }
                     }
                 }
             }
@@ -866,7 +861,6 @@ fun SimpleTextButton(
 ) {
     TextButton(
         onClick = onClick,
-//        modifier = Modifier.padding(8.dp),
     ) {
         Text(text)
     }
