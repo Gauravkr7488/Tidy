@@ -318,6 +318,7 @@ fun DueMenu(
     var expanded by remember { mutableStateOf(false) }
     var showTimeDialog by remember { mutableStateOf(false) }
     var showDateDialog by remember { mutableStateOf(false) }
+    var showAlertDialog by remember { mutableStateOf(false) }
     var date by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
     var time by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
     var dateAndTime: Long? by remember { mutableStateOf(null) }
@@ -409,7 +410,15 @@ fun DueMenu(
                                     set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
                                 }.timeInMillis
                             }
-                        onDueDateAndTimeChange(dateAndTime)
+                        dateAndTime?.let {
+                            if (it <= System.currentTimeMillis()) {
+                                showAlertDialog = true
+                                dateAndTime = null
+                            } else {
+                                onDueDateAndTimeChange(dateAndTime)
+                                expanded = false
+                            }
+                        }
                     }
                 )
             }
@@ -419,8 +428,6 @@ fun DueMenu(
         DatePickerTidy(
             onDismiss = { showDateDialog = false },
             onDateSelected = {
-                println(date)
-                println(it)
                 date = it
             },
             date = date
@@ -442,6 +449,18 @@ fun DueMenu(
                 time = Utils.convertTimeToMillis(it.hour, it.minute)
             },
             onDismiss = { showTimeDialog = false }
+        )
+    }
+    if (showAlertDialog) {
+        AlertDialog(
+            onDismissRequest = { showAlertDialog = false },
+            title = { Text("Past or Current time can not be selected") },
+            text = { Text("Please select a time after the current time.") },
+            confirmButton = {
+                TextButton(onClick = { showAlertDialog = false }) {
+                    Text("Ok")
+                }
+            }
         )
     }
 }
@@ -919,7 +938,6 @@ fun SimpleDialog(
                     SimpleTextButton("Cancel") { onDismissRequest() }
                     SimpleTextButton("Ok") {
                         onConfirm()
-                        onDismissRequest()
                     }
                 }
             }
@@ -943,7 +961,10 @@ fun TimePickerTidy(
     )
     SimpleDialog(
         onDismissRequest = onDismiss,
-        onConfirm = { onTimeSelected(timePickerState) },
+        onConfirm = {
+            onTimeSelected(timePickerState)
+            onDismiss()
+        },
         content = {
             TimePicker(
                 state = timePickerState
