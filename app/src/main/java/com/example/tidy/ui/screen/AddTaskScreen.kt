@@ -45,7 +45,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
@@ -321,6 +320,7 @@ fun DueMenu(
     var showDateDialog by remember { mutableStateOf(false) }
     var date by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
     var time by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
+    var dateAndTime: Long? by remember { mutableStateOf(null) }
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -334,10 +334,13 @@ fun DueMenu(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    "Pick",
+                    if (dateAndTime == null) "Pick" else Utils.changeDateFormat(
+                        dateAndTime!!,
+                        "hh:mm a 'On' MMM dd, yyyy"
+                    ),
                     modifier = Modifier.widthIn(min = 60.dp)
                 )
-                Icon(Icons.Default.Add, contentDescription = null)
+                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
             }
             if (expanded) {
                 SimpleDialog(
@@ -380,7 +383,7 @@ fun DueMenu(
                         )
                     },
                     onConfirm = {
-                        val dateAndTime: Long? =
+                        dateAndTime = // todo clear
                             if (date == null && time == null) dueDateAndTime else {
                                 val dateValue = date ?: Utils.getCurrentDateMillis()
                                 val timeValue = time ?: 0L
