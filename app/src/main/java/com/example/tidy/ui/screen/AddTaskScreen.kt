@@ -45,7 +45,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
@@ -335,7 +334,10 @@ fun DueMenu(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    if (dateAndTime == null)"Pick" else Utils.changeDateFormat(dateAndTime!!, "hh:mm a 'On' MMM dd, yyyy"),
+                    if (dateAndTime == null) "Pick" else Utils.changeDateFormat(
+                        dateAndTime!!,
+                        "hh:mm a 'On' MMM dd, yyyy"
+                    ),
                     modifier = Modifier.widthIn(min = 60.dp)
                 )
                 Icon(Icons.Default.ArrowDropDown, contentDescription = null)
