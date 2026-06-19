@@ -32,11 +32,13 @@ object Utils {
         }.format(Date(date))
     }
 
-    fun convertTimeToMillis(timeString: String): Long {
-        val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault()).apply {
-            timeZone = TimeZone.getDefault()
-        }
-        return sdf.parse(timeString)?.time ?: 0L
+    fun convertTimeToMillis(h: Int, m: Int): Long {
+        return Calendar.getInstance(TimeZone.getDefault()).apply {
+            set(Calendar.HOUR_OF_DAY, h)
+            set(Calendar.MINUTE, m)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
     }
 
     fun getCurrentDateMillis(): Long {

@@ -69,7 +69,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
-import androidx.compose.material3.isPm
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
@@ -428,7 +427,7 @@ fun DueMenu(
         var hour: Int? = null
         var minute: Int? = null
         if (time != null) {
-            hour = Utils.changeDateFormat(time!!, "hh")
+            hour = Utils.changeDateFormat(time!!, "HH")
                 .toInt()
             minute = Utils.changeDateFormat(time!!, "mm")
                 .toInt()
@@ -437,11 +436,7 @@ fun DueMenu(
             hour = hour,
             minute = minute,
             onTimeSelected = {
-                val hour = it.hour.toString()
-                val min = it.minute.toString()
-                val amPm = if (it.isPm) "PM" else "AM"
-                val timeString = "$hour:$min $amPm"
-                time = Utils.convertTimeToMillis(timeString = timeString)
+                time = Utils.convertTimeToMillis(it.hour, it.minute)
             },
             onDismiss = { showTimeDialog = false }
         )
