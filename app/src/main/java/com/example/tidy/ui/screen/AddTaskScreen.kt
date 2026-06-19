@@ -427,7 +427,7 @@ fun DueMenu(
         var hour: Int? = null
         var minute: Int? = null
         if (time != null) {
-            hour = Utils.changeDateFormat(time!!, "hh")
+            hour = Utils.changeDateFormat(time!!, "HH")
                 .toInt()
             minute = Utils.changeDateFormat(time!!, "mm")
                 .toInt()
