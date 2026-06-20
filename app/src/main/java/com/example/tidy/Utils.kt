@@ -50,6 +50,32 @@ object Utils {
         }.timeInMillis
     }
 
+
+    fun combineDateAndTimeMillis(date: Long?, time:Long?): Long {
+        val dateValue = date ?: getCurrentDateMillis()
+        val timeValue = time ?: 0L
+
+        val dateCalendar = Calendar.getInstance().apply {
+            timeInMillis = dateValue
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val timeCalendar = Calendar.getInstance().apply {
+            timeInMillis = timeValue
+        }
+
+        return dateCalendar.apply {
+            set(
+                Calendar.HOUR_OF_DAY,
+                timeCalendar.get(Calendar.HOUR_OF_DAY)
+            )
+            set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
+            set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
+        }.timeInMillis
+    }
     fun scheduleDueDateWork(context: Context, taskId: Long, dueDateMillis: Long) {
         val delay = dueDateMillis - System.currentTimeMillis()
 
