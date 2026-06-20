@@ -321,7 +321,7 @@ fun DueMenu(
     var showAlertDialog by remember { mutableStateOf(false) }
     var date by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
     var time by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
-    var dateAndTime: Long? by remember { mutableStateOf(null) }
+    var dateAndTime: Long? by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
     Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -384,32 +384,9 @@ fun DueMenu(
                         )
                     },
                     onConfirm = {
-                        dateAndTime = // todo clear
-                            if (date == null && time == null) dueDateAndTime else {
-                                val dateValue = date ?: Utils.getCurrentDateMillis()
-                                val timeValue = time ?: 0L
-
-                                val dateCalendar = Calendar.getInstance().apply {
-                                    timeInMillis = dateValue
-                                    set(Calendar.HOUR_OF_DAY, 0)
-                                    set(Calendar.MINUTE, 0)
-                                    set(Calendar.SECOND, 0)
-                                    set(Calendar.MILLISECOND, 0)
-                                }
-
-                                val timeCalendar = Calendar.getInstance().apply {
-                                    timeInMillis = timeValue
-                                }
-
-                                dateCalendar.apply {
-                                    set(
-                                        Calendar.HOUR_OF_DAY,
-                                        timeCalendar.get(Calendar.HOUR_OF_DAY)
-                                    )
-                                    set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
-                                    set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
-                                }.timeInMillis
-                            }
+                        dateAndTime =
+                            if (date == null && time == null) dueDateAndTime
+                            else Utils.combineDateAndTimeMillis(date, time)
                         dateAndTime?.let {
                             if (it <= System.currentTimeMillis()) {
                                 showAlertDialog = true
