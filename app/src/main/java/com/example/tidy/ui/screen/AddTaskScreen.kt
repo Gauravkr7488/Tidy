@@ -19,6 +19,7 @@
 package com.example.tidy.ui.screen
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -46,8 +47,10 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -60,6 +63,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -299,6 +303,10 @@ fun AddTaskScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
+            TaskSelectionDialog(
+                tasks = emptyList(),
+                onConfirm = {}
+            ) { }
             Spacer(modifier = Modifier.weight(1f))
             if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
@@ -947,5 +955,59 @@ fun TimePickerTidy(
                 state = timePickerState
             )
         }
+    )
+}
+
+@Composable
+fun TaskSelectionDialog(
+    tasks: List<Task>,
+    onConfirm: (List<Long>) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val selectedTasks: List<Long> by remember { mutableStateOf(emptyList()) }
+    SimpleDialog(
+        onDismissRequest = onDismiss,
+        onConfirm = { onConfirm(selectedTasks) },
+    ) {
+        var query by remember { mutableStateOf("") }
+
+        SearchBar(
+            query = query,
+            placeHolder = "Search tasks"
+        ) { query = it}
+    }
+}
+
+@Composable
+fun SearchBar(
+    query: String,
+    placeHolder: String,
+    onQueryValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = { onQueryValueChange(it) },
+        placeholder = { Text(placeHolder) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search"
+            )
+        },
+        trailingIcon = {
+            AnimatedVisibility(visible = query.isNotEmpty()) {
+                IconButton(onClick = { onQueryValueChange("") }) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear"
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
     )
 }

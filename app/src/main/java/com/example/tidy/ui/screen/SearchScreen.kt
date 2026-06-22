@@ -117,7 +117,7 @@ fun SearchScreen(
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                placeholder = { Text("Search tasks and notes...") },
+                placeholder = { Text("Search tasks") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
