@@ -114,7 +114,7 @@ fun SearchScreen(
                 .padding(top = innerPadding.calculateTopPadding())
         ) {
             // Search Field
-            OutlinedTextField(
+            OutlinedTextField( // todo replace with composable in addTask
                 value = query,
                 onValueChange = { query = it },
                 placeholder = { Text("Search tasks") },

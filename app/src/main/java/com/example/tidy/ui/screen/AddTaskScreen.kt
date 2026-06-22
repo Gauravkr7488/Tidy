@@ -902,11 +902,13 @@ fun DatePickerTidy(
 fun SimpleDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             shape = RoundedCornerShape(16.dp),
+            modifier = modifier
         ) {
             Column(
                 modifier = Modifier
