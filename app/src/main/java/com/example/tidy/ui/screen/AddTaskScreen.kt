@@ -19,7 +19,9 @@
 package com.example.tidy.ui.screen
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -46,8 +48,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -60,6 +65,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -894,6 +900,7 @@ fun DatePickerTidy(
 fun SimpleDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
@@ -901,7 +908,7 @@ fun SimpleDialog(
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .padding(8.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -947,5 +954,103 @@ fun TimePickerTidy(
                 state = timePickerState
             )
         }
+    )
+}
+
+@Composable
+fun TaskSelectionDialog(
+    tasks: List<Task>,
+    onConfirm: (List<Task>) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var selectedTasks: List<Task> by remember { mutableStateOf(emptyList()) }
+    SimpleDialog(
+        onDismissRequest = onDismiss,
+        onConfirm = { onConfirm(selectedTasks) },
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
+    ) {
+        var query by remember { mutableStateOf("") }
+        val listState = rememberLazyListState()
+        val filteredTasks = tasks.filter { task ->
+            val matchesQuery = query.isBlank() ||
+                    task.title.contains(query, ignoreCase = true) ||
+                    task.description.contains(query, ignoreCase = true)
+            return@filter matchesQuery
+        }
+        Text(
+            if (selectedTasks.isEmpty()) "Select Tasks" else selectedTasks.size.toString() + " selected"
+        )
+        SearchTextField(
+            query = query,
+            placeHolder = "Search tasks",
+            modifier = Modifier.padding(vertical = 8.dp)
+        ) { query = it }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp)
+                .padding(bottom = 5.dp),
+        ) {
+            items(filteredTasks, key = { it.id }) { task ->
+                TaskCard(
+                    task = task,
+                    onClick = {
+                        selectedTasks = if (selectedTasks.contains(task)) {
+                            selectedTasks - task
+                        } else {
+                            selectedTasks + task
+                        }
+                    },
+                    children = emptyList(),
+                    trailingIcons = buildList {
+                        if (selectedTasks.contains(task)) {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Check,
+                                    description = "selected",
+                                    onClick = {},
+                                )
+                            )
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SearchTextField(
+    query: String,
+    placeHolder: String,
+    modifier: Modifier = Modifier,
+    onQueryValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = query,
+        onValueChange = { onQueryValueChange(it) },
+        placeholder = { Text(placeHolder) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search"
+            )
+        },
+        trailingIcon = {
+            AnimatedVisibility(visible = query.isNotEmpty()) {
+                IconButton(onClick = { onQueryValueChange("") }) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear"
+                    )
+                }
+            }
+        },
+        singleLine = true,
+        shape = RoundedCornerShape(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
     )
 }
