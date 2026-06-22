@@ -305,10 +305,6 @@ fun AddTaskScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
-            TaskSelectionDialog(
-                tasks = sharedViewModel.tasks.collectAsState().value,
-                onConfirm = {}
-            ) { }
             Spacer(modifier = Modifier.weight(1f))
             if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
@@ -984,7 +980,7 @@ fun TaskSelectionDialog(
         Text(
             if (selectedTasks.isEmpty()) "Select Tasks" else selectedTasks.size.toString() + " selected"
         )
-        SearchBar(
+        SearchTextField(
             query = query,
             placeHolder = "Search tasks",
             modifier = Modifier.padding(vertical = 8.dp)
@@ -1025,7 +1021,7 @@ fun TaskSelectionDialog(
 }
 
 @Composable
-fun SearchBar(
+fun SearchTextField(
     query: String,
     placeHolder: String,
     modifier: Modifier = Modifier,
