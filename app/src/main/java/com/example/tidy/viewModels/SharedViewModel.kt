@@ -154,9 +154,7 @@ class SharedViewModel(
 
         dbOperation.setLastResetToday(todayDate = todayDate)
 
-        val repeatTasks = tasks.value.filter { it.repeatType != RepeatTypes.NONE }
-
-        repeatTasks.forEach { task ->
+        tasks.value.forEach { task ->
             val shouldReset = when (task.repeatType) {
                 RepeatTypes.NONE, RepeatTypes.DAILY -> true
                 RepeatTypes.WEEKLY -> task.repeatDays.contains(todayDay)
