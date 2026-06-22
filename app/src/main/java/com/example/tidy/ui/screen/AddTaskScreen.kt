@@ -304,7 +304,7 @@ fun AddTaskScreen(
                 )
             }
             TaskSelectionDialog(
-                tasks = emptyList(),
+                tasks = sharedViewModel.tasks.collectAsState().value,
                 onConfirm = {}
             ) { }
             Spacer(modifier = Modifier.weight(1f))
@@ -961,20 +961,44 @@ fun TimePickerTidy(
 @Composable
 fun TaskSelectionDialog(
     tasks: List<Task>,
-    onConfirm: (List<Long>) -> Unit,
+    onConfirm: (List<Task>) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val selectedTasks: List<Long> by remember { mutableStateOf(emptyList()) }
+    var selectedTasks: List<Task> by remember { mutableStateOf(emptyList()) }
     SimpleDialog(
         onDismissRequest = onDismiss,
         onConfirm = { onConfirm(selectedTasks) },
     ) {
         var query by remember { mutableStateOf("") }
-
+        val listState = rememberLazyListState()
+        Text(
+            if (selectedTasks.isEmpty()) "Select Tasks" else selectedTasks.size.toString() + " selected"
+        )
         SearchBar(
             query = query,
             placeHolder = "Search tasks"
-        ) { query = it}
+        ) { query = it }
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp)
+                .padding(bottom = 5.dp),
+        ) {
+            items(tasks, key = { it.id }) { task ->
+                TaskCard(
+                    task = task,
+                    onClick = {
+                        selectedTasks = if (selectedTasks.contains(task)) {
+                            selectedTasks - task
+                        } else {
+                            selectedTasks + task
+                        }
+                    },
+                    children = emptyList()
+                )
+            }
+        }
     }
 }
 
