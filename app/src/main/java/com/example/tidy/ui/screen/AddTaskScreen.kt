@@ -21,6 +21,7 @@ package com.example.tidy.ui.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -908,10 +909,9 @@ fun SimpleDialog(
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             shape = RoundedCornerShape(16.dp),
-            modifier = modifier
         ) {
             Column(
-                modifier = Modifier
+                modifier = modifier
                     .padding(8.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -970,6 +970,7 @@ fun TaskSelectionDialog(
     SimpleDialog(
         onDismissRequest = onDismiss,
         onConfirm = { onConfirm(selectedTasks) },
+        modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
     ) {
         var query by remember { mutableStateOf("") }
         val listState = rememberLazyListState()
