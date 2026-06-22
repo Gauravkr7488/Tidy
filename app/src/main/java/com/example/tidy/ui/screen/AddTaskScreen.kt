@@ -48,6 +48,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
@@ -998,7 +999,18 @@ fun TaskSelectionDialog(
                             selectedTasks + task
                         }
                     },
-                    children = emptyList()
+                    children = emptyList(),
+                    trailingIcons = buildList {
+                        if (selectedTasks.contains(task)) {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Check,
+                                    description = "selected",
+                                    onClick = {},
+                                )
+                            )
+                        }
+                    }
                 )
             }
         }
