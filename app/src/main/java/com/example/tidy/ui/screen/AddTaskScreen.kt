@@ -975,12 +975,19 @@ fun TaskSelectionDialog(
     ) {
         var query by remember { mutableStateOf("") }
         val listState = rememberLazyListState()
+        val filteredTasks = tasks.filter { task ->
+            val matchesQuery = query.isBlank() ||
+                    task.title.contains(query, ignoreCase = true) ||
+                    task.description.contains(query, ignoreCase = true)
+            return@filter matchesQuery
+        }
         Text(
             if (selectedTasks.isEmpty()) "Select Tasks" else selectedTasks.size.toString() + " selected"
         )
         SearchBar(
             query = query,
-            placeHolder = "Search tasks"
+            placeHolder = "Search tasks",
+            modifier = Modifier.padding(vertical = 8.dp)
         ) { query = it }
         LazyColumn(
             state = listState,
@@ -989,7 +996,7 @@ fun TaskSelectionDialog(
                 .heightIn(max = 300.dp)
                 .padding(bottom = 5.dp),
         ) {
-            items(tasks, key = { it.id }) { task ->
+            items(filteredTasks, key = { it.id }) { task ->
                 TaskCard(
                     task = task,
                     onClick = {
@@ -1021,6 +1028,7 @@ fun TaskSelectionDialog(
 fun SearchBar(
     query: String,
     placeHolder: String,
+    modifier: Modifier = Modifier,
     onQueryValueChange: (String) -> Unit
 ) {
     OutlinedTextField(
@@ -1045,7 +1053,7 @@ fun SearchBar(
         },
         singleLine = true,
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     )
