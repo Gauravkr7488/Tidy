@@ -145,6 +145,9 @@ fun AddTaskScreen(
         if (task != null) {
             taskId = task.id
             taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
+            blockedByTasks = sharedViewModel.tasks.value.filter {
+                it.blockedBy.contains(taskId.toString())
+            }
             parentId = task.parentId
             taskTitle = task.title
             description = task.description
@@ -185,6 +188,8 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
+                                var blockedByTasksString = ""
+                                blockedByTasks.forEach { task -> blockedByTasksString = blockedByTasksString + task.id.toString() + "," }
                                 val savedTaskId = sharedViewModel.saveTask(
                                     Task(
                                         id = taskId,
@@ -196,6 +201,7 @@ fun AddTaskScreen(
                                         hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
+                                        blockedBy = blockedByTasksString,
                                         priority = priority,
                                         dueDateAndTime = dueDateAndTime
                                     )
