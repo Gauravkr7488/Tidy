@@ -169,11 +169,11 @@ class DbOperation(
         tasks.forEach { saveTask(it) }
     }
 
-    suspend fun getLastResetDate() = withContext(Dispatchers.IO) {
+    suspend fun getLastResetDate(): String? = withContext(Dispatchers.IO) {
         db.lastResetQueries.getLastReset().executeAsOneOrNull()
     }
 
-    suspend fun setLastResetToday(todayDate: String) = withContext(Dispatchers.IO) {
+    suspend fun setLastResetToday(todayDate: String): Unit = withContext(Dispatchers.IO) {
         db.lastResetQueries.setLastReset(todayDate)
     }
 
