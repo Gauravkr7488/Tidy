@@ -25,6 +25,7 @@ CREATE TABLE Task (
     hide INTEGER NOT NULL DEFAULT 0,
     createdAt INTEGER NOT NULL,
     parentId INTEGER,                       -- NULL = root task
+    blockedBy TEXT NOT NULL DEFAULT '',
     priority INTEGER,
     dueDateAndTime INTEGER,
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
@@ -40,6 +41,7 @@ SET
     description = ?,
     hide = ?,
     parentId = ?,
+    blockedBy = ?,
     priority = ?,
     dueDateAndTime = ?
 WHERE id = ?;
@@ -61,10 +63,12 @@ INSERT INTO Task(
     hide,
     createdAt,
     parentId,
+    blockedBy,
     priority,
     dueDateAndTime
 )
 VALUES (
+    ?,
     ?,
     ?,
     ?,
@@ -102,10 +106,12 @@ INSERT INTO Task(
     hide,
     createdAt,
     parentId,
+    blockedBy,
     priority,
     dueDateAndTime
 )
 VALUES (
+    ?,
     ?,
     ?,
     ?,

@@ -126,6 +126,7 @@ fun AddTaskScreen(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     var taskChildren by remember { mutableStateOf<List<Task>>(emptyList()) }
+    var blockedByTasks by remember { mutableStateOf<List<Task>>(emptyList()) }
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
@@ -144,6 +145,9 @@ fun AddTaskScreen(
         if (task != null) {
             taskId = task.id
             taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
+            blockedByTasks = sharedViewModel.tasks.value.filter {
+                task.blockedBy.contains(it.id.toString())
+            }
             parentId = task.parentId
             taskTitle = task.title
             description = task.description
@@ -184,6 +188,11 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
+                                var blockedByTasksString = ""
+                                blockedByTasks.forEach { task ->
+                                    blockedByTasksString =
+                                        blockedByTasksString + task.id.toString() + ","
+                                }
                                 val savedTaskId = sharedViewModel.saveTask(
                                     Task(
                                         id = taskId,
@@ -195,6 +204,7 @@ fun AddTaskScreen(
                                         hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
+                                        blockedBy = blockedByTasksString,
                                         priority = priority,
                                         dueDateAndTime = dueDateAndTime
                                     )
@@ -296,6 +306,15 @@ fun AddTaskScreen(
                     { id ->
                         sharedViewModel.tasks.value.filter { it.parentId == id }
                     }
+            )
+            BlockedByMenu(
+                blockedByTasks = blockedByTasks,
+                getChild = { id ->
+                    sharedViewModel.tasks.value.filter { it.parentId == id }
+                },
+                availableTaskList = sharedViewModel.tasks.collectAsState().value.filter { it.id != taskId },
+                onAdd = { blockedByTasks = blockedByTasks + it },
+                onTaskRemove = { blockedByTasks = blockedByTasks - it },
             )
             if (createdAt != "") {
                 Text(
@@ -962,12 +981,13 @@ fun TaskSelectionDialog(
     tasks: List<Task>,
     onConfirm: (List<Task>) -> Unit,
     onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var selectedTasks: List<Task> by remember { mutableStateOf(emptyList()) }
     SimpleDialog(
         onDismissRequest = onDismiss,
         onConfirm = { onConfirm(selectedTasks) },
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.surface)
+        modifier = modifier.background(color = MaterialTheme.colorScheme.surface)
     ) {
         var query by remember { mutableStateOf("") }
         val listState = rememberLazyListState()
@@ -1053,4 +1073,93 @@ fun SearchTextField(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
     )
+}
+
+@Composable
+fun BlockedByMenu(
+    blockedByTasks: List<Task>,
+    getChild: (Long) -> List<Task>,
+    availableTaskList: List<Task>,
+    onAdd: (List<Task>) -> Unit,
+    onTaskRemove: (Task) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val listState = rememberLazyListState()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var taskToRemove by remember { mutableStateOf(Utils.getEmptyTask()) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    Column(modifier = modifier) {
+        Text("Blocked By")
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp)
+                .padding(bottom = 5.dp),
+        ) {
+            items(
+                items = blockedByTasks
+            ) { task ->
+                TaskCard(
+                    task = task,
+                    trailingIconButtons = buildList {
+                        add(
+                            TaskIconAction(
+                                icon = Icons.Default.Close,
+                                description = "Remove Task",
+                                onClick = {
+                                    showDeleteDialog = true
+                                    taskToRemove = task
+                                },
+                            )
+                        )
+                    },
+                    children = getChild(task.id),
+                )
+            }
+        }
+        Button(onClick = { showAddDialog = true }) {
+            Text("Add Blocked By")
+        }
+    }
+    if (showAddDialog) {
+        TaskSelectionDialog(
+            tasks = availableTaskList,
+            onConfirm = { selectedTasks ->
+                var tasksToAdd: List<Task> = emptyList()
+                selectedTasks.forEach {
+                    if (!blockedByTasks.contains(it)) tasksToAdd = tasksToAdd + it
+                }
+                onAdd(tasksToAdd)
+                showAddDialog = false
+            },
+            onDismiss = { showAddDialog = false }
+        )
+    }
+    if (showDeleteDialog) {
+        AlertDialog(
+            title = { Text("Remove Task") },
+            onDismissRequest = { showDeleteDialog = false },
+            text = {
+                Text(
+                    text = buildAnnotatedString {
+                        append("Are you sure you want to remove '")
+                        withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append(taskToRemove.title)
+                        }
+                        append("'?")
+                    }
+                )
+
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onTaskRemove(taskToRemove)
+                    showDeleteDialog = false
+                }) {
+                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                }
+            }
+        )
+    }
 }

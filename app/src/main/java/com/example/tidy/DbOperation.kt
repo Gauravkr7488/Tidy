@@ -40,6 +40,7 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
+                blockedBy = task.blockedBy,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
@@ -69,6 +70,7 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
+                blockedBy = task.blockedBy,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
@@ -86,6 +88,7 @@ class DbOperation(
                 description = task.description,
                 hide = task.hide,
                 parentId = task.parentId,
+                blockedBy = task.blockedBy,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
@@ -166,11 +169,11 @@ class DbOperation(
         tasks.forEach { saveTask(it) }
     }
 
-    suspend fun getLastResetDate() = withContext(Dispatchers.IO) {
+    suspend fun getLastResetDate(): String? = withContext(Dispatchers.IO) {
         db.lastResetQueries.getLastReset().executeAsOneOrNull()
     }
 
-    suspend fun setLastResetToday(todayDate: String) = withContext(Dispatchers.IO) {
+    suspend fun setLastResetToday(todayDate: String): Unit = withContext(Dispatchers.IO) {
         db.lastResetQueries.setLastReset(todayDate)
     }
 

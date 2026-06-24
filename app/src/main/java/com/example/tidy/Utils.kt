@@ -113,6 +113,7 @@ object Utils {
             hide = 0,
             createdAt = System.currentTimeMillis(),
             parentId = null,
+            blockedBy = "",
             priority = null,
             dueDateAndTime = null
         )
@@ -129,6 +130,7 @@ object Utils {
             hide = hide != 0L,
             createdAt = createdAt,
             parentId = parentId,
+            blockedBy = blockedBy,
             priority = priority,
             dueDateAndTime = dueDateAndTime
         )
@@ -144,6 +146,7 @@ object Utils {
             description = description ?: "",
             hide = if (hide) 1L else 0L,
             parentId = parentId,
+            blockedBy = blockedBy,
             createdAt = createdAt,
             priority = priority,
             dueDateAndTime = dueDateAndTime
