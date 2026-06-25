@@ -176,7 +176,7 @@ class SharedViewModel(
         }
     }
 
-    suspend fun getCurrentTask(taskId: Long): Task? {
+    suspend fun getTask(taskId: Long): Task? {
         if (taskId == 0L) return null
         return dbOperation.getTask(taskId)
     }

@@ -141,7 +141,7 @@ fun AddTaskScreen(
 
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
-        val task = sharedViewModel.getCurrentTask(taskId = taskId)
+        val task = sharedViewModel.getTask(taskId = taskId)
         if (task != null) {
             taskId = task.id
             taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
@@ -214,7 +214,8 @@ fun AddTaskScreen(
                                         it.copy(
                                             parentId = savedTaskId,
                                             repeatType = repeatType,
-                                            repeatDays = repeatDays
+                                            repeatDays = repeatDays,
+                                            blockedBy = blockedByTasksString
                                         )
                                     )
                                 }

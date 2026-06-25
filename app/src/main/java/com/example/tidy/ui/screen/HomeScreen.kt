@@ -143,7 +143,11 @@ fun HomeScreen(
                         key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         SubTaskCard(
                             task,
-                            toggleDoneStatus = sharedViewModel::toggleDoneStatus,
+                            toggleDoneStatus = {
+                                if (task.blockedBy == "") sharedViewModel.toggleDoneStatus(
+                                    it
+                                )
+                            },
                             deleteTask = sharedViewModel::deleteTask,
                             onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
                             onSkip = sharedViewModel::skipTask,
