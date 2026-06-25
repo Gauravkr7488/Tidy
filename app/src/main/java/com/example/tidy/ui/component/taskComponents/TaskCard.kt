@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.outlined.Archive
@@ -153,6 +154,13 @@ fun TaskCard(
                         text = "Archived",
                         imageVector = Icons.Outlined.Archive,
                         contentDescription = "Archived"
+                    )
+                }
+                if (task.blockedBy != ""){
+                    Badge(
+                        text = "Blocked",
+                        imageVector = Icons.Default.Block,
+                        contentDescription = "Blocked"
                     )
                 }
             }
