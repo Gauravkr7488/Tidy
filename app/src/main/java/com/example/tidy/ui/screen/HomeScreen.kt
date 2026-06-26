@@ -67,7 +67,7 @@ fun HomeScreen(
 ) {
     val taskState = sharedViewModel.tasks.collectAsState()
     val tasks = taskState.value
-    val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L }
+    val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L && task.blockedBy == ""}
 
     val hasDoneTask = activeTasks.any { it.done == 1L }
     Scaffold(
