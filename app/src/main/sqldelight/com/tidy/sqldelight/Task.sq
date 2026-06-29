@@ -31,6 +31,14 @@ CREATE TABLE Task (
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
 );
 
+CREATE TABLE TaskBlocker (
+    task_id    INTEGER NOT NULL,
+    blocker_id INTEGER NOT NULL,
+    PRIMARY KEY (task_id, blocker_id),
+    FOREIGN KEY (task_id)    REFERENCES Task(id) ON DELETE CASCADE,
+    FOREIGN KEY (blocker_id) REFERENCES Task(id) ON DELETE CASCADE
+);
+
 updateTask:
 UPDATE Task
 SET
