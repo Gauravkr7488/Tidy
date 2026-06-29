@@ -55,7 +55,7 @@ sqldelight {
     databases {
         create("AppDatabase") {
             packageName.set("com.yourapp.db")
-            version = 3
+            version = 2
         }
     }
 }
