@@ -40,11 +40,18 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
-                blockedBy = task.blockedBy,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
         }
+    }
+
+    suspend fun addBlocker(taskId: Long, blockerId: Long) = withContext(Dispatchers.IO) {
+        db.taskQueries.addBlocker(taskId, blockerId)
+    }
+
+    suspend fun getBlockedTasks(taskId: Long) = withContext(Dispatchers.IO) {
+        return@withContext db.taskQueries.getBlockersForTask(taskId)
     }
 
     suspend fun isChildAncestorOfParent(parentId: Long, childId: Long): Boolean =
@@ -70,12 +77,15 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
-                blockedBy = task.blockedBy,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
-            if (task.dueDateAndTime != null && id != null) Utils.scheduleDueDateWork(context, id, task.dueDateAndTime)
+            if (task.dueDateAndTime != null && id != null) Utils.scheduleDueDateWork(
+                context,
+                id,
+                task.dueDateAndTime
+            )
             return@withContext id
 
         } else {
@@ -88,11 +98,10 @@ class DbOperation(
                 description = task.description,
                 hide = task.hide,
                 parentId = task.parentId,
-                blockedBy = task.blockedBy,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
-            if (task.dueDateAndTime != null){
+            if (task.dueDateAndTime != null) {
                 Utils.cancelDueDateWork(context, task.id)
                 Utils.scheduleDueDateWork(context, task.id, task.dueDateAndTime)
             }

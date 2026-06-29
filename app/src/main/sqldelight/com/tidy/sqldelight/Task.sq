@@ -38,6 +38,19 @@ CREATE TABLE TaskBlocker (
     FOREIGN KEY (blocker_id) REFERENCES Task(id) ON DELETE CASCADE
 );
 
+getBlockersForTask:
+SELECT Task.*
+FROM Task
+JOIN TaskBlocker ON Task.id = TaskBlocker.blocker_id
+WHERE TaskBlocker.task_id = :taskId;
+
+addBlocker:
+INSERT INTO TaskBlocker(task_id, blocker_id)
+VALUES (
+?,
+?
+);
+
 updateTask:
 UPDATE Task
 SET
