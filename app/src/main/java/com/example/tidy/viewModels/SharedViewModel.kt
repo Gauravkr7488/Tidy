@@ -99,6 +99,20 @@ class SharedViewModel(
         dbOperation.deleteTask(id)
     }
 
+    fun getBlockedTasks(taskId: Long): List<Task> {
+        var list: List<Task> = emptyList()
+        viewModelScope.launch {
+            list = dbOperation.getBlockedTasks(taskId)
+        }
+        return list
+    }
+
+    fun addBlockedByTasks(taskId: Long, blockerId: Long) {
+        viewModelScope.launch {
+            dbOperation.addBlocker(taskId, blockerId)
+        }
+    }
+
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
             dbOperation.updateDoneStatus(task.id)
@@ -108,12 +122,9 @@ class SharedViewModel(
     }
 
     suspend fun updateBlockedTasksStatus(task: Task) {
-        val blockedTasks = tasks.value.filter { it.blockedBy.contains(task.id.toString()) }
+        val blockedTasks = getBlockedTasks(task.id)
         blockedTasks.forEach {
-            var blockedByString = it.blockedBy
-            val id = task.id
-            blockedByString = blockedByString.replace("$id,", "")
-            saveTask(it.copy(blockedBy = blockedByString))
+            saveTask(it.copy(blockStatus = 0))
         }
     }
 

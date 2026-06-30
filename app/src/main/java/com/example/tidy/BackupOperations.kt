@@ -26,8 +26,8 @@ import androidx.documentfile.provider.DocumentFile
 import com.example.tidy.Utils.createBackupJson
 import com.example.tidy.Utils.toTask
 import com.google.gson.Gson
+import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
-import com.tidy.sqldelight.TaskBlocker
 import java.util.Collections.emptyList
 
 class BackupOperations(
@@ -80,7 +80,7 @@ class BackupOperations(
                 dbOperation.setLastResetToday(lastResetDate)
 
                 val newTasks: MutableList<Task> = emptyList()
-                val blockList: MutableList<TaskBlocker> = emptyList()
+                val blockList: MutableList<BlockedTask> = emptyList()
                 taskDtos.forEach { taskBackupDto ->
                     val task = taskBackupDto.toTask()
                     newTasks.add(task.copy(parentId = null))
@@ -99,7 +99,7 @@ class BackupOperations(
                 }
 
                 dbOperation.taskSaveList(tasksWithParentId)
-                blockList.forEach { dbOperation.addBlocker(it.task_id, it.blocker_id) }
+                blockList.forEach { dbOperation.addBlocker(it.task_id, it.blockedBy_id) }
                 dbOperation.taskGetAll()
 
 

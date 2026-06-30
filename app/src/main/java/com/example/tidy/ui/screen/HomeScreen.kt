@@ -67,7 +67,7 @@ fun HomeScreen(
 ) {
     val taskState = sharedViewModel.tasks.collectAsState()
     val tasks = taskState.value
-    val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L && task.blockedBy == ""}
+    val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L && task.blockStatus == 0L}
 
     val hasDoneTask = activeTasks.any { it.done == 1L }
     Scaffold(
@@ -144,7 +144,7 @@ fun HomeScreen(
                         SubTaskCard(
                             task,
                             toggleDoneStatus = {
-                                if (task.blockedBy == "") sharedViewModel.toggleDoneStatus(
+                                if (task.blockStatus == 0L) sharedViewModel.toggleDoneStatus(
                                     it
                                 )
                             },

@@ -145,9 +145,7 @@ fun AddTaskScreen(
         if (task != null) {
             taskId = task.id
             taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
-            blockedByTasks = sharedViewModel.tasks.value.filter {
-                task.blockedBy.contains(it.id.toString())
-            }
+            blockedByTasks = sharedViewModel.getBlockedTasks(taskId)
             parentId = task.parentId
             taskTitle = task.title
             description = task.description
@@ -188,11 +186,6 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                var blockedByTasksString = ""
-                                blockedByTasks.forEach { task ->
-                                    blockedByTasksString =
-                                        blockedByTasksString + task.id.toString() + ","
-                                }
                                 val savedTaskId = sharedViewModel.saveTask(
                                     Task(
                                         id = taskId,
@@ -204,18 +197,21 @@ fun AddTaskScreen(
                                         hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
-                                        blockedBy = blockedByTasksString,
+                                        blockStatus = if (blockedByTasks.isNotEmpty()) 1L else 0L,
                                         priority = priority,
                                         dueDateAndTime = dueDateAndTime
                                     )
                                 )
+                                if (savedTaskId == null) return@launch
+                                blockedByTasks.forEach {
+                                    sharedViewModel.addBlockedByTasks(savedTaskId,it.id)
+                                }
                                 taskChildren.forEach {
                                     sharedViewModel.saveTask(
                                         it.copy(
                                             parentId = savedTaskId,
                                             repeatType = repeatType,
                                             repeatDays = repeatDays,
-                                            blockedBy = blockedByTasksString
                                         )
                                     )
                                 }

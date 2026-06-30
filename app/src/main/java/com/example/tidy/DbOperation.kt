@@ -19,11 +19,11 @@ package com.example.tidy
 import android.content.Context
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.tidy.sqldelight.BlockedTask
 import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.tidy.sqldelight.Task
-import com.tidy.sqldelight.TaskBlocker
 import kotlinx.coroutines.flow.Flow
 
 class DbOperation(
@@ -41,6 +41,7 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
+                blockStatus = task.blockStatus,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
@@ -48,14 +49,14 @@ class DbOperation(
     }
 
     suspend fun addBlocker(taskId: Long, blockerId: Long) = withContext(Dispatchers.IO) {
-        db.taskQueries.addBlocker(taskId, blockerId)
+        db.taskQueries.blockTask(taskId, blockerId)
     }
 
     suspend fun getBlockedTasks(taskId: Long) = withContext(Dispatchers.IO) {
-        return@withContext db.taskQueries.getBlockersForTask(taskId)
+        return@withContext db.taskQueries.getBlockedTasks(taskId).executeAsList()
     }
 
-    suspend fun getAllBlockers(): List<TaskBlocker> = withContext(Dispatchers.IO) {
+    suspend fun getAllBlockers(): List<BlockedTask> = withContext(Dispatchers.IO) {
         return@withContext db.taskQueries.getAllBlockers().executeAsList()
     }
 
@@ -82,6 +83,7 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
+                blockStatus = task.blockStatus,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
@@ -103,6 +105,7 @@ class DbOperation(
                 description = task.description,
                 hide = task.hide,
                 parentId = task.parentId,
+                blockStatus = task.blockStatus,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )

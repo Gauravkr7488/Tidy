@@ -6,8 +6,8 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.tidy.constants.RepeatTypes
 import com.google.gson.Gson
+import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
-import com.tidy.sqldelight.TaskBlocker
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Collections.emptyList
@@ -101,12 +101,12 @@ object Utils {
     fun createBackupJson(
         tasks: List<Task>,
         lastResetDate: String,
-        taskBlocks: List<TaskBlocker>
+        taskBlocks: List<BlockedTask>
     ): String {
         val blockerList = taskBlocks.groupBy { it.task_id }
         val taskDtos = tasks.map { task ->
             val string =
-                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(", ") { it.blocker_id.toString() } else null
+                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(", ") { it.blockedBy_id.toString() } else null
             task.toTaskDto(string)
         }
         val backupDto = BackupDto(lastResetDate, taskDtos)
@@ -125,6 +125,7 @@ object Utils {
             hide = 0,
             createdAt = System.currentTimeMillis(),
             parentId = null,
+            blockStatus = 0,
             priority = null,
             dueDateAndTime = null
         )
@@ -142,6 +143,7 @@ object Utils {
             createdAt = createdAt,
             parentId = parentId,
             blockedBy = taskBlockString,
+            blockedStatus = blockStatus != 0L,
             priority = priority,
             dueDateAndTime = dueDateAndTime
         )
@@ -157,19 +159,20 @@ object Utils {
             description = description ?: "",
             hide = if (hide) 1L else 0L,
             parentId = parentId,
+            blockStatus = if (blockedStatus) 1L else 0L,
             createdAt = createdAt,
             priority = priority,
             dueDateAndTime = dueDateAndTime
         )
     }
 
-    fun getBlockerFromString(blockString: String, id: Long): List<TaskBlocker> {
+    fun getBlockerFromString(blockString: String, id: Long): List<BlockedTask> {
         val blockIds = blockString.split(", ")
         if (blockIds.isEmpty()) return emptyList()
-        val blockers: List<TaskBlocker> = blockIds.map {
-            return@map TaskBlocker(
+        val blockers: List<BlockedTask> = blockIds.map {
+            return@map BlockedTask(
                 task_id = id,
-                blocker_id = it.toLong()
+                blockedBy_id = it.toLong()
             )
         }
         return blockers
