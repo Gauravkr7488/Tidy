@@ -19,6 +19,7 @@ package com.example.tidy
 import android.content.Context
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.tidy.sqldelight.BlockedTask
 import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -40,11 +41,28 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
-                blockedBy = task.blockedBy,
+                blockStatus = task.blockStatus,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
         }
+    }
+
+    suspend fun addBlocker(taskId: Long, blockerId: Long) = withContext(Dispatchers.IO) {
+        db.taskQueries.blockTask(taskId, blockerId)
+    }
+
+    suspend fun getBlockedTasks(taskId: Long) = withContext(Dispatchers.IO) {
+        return@withContext db.taskQueries.getBlockedTasks(taskId).executeAsList()
+    }
+
+
+    suspend fun getBlockedByTasks(taskId: Long) = withContext(Dispatchers.IO) {
+        return@withContext db.taskQueries.getBlockedByTasks(taskId).executeAsList()
+    }
+
+    suspend fun getAllBlockers(): List<BlockedTask> = withContext(Dispatchers.IO) {
+        return@withContext db.taskQueries.getAllBlockers().executeAsList()
     }
 
     suspend fun isChildAncestorOfParent(parentId: Long, childId: Long): Boolean =
@@ -70,12 +88,16 @@ class DbOperation(
                 hide = task.hide,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
-                blockedBy = task.blockedBy,
+                blockStatus = task.blockStatus,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
-            if (task.dueDateAndTime != null && id != null) Utils.scheduleDueDateWork(context, id, task.dueDateAndTime)
+            if (task.dueDateAndTime != null && id != null) Utils.scheduleDueDateWork(
+                context,
+                id,
+                task.dueDateAndTime
+            )
             return@withContext id
 
         } else {
@@ -88,11 +110,11 @@ class DbOperation(
                 description = task.description,
                 hide = task.hide,
                 parentId = task.parentId,
-                blockedBy = task.blockedBy,
+                blockStatus = task.blockStatus,
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime
             )
-            if (task.dueDateAndTime != null){
+            if (task.dueDateAndTime != null) {
                 Utils.cancelDueDateWork(context, task.id)
                 Utils.scheduleDueDateWork(context, task.id, task.dueDateAndTime)
             }

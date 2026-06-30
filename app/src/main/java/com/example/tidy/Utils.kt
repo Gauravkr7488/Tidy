@@ -6,9 +6,11 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.tidy.constants.RepeatTypes
 import com.google.gson.Gson
+import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Collections.emptyList
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -51,7 +53,7 @@ object Utils {
     }
 
 
-    fun combineDateAndTimeMillis(date: Long?, time:Long?): Long {
+    fun combineDateAndTimeMillis(date: Long?, time: Long?): Long {
         val dateValue = date ?: getCurrentDateMillis()
         val timeValue = time ?: 0L
 
@@ -76,6 +78,7 @@ object Utils {
             set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
         }.timeInMillis
     }
+
     fun scheduleDueDateWork(context: Context, taskId: Long, dueDateMillis: Long) {
         val delay = dueDateMillis - System.currentTimeMillis()
 
@@ -95,8 +98,17 @@ object Utils {
         WorkManager.getInstance(context).cancelAllWorkByTag("due_date_$taskId")
     }
 
-    fun createBackupJson(tasks: List<Task>, lastResetDate: String): String {
-        val taskDtos = tasks.map { it.toTaskDto() }
+    fun createBackupJson(
+        tasks: List<Task>,
+        lastResetDate: String,
+        taskBlocks: List<BlockedTask>
+    ): String {
+        val blockerList = taskBlocks.groupBy { it.task_id }
+        val taskDtos = tasks.map { task ->
+            val string =
+                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(", ") { it.blockedBy_id.toString() } else null
+            task.toTaskDto(string)
+        }
         val backupDto = BackupDto(lastResetDate, taskDtos)
         val json = Gson().toJson(backupDto)
         return json
@@ -113,13 +125,13 @@ object Utils {
             hide = 0,
             createdAt = System.currentTimeMillis(),
             parentId = null,
-            blockedBy = "",
+            blockStatus = 0,
             priority = null,
             dueDateAndTime = null
         )
     }
 
-    fun Task.toTaskDto(): TaskBackupDto {
+    fun Task.toTaskDto(taskBlockString: String?): TaskBackupDto {
         return TaskBackupDto(
             id = id,
             title = title,
@@ -130,7 +142,8 @@ object Utils {
             hide = hide != 0L,
             createdAt = createdAt,
             parentId = parentId,
-            blockedBy = blockedBy,
+            blockedBy = taskBlockString,
+            blockedStatus = blockStatus != 0L,
             priority = priority,
             dueDateAndTime = dueDateAndTime
         )
@@ -146,10 +159,23 @@ object Utils {
             description = description ?: "",
             hide = if (hide) 1L else 0L,
             parentId = parentId,
-            blockedBy = blockedBy,
+            blockStatus = if (blockedStatus) 1L else 0L,
             createdAt = createdAt,
             priority = priority,
             dueDateAndTime = dueDateAndTime
         )
+    }
+
+    fun getBlockerFromString(blockString: String, id: Long): List<BlockedTask> {
+        if (blockString.isEmpty()) return emptyList()
+        val blockIds = blockString.split(",")
+        if (blockIds.isEmpty()) return emptyList()
+        val blockers: List<BlockedTask> = blockIds.filter { it.isNotEmpty() }.map {
+            BlockedTask(
+                task_id = id,
+                blockedBy_id = it.toLong()
+            )
+        }
+        return blockers
     }
 }

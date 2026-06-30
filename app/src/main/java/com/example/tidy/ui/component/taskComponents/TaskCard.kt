@@ -156,7 +156,7 @@ fun TaskCard(
                         contentDescription = "Archived"
                     )
                 }
-                if (task.blockedBy != ""){
+                if (task.blockStatus == 1L){
                     Badge(
                         text = "Blocked",
                         imageVector = Icons.Default.Block,

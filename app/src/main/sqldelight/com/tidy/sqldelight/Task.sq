@@ -25,10 +25,38 @@ CREATE TABLE Task (
     hide INTEGER NOT NULL DEFAULT 0,
     createdAt INTEGER NOT NULL,
     parentId INTEGER,                       -- NULL = root task
-    blockedBy TEXT NOT NULL DEFAULT '',
+    blockStatus INTEGER NOT NULL DEFAULT 0,
     priority INTEGER,
     dueDateAndTime INTEGER,
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
+);
+
+CREATE TABLE BlockedTask (
+    task_id    INTEGER NOT NULL,
+    blockedBy_id INTEGER NOT NULL,
+    PRIMARY KEY (task_id, blockedBy_id),
+    FOREIGN KEY (task_id)    REFERENCES Task(id) ON DELETE CASCADE,
+    FOREIGN KEY (blockedBy_id) REFERENCES Task(id) ON DELETE CASCADE
+);
+
+getBlockedTasks:
+SELECT Task.*
+FROM Task
+JOIN BlockedTask ON Task.id = BlockedTask.task_id
+WHERE BlockedTask.blockedBy_id = ?;
+
+getBlockedByTasks:
+SELECT Task.*
+FROM Task
+JOIN BlockedTask ON Task.id = BlockedTask.blockedBy_id
+WHERE BlockedTask.task_id = ?;
+
+
+blockTask:
+INSERT INTO BlockedTask(task_id, blockedBy_id)
+VALUES (
+?,
+?
 );
 
 updateTask:
@@ -41,7 +69,7 @@ SET
     description = ?,
     hide = ?,
     parentId = ?,
-    blockedBy = ?,
+    blockStatus = ?,
     priority = ?,
     dueDateAndTime = ?
 WHERE id = ?;
@@ -63,7 +91,7 @@ INSERT INTO Task(
     hide,
     createdAt,
     parentId,
-    blockedBy,
+    blockStatus,
     priority,
     dueDateAndTime
 )
@@ -83,6 +111,9 @@ VALUES (
 
 getAll:
 SELECT * FROM Task;
+
+getAllBlockers:
+SELECT * FROM BlockedTask;
 
 getChildren:
 SELECT * FROM Task
@@ -106,7 +137,7 @@ INSERT INTO Task(
     hide,
     createdAt,
     parentId,
-    blockedBy,
+    blockStatus,
     priority,
     dueDateAndTime
 )
