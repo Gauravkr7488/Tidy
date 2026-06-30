@@ -43,7 +43,8 @@ class ExportManager(
             val tasks = dbOperation.taskGetAll()
             var lastResetDate = dbOperation.getLastResetDate()
             if (lastResetDate == null) lastResetDate = getCurrentDate()
-            val json = createBackupJson(tasks, lastResetDate)
+            val taskBlockers = dbOperation.getAllBlockers()
+            val json = createBackupJson(tasks, lastResetDate, taskBlockers)
 
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
             val fileName = "backup_$timestamp.json"

@@ -101,6 +101,9 @@ VALUES (
 getAll:
 SELECT * FROM Task;
 
+getAllBlockers:
+SELECT * FROM TaskBlocker;
+
 getChildren:
 SELECT * FROM Task
 WHERE parentId = ?;

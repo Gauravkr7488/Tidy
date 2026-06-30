@@ -36,7 +36,8 @@ class BackupOperations(
     ) {
         try {
             val lastResetDate = dbOperation.getLastResetDate() ?: Utils.getCurrentDate()
-            val json = createBackupJson(dbOperation.taskGetAll(), lastResetDate)
+            val taskBlockers = dbOperation.getAllBlockers()
+            val json = createBackupJson(dbOperation.taskGetAll(), lastResetDate, taskBlockers)
 
             context.contentResolver
                 .openOutputStream(uri)

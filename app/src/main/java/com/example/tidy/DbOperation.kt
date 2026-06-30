@@ -23,6 +23,7 @@ import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.tidy.sqldelight.Task
+import com.tidy.sqldelight.TaskBlocker
 import kotlinx.coroutines.flow.Flow
 
 class DbOperation(
@@ -52,6 +53,10 @@ class DbOperation(
 
     suspend fun getBlockedTasks(taskId: Long) = withContext(Dispatchers.IO) {
         return@withContext db.taskQueries.getBlockersForTask(taskId)
+    }
+
+    suspend fun getAllBlockers(): List<TaskBlocker> = withContext(Dispatchers.IO) {
+        return@withContext db.taskQueries.getAllBlockers().executeAsList()
     }
 
     suspend fun isChildAncestorOfParent(parentId: Long, childId: Long): Boolean =
