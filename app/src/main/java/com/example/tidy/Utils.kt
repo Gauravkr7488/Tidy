@@ -167,10 +167,11 @@ object Utils {
     }
 
     fun getBlockerFromString(blockString: String, id: Long): List<BlockedTask> {
-        val blockIds = blockString.split(", ")
+        if (blockString.isEmpty()) return emptyList()
+        val blockIds = blockString.split(",")
         if (blockIds.isEmpty()) return emptyList()
-        val blockers: List<BlockedTask> = blockIds.map {
-            return@map BlockedTask(
+        val blockers: List<BlockedTask> = blockIds.filter { it.isNotEmpty() }.map {
+            BlockedTask(
                 task_id = id,
                 blockedBy_id = it.toLong()
             )

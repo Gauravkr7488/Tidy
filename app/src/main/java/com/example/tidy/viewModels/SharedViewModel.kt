@@ -99,12 +99,12 @@ class SharedViewModel(
         dbOperation.deleteTask(id)
     }
 
-    fun getBlockedTasks(taskId: Long): List<Task> {
-        var list: List<Task> = emptyList()
-        viewModelScope.launch {
-            list = dbOperation.getBlockedTasks(taskId)
-        }
-        return list
+    suspend fun getBlockedTasks(taskId: Long): List<Task> {
+        return dbOperation.getBlockedTasks(taskId)
+    }
+
+    suspend fun getBlockedByTasks(taskId: Long): List<Task> {
+        return dbOperation.getBlockedByTasks(taskId)
     }
 
     fun addBlockedByTasks(taskId: Long, blockerId: Long) {
@@ -117,14 +117,14 @@ class SharedViewModel(
         viewModelScope.launch {
             dbOperation.updateDoneStatus(task.id)
             if (task.parentId != null) dbOperation.updateParentDoneStatus(task.parentId)
-            updateBlockedTasksStatus(task)
+            updateBlockedTasksStatus(task.id, task.done) // task.done since the block is opposite of done
         }
     }
 
-    suspend fun updateBlockedTasksStatus(task: Task) {
-        val blockedTasks = getBlockedTasks(task.id)
+    suspend fun updateBlockedTasksStatus(taskId: Long, updatedBlockStatus: Long) {
+        val blockedTasks = getBlockedTasks(taskId)
         blockedTasks.forEach {
-            saveTask(it.copy(blockStatus = 0))
+            saveTask(it.copy(blockStatus = updatedBlockStatus))
         }
     }
 
@@ -151,6 +151,7 @@ class SharedViewModel(
             }
         }
         val parentId = task.parentId
+        updateBlockedTasksStatus(task.id, 0)
         dbOperation.deleteTask(task.id)
         updateParentStatus(parentId)
     }

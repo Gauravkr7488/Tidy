@@ -87,7 +87,9 @@ class BackupOperations(
                     val blockString = taskBackupDto.blockedBy
                     if (blockString != null) {
                         val blockers = Utils.getBlockerFromString(blockString, taskBackupDto.id)
-                        blockList.addAll(blockers)
+                        if (blockers.isNotEmpty()){
+                            blockList.addAll(blockers)
+                        }
                     }
                 }
                 dbOperation.taskDeleteALl()
@@ -99,8 +101,12 @@ class BackupOperations(
                 }
 
                 dbOperation.taskSaveList(tasksWithParentId)
-                blockList.forEach { dbOperation.addBlocker(it.task_id, it.blockedBy_id) }
-                dbOperation.taskGetAll()
+                blockList.forEach {
+                    val blockedTask = dbOperation.getTask(it.task_id) ?: return@forEach
+                    dbOperation.saveTask(blockedTask.copy(blockStatus = 1L))
+                    dbOperation.addBlocker(it.task_id, it.blockedBy_id)
+                }
+                dbOperation.taskGetAll() // todo why is this here?
 
 
                 Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()

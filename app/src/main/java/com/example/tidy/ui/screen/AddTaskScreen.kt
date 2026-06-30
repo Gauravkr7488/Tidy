@@ -145,7 +145,7 @@ fun AddTaskScreen(
         if (task != null) {
             taskId = task.id
             taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
-            blockedByTasks = sharedViewModel.getBlockedTasks(taskId)
+            blockedByTasks = sharedViewModel.getBlockedByTasks(taskId)
             parentId = task.parentId
             taskTitle = task.title
             description = task.description
@@ -618,7 +618,7 @@ fun RepeatMenu(
                                 if (day in selectedDays) selectedDays - day else selectedDays + day
                             onRepeatDaysChange(
                                 selectedDays.joinToString(
-                                    ", "
+                                    ","
                                 )
                             )
                         },
