@@ -10,6 +10,7 @@ import com.tidy.sqldelight.Task
 import com.tidy.sqldelight.TaskBlocker
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Collections.emptyList
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -160,5 +161,17 @@ object Utils {
             priority = priority,
             dueDateAndTime = dueDateAndTime
         )
+    }
+
+    fun getBlockerFromString(blockString: String, id: Long): List<TaskBlocker> {
+        val blockIds = blockString.split(", ")
+        if (blockIds.isEmpty()) return emptyList()
+        val blockers: List<TaskBlocker> = blockIds.map {
+            return@map TaskBlocker(
+                task_id = id,
+                blocker_id = it.toLong()
+            )
+        }
+        return blockers
     }
 }
