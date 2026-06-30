@@ -51,6 +51,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -204,7 +205,12 @@ fun AddTaskScreen(
                                 )
                                 if (savedTaskId == null) return@launch
                                 blockedByTasks.forEach {
-                                    sharedViewModel.addBlockedByTasks(savedTaskId,it.id)
+                                    val blockerId = if (it.id == 0L) sharedViewModel.saveTask(it) else it.id
+                                    if (blockerId == null){
+                                        println("issue while saving new blocker")
+                                        return@forEach
+                                    }
+                                    sharedViewModel.addBlockedByTasks(savedTaskId, blockerId)
                                 }
                                 taskChildren.forEach {
                                     sharedViewModel.saveTask(
@@ -1033,6 +1039,27 @@ fun TaskSelectionDialog(
                     }
                 )
             }
+            item {
+                val t = Utils.getEmptyTask().copy(title = query)
+                TaskCard(
+                    task = t,
+                    onClick = {
+                        selectedTasks = selectedTasks + t
+                    },
+                    children = emptyList(),
+                    trailingIcons =
+                        buildList {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Create,
+                                    description = "create new",
+                                    onClick = {},
+                                )
+                            )
+                        },
+                )
+            }
+
         }
     }
 }
