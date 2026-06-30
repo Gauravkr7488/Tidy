@@ -28,7 +28,6 @@ import com.example.tidy.Utils.toTask
 import com.google.gson.Gson
 import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
-import java.util.Collections.emptyList
 
 class BackupOperations(
     private val dbOperation: DbOperation
@@ -79,11 +78,12 @@ class BackupOperations(
 
                 dbOperation.setLastResetToday(lastResetDate)
 
-                val newTasks: MutableList<Task> = emptyList()
-                val blockList: MutableList<BlockedTask> = emptyList()
+                val newTasks: MutableList<Task> = mutableListOf()
+                val blockList: MutableList<BlockedTask> = mutableListOf()
                 taskDtos.forEach { taskBackupDto ->
                     val task = taskBackupDto.toTask()
-                    newTasks.add(task.copy(parentId = null))
+                    val t = task.copy(parentId = null)
+                    newTasks.add(t)
                     val blockString = taskBackupDto.blockedBy
                     if (blockString != null) {
                         val blockers = Utils.getBlockerFromString(blockString, taskBackupDto.id)
@@ -108,7 +108,7 @@ class BackupOperations(
 
         } catch (e: Exception) {
             dbOperation.taskDeleteALl()
-            dbOperation.taskSaveList(preImportTasks)
+            dbOperation.saveNewTaskList(preImportTasks)
             dbOperation.setLastResetToday(preImportResetDate)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
