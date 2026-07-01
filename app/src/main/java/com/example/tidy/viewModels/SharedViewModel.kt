@@ -170,7 +170,7 @@ class SharedViewModel(
         }
     }
 
-    private suspend fun resetTasksForToday() {
+    private suspend fun resetTasksForToday() { // todo this should be done via work manager so that even in bg it works
         val todayDate = getCurrentDate()
         val todayDay = getCurrentDay()
 
@@ -181,7 +181,7 @@ class SharedViewModel(
 
         tasks.value.forEach { task ->
             val shouldReset = when (task.repeatType) {
-                RepeatTypes.NONE, RepeatTypes.DAILY -> true
+                RepeatTypes.DAILY -> true
                 RepeatTypes.WEEKLY -> task.repeatDays.contains(todayDay)
                 RepeatTypes.MONTHLY -> task.repeatDays.contains(todayDate)
                 else -> false
@@ -189,6 +189,8 @@ class SharedViewModel(
             if (shouldReset) {
                 dbOperation.saveTask(task.copy(hide = 0L, done = 0L))
             }
+
+            if (task.repeatType == RepeatTypes.NONE) dbOperation.saveTask(task.copy(hide = 0L))
         }
 
     }
