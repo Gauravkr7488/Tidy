@@ -56,6 +56,11 @@ class DbOperation(
         return@withContext db.taskQueries.getBlockedTasks(taskId).executeAsList()
     }
 
+    suspend fun getBlockedTask(taskId: Long, blockerId: Long): BlockedTask? =
+        withContext(Dispatchers.IO) {
+            return@withContext db.taskQueries.getBlockTask(taskId, blockerId).executeAsOneOrNull()
+        }
+
 
     suspend fun getBlockedByTasks(taskId: Long) = withContext(Dispatchers.IO) {
         return@withContext db.taskQueries.getBlockedByTasks(taskId).executeAsList()

@@ -198,7 +198,7 @@ fun AddTaskScreen(
                                         hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
-                                        blockStatus = if (blockedByTasks.isNotEmpty()) 1L else 0L,
+                                        blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
                                         priority = priority,
                                         dueDateAndTime = dueDateAndTime
                                     )
