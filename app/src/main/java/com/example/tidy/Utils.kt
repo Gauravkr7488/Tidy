@@ -173,7 +173,7 @@ object Utils {
         val blockers: List<BlockedTask> = blockIds.filter { it.isNotEmpty() }.map {
             BlockedTask(
                 task_id = id,
-                blockedBy_id = it.toLong()
+                blockedBy_id = it.trim().toLong()
             )
         }
         return blockers
