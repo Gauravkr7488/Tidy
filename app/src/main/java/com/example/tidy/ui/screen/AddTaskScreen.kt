@@ -21,7 +21,6 @@ package com.example.tidy.ui.screen
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -740,15 +739,17 @@ fun ScheduleMenu() {
             onConfirm = { },
             title = "Add Schedule",
         ) {
-            SimpleMenuItem(
-                menuName = "Due Date"
-            ) {
-                OutlineButtonTidy("Add") { }
-            }
-            SimpleMenuItem(
-                menuName = "Repeat"
-            ) {
-                OutlineButtonTidy("Add") { }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SimpleMenuItem(
+                    menuName = "Due Date"
+                ) {
+                    OutlineButtonTidy("Add") { }
+                }
+                SimpleMenuItem(
+                    menuName = "Repeat"
+                ) {
+                    OutlineButtonTidy("Add") { }
+                }
             }
         }
     }
@@ -1015,6 +1016,9 @@ fun SimpleDialog(
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
             shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            )
         ) {
             Column(
                 modifier = modifier
@@ -1076,14 +1080,12 @@ fun TimePickerTidy(
 fun TaskSelectionDialog(
     tasks: List<Task>,
     onConfirm: (List<Task>) -> Unit,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    onDismiss: () -> Unit
 ) {
     var selectedTasks: List<Task> by remember { mutableStateOf(emptyList()) }
     SimpleDialog(
         onDismissRequest = onDismiss,
         onConfirm = { onConfirm(selectedTasks) },
-        modifier = modifier.background(color = MaterialTheme.colorScheme.surface),
         title = if (selectedTasks.isEmpty()) "Select Tasks" else selectedTasks.size.toString() + " selected"
     ) {
         var query by remember { mutableStateOf("") }
