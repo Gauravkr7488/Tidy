@@ -756,6 +756,29 @@ fun ScheduleMenu() {
 }
 
 @Composable
+fun SimpleSelectionCard(itemName: String) {
+    var selected by remember { mutableStateOf(false) }
+    Card(
+        onClick = { selected = !selected },
+        shape = RoundedCornerShape(25),
+    ) {
+        Row(
+
+            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
+        ) {
+            Text(itemName)
+            Spacer(modifier = Modifier.weight(1f))
+            if (selected) {
+                Icon(
+                    imageVector = Icons.Default.Check,
+                    contentDescription = "selected"
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun OutlineButtonTidy(text: String, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
