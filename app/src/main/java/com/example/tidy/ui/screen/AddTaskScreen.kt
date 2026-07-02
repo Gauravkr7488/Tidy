@@ -48,6 +48,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -591,7 +593,8 @@ fun RepeatMenu(
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    t.lowercase().replaceFirstChar { it.uppercase() })
+                                    t.lowercase().replaceFirstChar { it.uppercase() }
+                                )
                             },
                             onClick = {
                                 onRepeatTypeChange(t)
@@ -730,7 +733,8 @@ fun RepeatMenu(
 @Composable
 fun ScheduleMenu() {
     var showDialog by remember { mutableStateOf(false) }
-    SimpleMenuItem("Schedule") {
+    var showRepeatDialog by remember { mutableStateOf(false) }
+    OutlinedMenuItem("Schedule") {
         OutlineButtonTidy("Add") { showDialog = true }
     }
     if (showDialog) {
@@ -740,40 +744,91 @@ fun ScheduleMenu() {
             title = "Add Schedule",
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SimpleMenuItem(
+                OutlinedMenuItem(
                     menuName = "Due Date"
                 ) {
                     OutlineButtonTidy("Add") { }
                 }
-                SimpleMenuItem(
+                OutlinedMenuItem(
                     menuName = "Repeat"
                 ) {
-                    OutlineButtonTidy("Add") { }
+                    OutlineButtonTidy("Add") { showRepeatDialog = true }
                 }
+            }
+        }
+    }
+    if (showRepeatDialog) {
+        SimpleDialog(
+            onDismissRequest = { showRepeatDialog = false },
+            onConfirm = {},
+            title = "Select Repeat Details"
+        ) {
+            var selected by remember { mutableStateOf(RepeatTypes.NONE) }
+            Column {
+                Text(
+                    "Repeat Types",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                listOf(
+                    RepeatTypes.NONE,
+                    RepeatTypes.DAILY,
+                    RepeatTypes.WEEKLY,
+                    RepeatTypes.MONTHLY
+                ).forEach { text ->
+                    SimpleClickCard(
+                        text.lowercase().replaceFirstChar { it.uppercase() },
+                        onClick = { selected = text },
+                        trailingIcon = {
+                            if (selected == text){
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "selected",
+                                )
+                            }
+                        }
+                    )
+                }
+                Text(
+                    "Advance",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                SimpleClickCard("Time", onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+                }
+                   SimpleClickCard("Custom", onClick = {}) {
+                       Icon(
+                           imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                           contentDescription = null
+                       )
+                   }
             }
         }
     }
 }
 
 @Composable
-fun SimpleSelectionCard(itemName: String) {
-    var selected by remember { mutableStateOf(false) }
+fun SimpleClickCard(
+    itemName: String,
+    onClick: () -> Unit,
+    trailingIcon: @Composable () -> Unit
+) {
     Card(
-        onClick = { selected = !selected },
+        onClick = {
+            onClick()
+        },
         shape = RoundedCornerShape(25),
     ) {
         Row(
-
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
         ) {
             Text(itemName)
             Spacer(modifier = Modifier.weight(1f))
-            if (selected) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = "selected"
-                )
-            }
+            trailingIcon()
         }
     }
 }
@@ -794,9 +849,9 @@ fun OutlineButtonTidy(text: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun SimpleMenuItem(
+fun OutlinedMenuItem(
     menuName: String,
-    button: @Composable () -> Unit
+    content: @Composable () -> Unit
 ) {
     val cardShape = RoundedCornerShape(25)
     Card(
@@ -826,7 +881,7 @@ fun SimpleMenuItem(
             )
 
             Spacer(modifier = Modifier.weight(1f))
-            button()
+            content()
         }
     }
 }
