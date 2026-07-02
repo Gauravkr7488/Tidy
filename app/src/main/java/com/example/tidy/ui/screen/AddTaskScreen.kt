@@ -205,9 +205,10 @@ fun AddTaskScreen(
                                 )
                                 if (savedTaskId == null) return@launch
                                 blockedByTasks.forEach {
-                                    val blockerId = if (it.id == 0L) sharedViewModel.saveTask(it) else it.id
-                                    if (blockerId == null){
-                                        println("issue while saving new blocker")
+                                    val blockerId =
+                                        if (it.id == 0L) sharedViewModel.saveTask(it) else it.id
+                                    if (blockerId == null) {
+                                        println("issue while saving new blocker") // todo better logging or errs
                                         return@forEach
                                     }
                                     sharedViewModel.addBlockedByTasks(savedTaskId, blockerId)
@@ -374,8 +375,8 @@ fun DueMenu(
             if (expanded) {
                 SimpleDialog(
                     onDismissRequest = { expanded = false },
+                    title = "Select Date and Time",
                     content = {
-                        Text("Select Date and Time", modifier = Modifier.padding(5.dp))
                         DropDownMenuTextButton(
                             { showDateDialog = true },
                             content = {
@@ -977,7 +978,8 @@ fun TimePickerTidy(
             TimePicker(
                 state = timePickerState
             )
-        }
+        },
+        title = "Select Time"
     )
 }
 
@@ -992,7 +994,8 @@ fun TaskSelectionDialog(
     SimpleDialog(
         onDismissRequest = onDismiss,
         onConfirm = { onConfirm(selectedTasks) },
-        modifier = modifier.background(color = MaterialTheme.colorScheme.surface)
+        modifier = modifier.background(color = MaterialTheme.colorScheme.surface),
+        title = if (selectedTasks.isEmpty()) "Select Tasks" else selectedTasks.size.toString() + " selected"
     ) {
         var query by remember { mutableStateOf("") }
         val listState = rememberLazyListState()
@@ -1002,9 +1005,6 @@ fun TaskSelectionDialog(
                     task.description.contains(query, ignoreCase = true)
             return@filter matchesQuery
         }
-        Text(
-            if (selectedTasks.isEmpty()) "Select Tasks" else selectedTasks.size.toString() + " selected"
-        )
         SearchTextField(
             query = query,
             placeHolder = "Search tasks",
