@@ -923,6 +923,7 @@ fun SimpleDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
+    title: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
@@ -935,6 +936,7 @@ fun SimpleDialog(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                Text(title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(8.dp))
                 content()
                 Row(
                     modifier = Modifier
