@@ -764,7 +764,9 @@ fun ScheduleMenu() {
             title = "Select Repeat Details"
         ) {
             var selected by remember { mutableStateOf(RepeatTypes.NONE) }
-            Column {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Text(
                     "Repeat Types",
                     style = MaterialTheme.typography.labelMedium,
@@ -776,11 +778,11 @@ fun ScheduleMenu() {
                     RepeatTypes.WEEKLY,
                     RepeatTypes.MONTHLY
                 ).forEach { text ->
-                    SimpleClickCard(
+                    OutlinedMenuItem(
                         text.lowercase().replaceFirstChar { it.uppercase() },
                         onClick = { selected = text },
-                        trailingIcon = {
-                            if (selected == text){
+                        content = {
+                            if (selected == text) {
                                 Icon(
                                     imageVector = Icons.Default.Check,
                                     contentDescription = "selected",
@@ -794,41 +796,19 @@ fun ScheduleMenu() {
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Medium
                 )
-                SimpleClickCard("Time", onClick = {}) {
+                OutlinedMenuItem("Time", onClick = {}) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = null
                     )
                 }
-                   SimpleClickCard("Custom", onClick = {}) {
-                       Icon(
-                           imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                           contentDescription = null
-                       )
-                   }
+                OutlinedMenuItem("Custom", onClick = {}) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null
+                    )
+                }
             }
-        }
-    }
-}
-
-@Composable
-fun SimpleClickCard(
-    itemName: String,
-    onClick: () -> Unit,
-    trailingIcon: @Composable () -> Unit
-) {
-    Card(
-        onClick = {
-            onClick()
-        },
-        shape = RoundedCornerShape(25),
-    ) {
-        Row(
-            modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)
-        ) {
-            Text(itemName)
-            Spacer(modifier = Modifier.weight(1f))
-            trailingIcon()
         }
     }
 }
@@ -851,6 +831,7 @@ fun OutlineButtonTidy(text: String, onClick: () -> Unit) {
 @Composable
 fun OutlinedMenuItem(
     menuName: String,
+    onClick: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
     val cardShape = RoundedCornerShape(25)
@@ -866,6 +847,11 @@ fun OutlinedMenuItem(
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                 shape = cardShape
             )
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { onClick() }
+                )
+            },
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -877,7 +863,8 @@ fun OutlinedMenuItem(
                 text = menuName,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(4.dp)
             )
 
             Spacer(modifier = Modifier.weight(1f))
