@@ -22,12 +22,14 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -56,6 +58,7 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
@@ -68,6 +71,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -287,6 +291,7 @@ fun AddTaskScreen(
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it },
             )
+            ScheduleMenu()
             PriorityMenu(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
@@ -721,6 +726,83 @@ fun RepeatMenu(
     }
 }
 
+@Composable
+fun ScheduleMenu() {
+    var showDialog by remember { mutableStateOf(false) }
+    SimpleMenuItem("Schedule") {
+        Button(onClick = { showDialog = true }) {
+            Text("Add")
+        }
+    }
+    if (showDialog) {
+        SimpleDialog(
+            onDismissRequest = { showDialog = false },
+            onConfirm = { },
+            title = "Add Schedule",
+        ) {
+            SimpleMenuItem(
+                menuName = "Due Date"
+            ) {
+                OutlineButtonTidy("Add") { }
+            }
+            SimpleMenuItem(
+                menuName = "Repeat"
+            ) {
+                OutlineButtonTidy("Add") { }
+            }
+        }
+    }
+}
+
+@Composable
+fun OutlineButtonTidy(text: String, onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onClick,
+        shape = RoundedCornerShape(50),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+            contentColor = MaterialTheme.colorScheme.primary
+        ),
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+    ) {
+        Text(text, style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+@Composable
+fun SimpleMenuItem(
+    menuName: String,
+    button: @Composable () -> Unit
+) {
+    val cardShape = RoundedCornerShape(16.dp)
+    Card(
+        shape = cardShape,
+        modifier = Modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = cardShape
+            )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Text(
+                text = menuName,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+            button()
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -871,7 +953,7 @@ fun DropDownMenuTextButton(
         onClick = onClick,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         shape = RoundedCornerShape(8.dp),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
     ) {
         content()
     }
@@ -933,11 +1015,15 @@ fun SimpleDialog(
         ) {
             Column(
                 modifier = modifier
-                    .padding(8.dp),
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(8.dp))
+                Text(
+                    title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(8.dp)
+                )
                 content()
                 Row(
                     modifier = Modifier
