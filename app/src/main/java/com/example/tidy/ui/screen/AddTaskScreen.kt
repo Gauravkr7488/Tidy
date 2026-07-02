@@ -60,6 +60,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -95,6 +96,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
@@ -730,9 +732,7 @@ fun RepeatMenu(
 fun ScheduleMenu() {
     var showDialog by remember { mutableStateOf(false) }
     SimpleMenuItem("Schedule") {
-        Button(onClick = { showDialog = true }) {
-            Text("Add")
-        }
+        OutlineButtonTidy("Add") { showDialog = true }
     }
     if (showDialog) {
         SimpleDialog(
@@ -759,9 +759,8 @@ fun OutlineButtonTidy(text: String, onClick: () -> Unit) {
     OutlinedButton(
         onClick = onClick,
         shape = RoundedCornerShape(50),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(0.5f)),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
             contentColor = MaterialTheme.colorScheme.primary
         ),
         contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
@@ -775,13 +774,17 @@ fun SimpleMenuItem(
     menuName: String,
     button: @Composable () -> Unit
 ) {
-    val cardShape = RoundedCornerShape(16.dp)
+    val cardShape = RoundedCornerShape(25)
     Card(
         shape = cardShape,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = Modifier
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
                 shape = cardShape
             )
     ) {
@@ -789,7 +792,7 @@ fun SimpleMenuItem(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(vertical = 8.dp, horizontal = 16.dp)
         ) {
             Text(
                 text = menuName,
