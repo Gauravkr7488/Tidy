@@ -48,15 +48,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -733,35 +734,14 @@ fun RepeatMenu(
 @Composable
 fun ScheduleMenu() {
     var showDialog by remember { mutableStateOf(false) }
-    var showRepeatDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
         OutlineButtonTidy("Add") { showDialog = true }
     }
     if (showDialog) {
         SimpleDialog(
             onDismissRequest = { showDialog = false },
-            onConfirm = { },
-            title = "Add Schedule",
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedMenuItem(
-                    menuName = "Due Date"
-                ) {
-                    OutlineButtonTidy("Add") { }
-                }
-                OutlinedMenuItem(
-                    menuName = "Repeat"
-                ) {
-                    OutlineButtonTidy("Add") { showRepeatDialog = true }
-                }
-            }
-        }
-    }
-    if (showRepeatDialog) {
-        SimpleDialog(
-            onDismissRequest = { showRepeatDialog = false },
             onConfirm = {},
-            title = "Select Repeat Details"
+            title = "Add Schedule"
         ) {
             var selected by remember { mutableStateOf(RepeatTypes.NONE) }
             Column(
@@ -792,19 +772,31 @@ fun ScheduleMenu() {
                     )
                 }
                 Text(
-                    "Advance",
+                    "More Details",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Medium
                 )
+                OutlinedMenuItem("Start Date", onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = null
+                    )
+                }
+                OutlinedMenuItem("Due Date", onClick = {}) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = null
+                    )
+                }
                 OutlinedMenuItem("Time", onClick = {}) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Default.AccessTime,
                         contentDescription = null
                     )
                 }
                 OutlinedMenuItem("Custom", onClick = {}) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        imageVector = Icons.Default.Settings,
                         contentDescription = null
                     )
                 }
