@@ -41,6 +41,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -49,6 +50,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
@@ -734,6 +736,37 @@ fun RepeatMenu(
 }
 
 @Composable
+fun FadingLazyRow(
+    content: LazyListScope.() -> Unit
+) {
+    val bg = MaterialTheme.colorScheme.surface
+    LazyRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .drawWithContent {
+                drawContent()
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(Color.Transparent, bg),
+                        startX = size.width * 0.91f,
+                        endX = size.width
+                    ),
+                )
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(Color.Transparent, bg),
+                        startX = size.width * 0.09f,
+                        endX = size.width * 0f
+                    ),
+                )
+            },
+        contentPadding = PaddingValues(horizontal = 16.dp),
+    ) {
+        content()
+    }
+}
+
+@Composable
 fun ScheduleMenu() {
     var showDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
@@ -774,30 +807,7 @@ fun ScheduleMenu() {
                     )
                     if (text == RepeatTypes.WEEKLY && selected == RepeatTypes.WEEKLY) {
                         var selectedDays by remember { mutableStateOf(emptyList<String>()) }
-
-                        val bg = MaterialTheme.colorScheme.surface
-                        LazyRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .drawWithContent {
-                                    drawContent()
-                                    drawRect(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(Color.Transparent, bg),
-                                            startX = size.width * 0.91f,
-                                            endX = size.width
-                                        ),
-                                    )
-                                    drawRect(
-                                        brush = Brush.horizontalGradient(
-                                            colors = listOf(Color.Transparent, bg),
-                                            startX = size.width * 0.09f,
-                                            endX = size.width * 0f
-                                        ),
-                                    )
-                                },
-                            contentPadding = PaddingValues(horizontal = 16.dp),
-                        ) {
+                        FadingLazyRow {
                             listOf(
                                 "S" to WeekDays.SUN,
                                 "M" to WeekDays.MON,
@@ -819,6 +829,65 @@ fun ScheduleMenu() {
                                     )
                                 }
                             }
+                        }
+                    }
+                    if (text == RepeatTypes.MONTHLY && selected == RepeatTypes.MONTHLY) {
+                        var selectedDates by remember { mutableStateOf(emptyList<String>()) }
+                        var showDateDialog by remember { mutableStateOf(false) }
+                        var showDuplicateDateAlert by remember { mutableStateOf(false) }
+
+                        FadingLazyRow {
+                            selectedDates.forEach { date ->
+                                item {
+                                    FilterChip(
+                                        onClick = {
+                                            selectedDates = selectedDates - date
+                                        },
+                                        selected = date in selectedDates,
+                                        label = {
+                                            Text(date)
+                                        },
+                                        shape = RoundedCornerShape(50)
+                                    )
+                                }
+                            }
+                            item {
+                                FilterChip(
+                                    onClick = { showDateDialog = true },
+                                    selected = false,
+                                    label = {
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    shape = RoundedCornerShape(50)
+                                )
+                            }
+                        }
+                        if (showDateDialog) {
+                            DatePickerTidy(
+                                onDismiss = { showDateDialog = false },
+                                onDateSelected = {
+                                    if (it != null) {
+                                        val date = Utils.changeDateFormat(it, "dd")
+                                        if (date in selectedDates) showDuplicateDateAlert =
+                                            true else selectedDates = selectedDates + date
+                                    }
+                                }
+                            )
+                        }
+                        if (showDuplicateDateAlert) {
+                            AlertDialog(
+                                onDismissRequest = { showDuplicateDateAlert = false },
+                                title = { Text("Duplicate Date Chosen") },
+                                text = { Text("You have already selected this date, please chose different one.") },
+                                confirmButton = {
+                                    TextButton(onClick = { showDuplicateDateAlert = false }) {
+                                        Text("Ok")
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -1085,7 +1154,7 @@ fun SimpleTextButton(
 
 @Composable
 fun DatePickerTidy(
-    date: Long?,
+    date: Long? = null,
     onDateSelected: (Long?) -> Unit,
     onDismiss: () -> Unit
 ) {
