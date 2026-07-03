@@ -766,6 +766,7 @@ fun FadingLazyRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleMenu() {
     var showDialog by remember { mutableStateOf(false) }
@@ -896,24 +897,93 @@ fun ScheduleMenu() {
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Medium
                 )
-                OutlinedMenuItem("Start Date", onClick = {}) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = null
+
+                var showStartDatePicker by remember { mutableStateOf(false) }
+                var startDate: Long? by remember { mutableStateOf(null) }
+                OutlinedMenuItem("Start Date", onClick = { showStartDatePicker = true }) {
+                    val date = startDate
+                    if (date == null) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = null
+                        )
+                    } else {
+                        Text(
+                            Utils.changeDateFormat(
+                                pattern = "MMM dd, yyyy",
+                                date = date
+                            )
+                        )
+                    }
+                }
+                if (showStartDatePicker) {
+                    DatePickerTidy(
+                        date = startDate,
+                        onDateSelected = { startDate = it }
+                    ) { showStartDatePicker = false }
+                }
+
+                var showDueDatePicker by remember { mutableStateOf(false) }
+                var duetDate: Long? by remember { mutableStateOf(null) }
+                OutlinedMenuItem("Due Date", onClick = { showDueDatePicker = true }) {
+                    val date = duetDate
+                    if (date == null) {
+                        Icon(
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = null
+                        )
+                    } else {
+                        Text(
+                            Utils.changeDateFormat(
+                                pattern = "MMM dd, yyyy",
+                                date = date
+                            )
+                        )
+                    }
+                }
+                if (showDueDatePicker) {
+                    DatePickerTidy(
+                        date = duetDate,
+                        onDateSelected = {
+                            duetDate = it
+                        }
+                    ) { showDueDatePicker = false }
+                }
+
+                var showTimePicker by remember { mutableStateOf(false) }
+                var time: Long? by remember { mutableStateOf(null) }
+                OutlinedMenuItem("Time", onClick = { showTimePicker = true }) {
+                    val t = time
+                    if (t == null) {
+                        Icon(
+                            imageVector = Icons.Default.AccessTime,
+                            contentDescription = null
+                        )
+                    } else {
+                        Text(
+                            Utils.changeDateFormat(t, "hh:mm a")
+                        )
+                    }
+                }
+                if (showTimePicker) {
+                    var hour: Int? = null
+                    var minute: Int? = null
+                    if (time != null) {
+                        hour = Utils.changeDateFormat(time!!, "HH")
+                            .toInt()
+                        minute = Utils.changeDateFormat(time!!, "mm")
+                            .toInt()
+                    }
+                    TimePickerTidy(
+                        hour = hour,
+                        minute = minute,
+                        onTimeSelected = {
+                            time = Utils.convertTimeToMillis(it.hour, it.minute)
+                        },
+                        onDismiss = { showTimePicker = false }
                     )
                 }
-                OutlinedMenuItem("Due Date", onClick = {}) {
-                    Icon(
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = null
-                    )
-                }
-                OutlinedMenuItem("Time", onClick = {}) {
-                    Icon(
-                        imageVector = Icons.Default.AccessTime,
-                        contentDescription = null
-                    )
-                }
+
                 OutlinedMenuItem("Custom", onClick = {}) {
                     Icon(
                         imageVector = Icons.Default.Settings,
