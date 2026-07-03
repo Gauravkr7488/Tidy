@@ -96,8 +96,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -770,6 +772,45 @@ fun ScheduleMenu() {
                             }
                         }
                     )
+                    if (text == RepeatTypes.WEEKLY && selected == RepeatTypes.WEEKLY) {
+                        val bg = MaterialTheme.colorScheme.surface
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .drawWithContent {
+                                    drawContent()
+                                    drawRect(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(Color.Transparent, bg),
+                                            startX = size.width * 0.90f,
+                                            endX = size.width
+                                        ),
+                                    )
+                                    drawRect(
+                                        brush = Brush.horizontalGradient(
+                                            colors = listOf(Color.Transparent, bg),
+                                            startX = size.width * 0.10f,
+                                            endX = size.width * 0f
+                                        ),
+                                    )
+                                },
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                        ) {
+                            listOf(
+                                "S" to WeekDays.SUN,
+                                "M" to WeekDays.MON,
+                                "T" to WeekDays.TUE,
+                                "W" to WeekDays.WED,
+                                "T" to WeekDays.THU,
+                                "F" to WeekDays.FRI,
+                                "S" to WeekDays.SAT,
+                            ).forEach { day ->
+                                item {
+                                    OutlineButtonTidy(day.first) { }
+                                }
+                            }
+                        }
+                    }
                 }
                 Text(
                     "More Details",
@@ -814,7 +855,7 @@ fun OutlineButtonTidy(text: String, onClick: () -> Unit) {
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.primary
         ),
-        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge)
     }
