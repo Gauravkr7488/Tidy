@@ -28,10 +28,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -59,7 +61,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -109,12 +110,14 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.navOptions
 import com.example.tidy.Utils
+import com.example.tidy.constants.RepeatFrequency
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
@@ -771,7 +774,10 @@ fun FadingLazyRow(
 fun ScheduleMenu() {
     var showDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
-        OutlineButtonTidy("Add") { showDialog = true }
+        RoundedOutlineButtonTidy(
+            "Add",
+            onClick = { showDialog = true },
+        )
     }
     if (showDialog) {
         SimpleDialog(
@@ -792,7 +798,8 @@ fun ScheduleMenu() {
                     RepeatTypes.NONE,
                     RepeatTypes.DAILY,
                     RepeatTypes.WEEKLY,
-                    RepeatTypes.MONTHLY
+                    RepeatTypes.MONTHLY,
+                    RepeatTypes.CUSTOM
                 ).forEach { text ->
                     OutlinedMenuItem(
                         text.lowercase().replaceFirstChar { it.uppercase() },
@@ -891,6 +898,67 @@ fun ScheduleMenu() {
                             )
                         }
                     }
+                    if (text == RepeatTypes.CUSTOM && selected == RepeatTypes.CUSTOM) {
+                        var frequencyNumber by remember { mutableStateOf("1") }
+                        var frequencyType by remember { mutableStateOf("Day") }
+                        var showFrequencyOptions by remember { mutableStateOf(false) }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(IntrinsicSize.Min)
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            Text("Every")
+                            OutlinedTextField(
+                                value = frequencyNumber,
+                                onValueChange = { newValue ->
+                                    if (newValue.all { it.isDigit() }) frequencyNumber = newValue
+                                },
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Number
+                                ),
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .width(80.dp)
+                                    .fillMaxHeight()
+                            )
+                            Box {
+                                OutlinedDropDownButton(
+                                    frequencyType,
+                                    onClick = { showFrequencyOptions = true },
+                                    modifier = Modifier.fillMaxHeight().width(100.dp)
+
+                                )
+                                DropdownMenu(expanded = showFrequencyOptions, onDismissRequest = {
+                                    showFrequencyOptions = false
+                                }) {
+                                    listOf(
+                                        RepeatFrequency.MINUTE,
+                                        RepeatFrequency.HOUR,
+                                        RepeatFrequency.DAY,
+                                        RepeatFrequency.WEEK,
+                                        RepeatFrequency.MONTH,
+                                        RepeatFrequency.YEAR,
+                                    ).forEach { f ->
+                                        val name =
+                                            f.lowercase().replaceFirstChar { it.uppercase() }
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(name)
+                                            },
+                                            onClick = {
+                                                frequencyType = name
+                                                showFrequencyOptions = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 Text(
                     "More Details",
@@ -983,20 +1051,13 @@ fun ScheduleMenu() {
                         onDismiss = { showTimePicker = false }
                     )
                 }
-
-                OutlinedMenuItem("Custom", onClick = {}) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = null
-                    )
-                }
             }
         }
     }
 }
 
 @Composable
-fun OutlineButtonTidy(text: String, onClick: () -> Unit) {
+fun RoundedOutlineButtonTidy(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     OutlinedButton(
         onClick = onClick,
         shape = RoundedCornerShape(50),
@@ -1004,9 +1065,36 @@ fun OutlineButtonTidy(text: String, onClick: () -> Unit) {
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = MaterialTheme.colorScheme.primary
         ),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+        modifier = modifier
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+@Composable
+fun OutlinedDropDownButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(0.5f)),
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.primary
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+        modifier = modifier
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(label)
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+        }
     }
 }
 

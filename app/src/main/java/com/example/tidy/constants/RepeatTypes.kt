@@ -5,4 +5,5 @@ object RepeatTypes {
     const val DAILY = "DAILY"
     const val WEEKLY = "WEEKLY"
     const val MONTHLY = "MONTHLY"
+    const val CUSTOM = "CUSTOM"
 }
