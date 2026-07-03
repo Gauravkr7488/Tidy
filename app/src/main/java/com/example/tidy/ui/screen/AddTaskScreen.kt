@@ -773,6 +773,8 @@ fun ScheduleMenu() {
                         }
                     )
                     if (text == RepeatTypes.WEEKLY && selected == RepeatTypes.WEEKLY) {
+                        var selectedDays by remember { mutableStateOf(emptyList<String>()) }
+
                         val bg = MaterialTheme.colorScheme.surface
                         LazyRow(
                             modifier = Modifier
@@ -782,14 +784,14 @@ fun ScheduleMenu() {
                                     drawRect(
                                         brush = Brush.horizontalGradient(
                                             colors = listOf(Color.Transparent, bg),
-                                            startX = size.width * 0.90f,
+                                            startX = size.width * 0.91f,
                                             endX = size.width
                                         ),
                                     )
                                     drawRect(
                                         brush = Brush.horizontalGradient(
                                             colors = listOf(Color.Transparent, bg),
-                                            startX = size.width * 0.10f,
+                                            startX = size.width * 0.09f,
                                             endX = size.width * 0f
                                         ),
                                     )
@@ -804,9 +806,17 @@ fun ScheduleMenu() {
                                 "T" to WeekDays.THU,
                                 "F" to WeekDays.FRI,
                                 "S" to WeekDays.SAT,
-                            ).forEach { day ->
+                            ).forEach { (label, day) ->
                                 item {
-                                    OutlineButtonTidy(day.first) { }
+                                    FilterChip(
+                                        onClick = {
+                                            selectedDays =
+                                                if (day in selectedDays) selectedDays - day else selectedDays + day
+                                        },
+                                        label = { Text(label) },
+                                        selected = day in selectedDays,
+                                        shape = RoundedCornerShape(50)
+                                    )
                                 }
                             }
                         }
