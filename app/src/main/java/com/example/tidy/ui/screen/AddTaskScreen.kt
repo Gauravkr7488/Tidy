@@ -133,6 +133,7 @@ fun AddTaskScreen(
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
+    var frequency by remember { mutableStateOf(RepeatTypes.DAY) }
     var repeatDays by remember { mutableStateOf("") }
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
@@ -289,7 +290,20 @@ fun AddTaskScreen(
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it },
             )
-            ScheduleMenu()
+            ScheduleMenu(
+                repeatType = repeatType,
+                repeatDays = repeatDays.split(","),
+                frequency = frequency,
+                onRepeatTypeChange = { repeatType = it },
+                onRepeatDaysChange = { repeatDays = it.joinToString(",") },
+                onFrequencyNumberChange = { frequency = it },
+                startDate = TODO(),
+                dueDate = TODO(),
+                time = TODO(),
+                onStartDateChange = TODO(),
+                onDueDateChange = TODO(),
+                onTimeChange = TODO()
+            )
             PriorityMenu(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
@@ -727,7 +741,20 @@ fun RepeatMenu(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ScheduleMenu() {
+private fun ScheduleMenu(
+    repeatType: String,
+    repeatDays: List<String>,
+    frequency: String,
+    startDate: Long?,
+    dueDate: Long?,
+    time: Long?,
+    onRepeatTypeChange: (String) -> Unit,
+    onRepeatDaysChange: (List<String>) -> Unit,
+    onFrequencyNumberChange: (String) -> Unit,
+    onStartDateChange: (Long?) -> Unit,
+    onDueDateChange: (Long?) -> Unit,
+    onTimeChange: (Long?) -> Unit,
+) {
     var showDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
         RoundedOutlineButtonTidy(
@@ -745,21 +772,35 @@ private fun ScheduleMenu() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 RepeatSection(
-                    repeatType = "",
-                    repeatDays = emptyList(),
-                    onRepeatTypeChange = {},
-                    onRepeatDaysChange = {},
-                    frequency = "",
-                    onFrequencyNumberChange = {}
+                    repeatType = repeatType,
+                    repeatDays = repeatDays,
+                    onRepeatTypeChange = onRepeatTypeChange,
+                    onRepeatDaysChange = onRepeatDaysChange,
+                    frequency = frequency,
+                    onFrequencyNumberChange = onFrequencyNumberChange
                 )
                 Text(
                     "More Details",
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Medium
                 )
-                DateRow("Start Date") {}
-                DateRow("Due Date") {}
-                TimeRow {}
+                DateRow(
+                    "Start Date",
+                    date = startDate
+                ) {
+                    onStartDateChange(it)
+                }
+                DateRow(
+                    "Due Date",
+                    date = dueDate
+                ) {
+                    onDueDateChange(it)
+                }
+                TimeRow(
+                    time = time
+                ) {
+                    onTimeChange(it)
+                }
             }
         }
     }
@@ -827,10 +868,11 @@ private fun RepeatSection(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TimeRow(
+    time: Long?,
     onTimeChange: (Long?) -> Unit
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
-    var time: Long? by remember { mutableStateOf(null) }
+    var time: Long? by remember { mutableStateOf(time) }
     OutlinedMenuItem("Time", onClick = { showTimePicker = true }) {
         val t = time
         if (t == null) {
@@ -868,10 +910,11 @@ private fun TimeRow(
 @Composable
 private fun DateRow(
     menuName: String,
+    date: Long?,
     onDateChange: (Long?) -> Unit,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    var date: Long? by remember { mutableStateOf(null) }
+    var date: Long? by remember { mutableStateOf(date) }
     OutlinedMenuItem(menuName, onClick = { showDatePicker = true }) {
         val date = date
         if (date == null) {
