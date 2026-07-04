@@ -987,6 +987,16 @@ private fun RepeatSection(
             }
         }
     }
+    if (showCustomMenu) {
+        CustomRow(
+            frequencyNumber = frequency,
+            frequencyType = repeatType,
+            onFrequencyNumberChange = { onFrequencyNumberChange(it) },
+            onFrequencyTypeChange = { onRepeatTypeChange(it) }
+        )
+
+    }
+
     if (repeatType == RepeatTypes.WEEK) {
         WeekDayRow(
             selectedDays = repeatDays
@@ -997,13 +1007,8 @@ private fun RepeatSection(
             selectedDates = repeatDays
         ) { onRepeatDaysChange(it) }
     }
-    if (showCustomMenu) {
-        CustomRow(
-            frequencyNumber = frequency,
-            frequencyType = repeatType,
-            onFrequencyNumberChange = { onFrequencyNumberChange(it) },
-            onFrequencyTypeChange = { onRepeatTypeChange(it) }
-        )
+
+    if (showCustomMenu){
 
         DateRow(
             "Start Date",
