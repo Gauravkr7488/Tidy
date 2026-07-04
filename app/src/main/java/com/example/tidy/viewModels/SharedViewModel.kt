@@ -181,9 +181,9 @@ class SharedViewModel(
 
         tasks.value.forEach { task ->
             val shouldReset = when (task.repeatType) {
-                RepeatTypes.DAILY -> true
-                RepeatTypes.WEEKLY -> task.repeatDays.contains(todayDay)
-                RepeatTypes.MONTHLY -> task.repeatDays.contains(todayDate)
+                RepeatTypes.DAY -> true
+                RepeatTypes.WEEK -> task.repeatDays.contains(todayDay)
+                RepeatTypes.MONTH -> task.repeatDays.contains(todayDate)
                 else -> false
             }
             if (shouldReset) {

@@ -97,7 +97,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.navOptions
 import com.example.tidy.Utils
-import com.example.tidy.constants.RepeatFrequency
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
@@ -582,9 +581,9 @@ fun RepeatMenu(
                 DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     listOf(
                         RepeatTypes.NONE,
-                        RepeatTypes.DAILY,
-                        RepeatTypes.WEEKLY,
-                        RepeatTypes.MONTHLY
+                        RepeatTypes.DAY,
+                        RepeatTypes.WEEK,
+                        RepeatTypes.MONTH
                     ).forEach { t ->
                         DropdownMenuItem(
                             text = {
@@ -601,7 +600,7 @@ fun RepeatMenu(
                 }
             }
         }
-        if (repeatType == RepeatTypes.WEEKLY) {
+        if (repeatType == RepeatTypes.WEEK) {
             var selectedDays by remember {
                 mutableStateOf(
                     repeatDays.split(",")
@@ -640,7 +639,7 @@ fun RepeatMenu(
                 }
             }
         }
-        if (repeatType == RepeatTypes.MONTHLY) {
+        if (repeatType == RepeatTypes.MONTH) {
             if (repeatDays == "") {
                 Button(
                     onClick = { showDateDialog = true },
@@ -728,7 +727,7 @@ fun RepeatMenu(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleMenu() {
+private fun ScheduleMenu() {
     var showDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
         RoundedOutlineButtonTidy(
@@ -742,44 +741,17 @@ fun ScheduleMenu() {
             onConfirm = {},
             title = "Add Schedule"
         ) {
-            var selected by remember { mutableStateOf(RepeatTypes.NONE) }
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    "Repeat Types",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Medium
+                RepeatSection(
+                    repeatType = "",
+                    repeatDays = emptyList(),
+                    onRepeatTypeChange = {},
+                    onRepeatDaysChange = {},
+                    frequency = "",
+                    onFrequencyNumberChange = {}
                 )
-                listOf(
-                    RepeatTypes.NONE,
-                    RepeatTypes.DAILY,
-                    RepeatTypes.WEEKLY,
-                    RepeatTypes.MONTHLY,
-                    RepeatTypes.CUSTOM
-                ).forEach { text ->
-                    OutlinedMenuItem(
-                        text.lowercase().replaceFirstChar { it.uppercase() },
-                        onClick = { selected = text },
-                        content = {
-                            if (selected == text) {
-                                Icon(
-                                    imageVector = Icons.Default.Check,
-                                    contentDescription = "selected",
-                                )
-                            }
-                        }
-                    )
-                    if (text == RepeatTypes.WEEKLY && selected == RepeatTypes.WEEKLY) {
-                        WeekDayRow {}
-                    }
-                    if (text == RepeatTypes.MONTHLY && selected == RepeatTypes.MONTHLY) {
-                        MonthRow {}
-                    }
-                    if (text == RepeatTypes.CUSTOM && selected == RepeatTypes.CUSTOM) {
-                        CustomRow({}, {})
-                    }
-                }
                 Text(
                     "More Details",
                     style = MaterialTheme.typography.labelMedium,
@@ -789,6 +761,65 @@ fun ScheduleMenu() {
                 DateRow("Due Date") {}
                 TimeRow {}
             }
+        }
+    }
+}
+
+@Composable
+private fun RepeatSection(
+    repeatType: String,
+    repeatDays: List<String>,
+    frequency: String,
+    onRepeatTypeChange: (String) -> Unit,
+    onRepeatDaysChange: (List<String>) -> Unit,
+    onFrequencyNumberChange: (String) -> Unit
+) {
+    var selected by remember { mutableStateOf(repeatType) }
+    Text(
+        "Repeat Types",
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Medium
+    )
+    listOf(
+        "None" to RepeatTypes.NONE,
+        "Daily" to RepeatTypes.DAY,
+        "Weekly" to RepeatTypes.WEEK,
+        "Monthly" to RepeatTypes.MONTH,
+        "Custom" to "Custom"
+    ).forEach { (label, type) ->
+        OutlinedMenuItem(
+            label,
+            onClick = {
+                selected = label
+                onRepeatTypeChange(type)
+            },
+            content = {
+                if (selected == label) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = "selected",
+                    )
+                }
+            }
+        )
+        if (label == "Weekly" && selected == "Weekly") {
+            WeekDayRow(
+                selectedDays = repeatDays
+            ) { onRepeatDaysChange(it) }
+        }
+        if (label == "Monthly" && selected == "Monthly") {
+            MonthRow(
+                selectedDates = repeatDays
+            ) { onRepeatDaysChange(it) }
+        }
+        if (label == "Custom" && selected == "Custom") {
+
+            CustomRow(
+                frequencyNumber = frequency,
+                frequencyType = repeatType,
+                onFrequencyNumberChange = { onFrequencyNumberChange(it) },
+                onFrequencyTypeChange = { onRepeatTypeChange(it) }
+            )
         }
     }
 }
@@ -870,11 +901,13 @@ private fun DateRow(
 
 @Composable
 private fun CustomRow(
+    frequencyNumber: String,
+    frequencyType: String,
     onFrequencyNumberChange: (String) -> Unit,
     onFrequencyTypeChange: (String) -> Unit,
 ) {
-    var frequencyNumber by remember { mutableStateOf("1") }
-    var frequencyType by remember { mutableStateOf("Day") }
+    var frequencyNumber by remember { mutableStateOf(frequencyNumber) }
+    var frequencyType by remember { mutableStateOf(frequencyType) }
     var showFrequencyOptions by remember { mutableStateOf(false) }
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -903,8 +936,17 @@ private fun CustomRow(
                 .fillMaxHeight()
         )
         Box {
+            val list = listOf(
+                "Minute" to RepeatTypes.MINUTE,
+                "Hour" to RepeatTypes.HOUR,
+                "Day" to RepeatTypes.DAY,
+                "Week" to RepeatTypes.WEEK,
+                "Month" to RepeatTypes.MONTH,
+                "Year" to RepeatTypes.YEAR
+            )
+            val frequencyTypeLabel = list.first { it.second == frequencyType }.first
             OutlinedDropDownButton(
-                frequencyType,
+                frequencyTypeLabel,
                 onClick = { showFrequencyOptions = true },
                 modifier = Modifier
                     .fillMaxHeight()
@@ -914,23 +956,14 @@ private fun CustomRow(
             DropdownMenu(expanded = showFrequencyOptions, onDismissRequest = {
                 showFrequencyOptions = false
             }) {
-                listOf(
-                    RepeatFrequency.MINUTE,
-                    RepeatFrequency.HOUR,
-                    RepeatFrequency.DAY,
-                    RepeatFrequency.WEEK,
-                    RepeatFrequency.MONTH,
-                    RepeatFrequency.YEAR,
-                ).forEach { f ->
-                    val name =
-                        f.lowercase().replaceFirstChar { it.uppercase() }
+                list.forEach { (label, frequency) ->
                     DropdownMenuItem(
                         text = {
-                            Text(name)
+                            Text(label)
                         },
                         onClick = {
-                            frequencyType = name
-                            onFrequencyTypeChange(frequencyType)
+                            frequencyType = label
+                            onFrequencyTypeChange(frequency)
                             showFrequencyOptions = false
                         }
                     )
@@ -942,9 +975,10 @@ private fun CustomRow(
 
 @Composable
 private fun MonthRow(
+    selectedDates: (List<String>),
     onSelectedDateChange: (List<String>) -> Unit
 ) {
-    var selectedDates by remember { mutableStateOf(emptyList<String>()) }
+    var selectedDates by remember { mutableStateOf(selectedDates) }
     var showDateDialog by remember { mutableStateOf(false) }
     var showDuplicateDateAlert by remember { mutableStateOf(false) }
 
@@ -1010,9 +1044,10 @@ private fun MonthRow(
 
 @Composable
 private fun WeekDayRow(
+    selectedDays: List<String>,
     onSelectedDayChange: (List<String>) -> Unit
 ) {
-    var selectedDays by remember { mutableStateOf(emptyList<String>()) }
+    var selectedDays by remember { mutableStateOf(selectedDays) }
     FadingLazyRow {
         listOf(
             "S" to WeekDays.SUN,
