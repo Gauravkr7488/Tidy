@@ -19,17 +19,13 @@
 package com.example.tidy.ui.screen
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -43,7 +39,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -56,16 +51,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -75,18 +64,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -99,11 +83,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
@@ -113,7 +94,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.navOptions
 import com.example.tidy.Utils
@@ -121,8 +101,16 @@ import com.example.tidy.constants.RepeatFrequency
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.Routes
 import com.example.tidy.constants.WeekDays
+import com.example.tidy.ui.component.buttons.OutlinedDropDownButton
+import com.example.tidy.ui.component.buttons.RoundedOutlineButtonTidy
+import com.example.tidy.ui.component.dialog.SimpleDialog
+import com.example.tidy.ui.component.list.FadingLazyRow
+import com.example.tidy.ui.component.menu.OutlinedMenuItem
+import com.example.tidy.ui.component.pickers.DatePickerTidy
+import com.example.tidy.ui.component.pickers.TimePickerTidy
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
+import com.example.tidy.ui.component.taskComponents.TaskSelectionDialog
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 import com.tidy.sqldelight.Task
@@ -738,37 +726,6 @@ fun RepeatMenu(
     }
 }
 
-@Composable
-fun FadingLazyRow(
-    content: LazyListScope.() -> Unit
-) {
-    val bg = MaterialTheme.colorScheme.surface
-    LazyRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .drawWithContent {
-                drawContent()
-                drawRect(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(Color.Transparent, bg),
-                        startX = size.width * 0.91f,
-                        endX = size.width
-                    ),
-                )
-                drawRect(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(Color.Transparent, bg),
-                        startX = size.width * 0.09f,
-                        endX = size.width * 0f
-                    ),
-                )
-            },
-        contentPadding = PaddingValues(horizontal = 16.dp),
-    ) {
-        content()
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleMenu() {
@@ -1056,92 +1013,6 @@ fun ScheduleMenu() {
     }
 }
 
-@Composable
-fun RoundedOutlineButtonTidy(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    OutlinedButton(
-        onClick = onClick,
-        shape = RoundedCornerShape(50),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(0.5f)),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.primary
-        ),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-        modifier = modifier
-    ) {
-        Text(text, style = MaterialTheme.typography.labelLarge)
-    }
-}
-
-@Composable
-fun OutlinedDropDownButton(
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    OutlinedButton(
-        onClick = onClick,
-        shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(0.5f)),
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = MaterialTheme.colorScheme.primary
-        ),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-        modifier = modifier
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(label)
-            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-        }
-    }
-}
-
-@Composable
-fun OutlinedMenuItem(
-    menuName: String,
-    onClick: () -> Unit = {},
-    content: @Composable () -> Unit
-) {
-    val cardShape = RoundedCornerShape(25)
-    Card(
-        shape = cardShape,
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = Modifier
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                shape = cardShape
-            )
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { onClick() }
-                )
-            },
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp, horizontal = 16.dp)
-        ) {
-            Text(
-                text = menuName,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(4.dp)
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-            content()
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1283,7 +1154,7 @@ fun SubTaskMenu(
 }
 
 @Composable
-fun DropDownMenuTextButton(
+fun DropDownMenuTextButton( // skip transfer
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit,
     modifier: Modifier = Modifier
@@ -1296,235 +1167,6 @@ fun DropDownMenuTextButton(
     ) {
         content()
     }
-}
-
-@Composable
-fun SimpleTextButton(
-    text: String,
-    onClick: () -> Unit,
-) {
-    TextButton(
-        onClick = onClick,
-    ) {
-        Text(text)
-    }
-}
-
-@Composable
-fun DatePickerTidy(
-    date: Long? = null,
-    onDateSelected: (Long?) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = date)
-
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                onDateSelected(datePickerState.selectedDateMillis)
-                onDismiss()
-            }) {
-                Text("OK")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        }
-    ) {
-        DatePicker(
-            state = datePickerState,
-        )
-    }
-}
-
-@Composable
-fun SimpleDialog(
-    onDismissRequest: () -> Unit,
-    onConfirm: () -> Unit,
-    modifier: Modifier = Modifier,
-    title: String,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Dialog(onDismissRequest = onDismissRequest) {
-        Card(
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
-        ) {
-            Column(
-                modifier = modifier
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = Modifier.padding(8.dp)
-                )
-                content()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    SimpleTextButton("Cancel") { onDismissRequest() }
-                    SimpleTextButton("Ok") {
-                        onConfirm()
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TimePickerTidy(
-    hour: Int?,
-    minute: Int?,
-    onTimeSelected: (TimePickerState) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val currentTime = Calendar.getInstance()
-    val timePickerState = rememberTimePickerState(
-        initialHour = hour ?: currentTime.get(Calendar.HOUR_OF_DAY),
-        initialMinute = minute ?: currentTime.get(Calendar.MINUTE),
-        is24Hour = false,
-    )
-    SimpleDialog(
-        onDismissRequest = onDismiss,
-        onConfirm = {
-            onTimeSelected(timePickerState)
-            onDismiss()
-        },
-        content = {
-            TimePicker(
-                state = timePickerState
-            )
-        },
-        title = "Select Time"
-    )
-}
-
-@Composable
-fun TaskSelectionDialog(
-    tasks: List<Task>,
-    onConfirm: (List<Task>) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var selectedTasks: List<Task> by remember { mutableStateOf(emptyList()) }
-    SimpleDialog(
-        onDismissRequest = onDismiss,
-        onConfirm = { onConfirm(selectedTasks) },
-        title = if (selectedTasks.isEmpty()) "Select Tasks" else selectedTasks.size.toString() + " selected"
-    ) {
-        var query by remember { mutableStateOf("") }
-        val listState = rememberLazyListState()
-        val filteredTasks = tasks.filter { task ->
-            val matchesQuery = query.isBlank() ||
-                    task.title.contains(query, ignoreCase = true) ||
-                    task.description.contains(query, ignoreCase = true)
-            return@filter matchesQuery
-        }
-        SearchTextField(
-            query = query,
-            placeHolder = "Search tasks",
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) { query = it }
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 300.dp)
-                .padding(bottom = 5.dp),
-        ) {
-            items(filteredTasks, key = { it.id }) { task ->
-                TaskCard(
-                    task = task,
-                    onClick = {
-                        selectedTasks = if (selectedTasks.contains(task)) {
-                            selectedTasks - task
-                        } else {
-                            selectedTasks + task
-                        }
-                    },
-                    children = emptyList(),
-                    trailingIcons = buildList {
-                        if (selectedTasks.contains(task)) {
-                            add(
-                                TaskIconAction(
-                                    icon = Icons.Default.Check,
-                                    description = "selected",
-                                    onClick = {},
-                                )
-                            )
-                        }
-                    }
-                )
-            }
-            item {
-                val t = Utils.getEmptyTask().copy(title = query)
-                TaskCard(
-                    task = t,
-                    onClick = {
-                        selectedTasks = selectedTasks + t
-                    },
-                    children = emptyList(),
-                    trailingIcons =
-                        buildList {
-                            add(
-                                TaskIconAction(
-                                    icon = Icons.Default.Create,
-                                    description = "create new",
-                                    onClick = {},
-                                )
-                            )
-                        },
-                )
-            }
-
-        }
-    }
-}
-
-@Composable
-fun SearchTextField(
-    query: String,
-    placeHolder: String,
-    modifier: Modifier = Modifier,
-    onQueryValueChange: (String) -> Unit
-) {
-    OutlinedTextField(
-        value = query,
-        onValueChange = { onQueryValueChange(it) },
-        placeholder = { Text(placeHolder) },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search"
-            )
-        },
-        trailingIcon = {
-            AnimatedVisibility(visible = query.isNotEmpty()) {
-                IconButton(onClick = { onQueryValueChange("") }) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear"
-                    )
-                }
-            }
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(16.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    )
 }
 
 @Composable
