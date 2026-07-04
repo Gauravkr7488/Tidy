@@ -50,7 +50,6 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
@@ -354,6 +353,42 @@ fun AddTaskScreen(
             if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
+            }
+        }
+    }
+}
+
+@Composable
+fun DropDownMenuTidy(
+    menuName: String,
+    buttonText: String,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = menuName,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(4.dp)
+        )
+        Box {
+            var showDropDownMenu by remember { mutableStateOf(false) }
+            OutlinedDropDownButton(
+                label = buttonText,
+                onClick = { showDropDownMenu = true },
+                modifier = Modifier.width(100.dp)
+            )
+            DropdownMenu(
+                onDismissRequest = { showDropDownMenu = false },
+                expanded = showDropDownMenu
+            ) {
+                content()
             }
         }
     }
@@ -786,10 +821,95 @@ private fun ScheduleMenu(
                     frequency = frequency,
                     onFrequencyNumberChange = onFrequencyNumberChange
                 )
-                DueMenu(
-                    dueDateAndTime = dueDateAndTime,
-                    onDueDateAndTimeChange = onDueDateAndTimeChange,
+                DueSection(
+                    dueDate = null,
+                    dueTime = null,
+                    onDueDateChange = {},
+                    onDueTImeChange = {},
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DueSection(
+    dueDate: Long?,
+    dueTime: Long?,
+    onDueDateChange: (Long?) -> Unit,
+    onDueTImeChange: (Long?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = modifier.fillMaxWidth()
+        ) {
+            var showDatePicker by remember { mutableStateOf(false) }
+            Text(
+                text = "Due Date",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(4.dp)
+            )
+            OutlinedDropDownButton(
+                label = if (dueDate == null) "None" else Utils.changeDateFormat(
+                    dueDate,
+                    "MMM dd, yyyy"
+                ),
+                modifier = Modifier.width(160.dp),
+                onClick = { showDatePicker = true }
+            )
+            if (showDatePicker) {
+                DatePickerTidy(
+                    onDismiss = { showDatePicker = false },
+                    onDateSelected = {
+                        onDueDateChange(it)
+                    },
+                    date = dueDate
+                )
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = modifier.fillMaxWidth()
+        ) {
+            if (dueDate != null) {
+                var showTimePicker by remember { mutableStateOf(false) }
+                Text(
+                    text = "Due Time",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(4.dp)
+                )
+                OutlinedDropDownButton(
+                    label = dueTime?.toString() ?: "None",
+                    modifier = Modifier.width(160.dp),
+                    onClick = { showTimePicker = true }
+                )
+                if (showTimePicker) {
+                    var hour: Int? = null
+                    var minute: Int? = null
+                    if (dueTime != null) {
+                        hour = Utils.changeDateFormat(dueTime, "HH")
+                            .toInt()
+                        minute = Utils.changeDateFormat(dueTime, "mm")
+                            .toInt()
+                    }
+                    TimePickerTidy(
+                        hour = hour,
+                        minute = minute,
+                        onTimeSelected = {
+                            onDueTImeChange(Utils.convertTimeToMillis(it.hour, it.minute))
+                        },
+                        onDismiss = { showTimePicker = false }
+                    )
+                }
             }
         }
     }
@@ -831,7 +951,7 @@ private fun RepeatSection(
             OutlinedDropDownButton(
                 label = list.first { it.second == repeatType }.first,
                 onClick = { showDropDownMenu = true },
-                modifier = Modifier.width(100.dp)
+                modifier = Modifier.width(160.dp)
             )
             DropdownMenu(
                 onDismissRequest = { showDropDownMenu = false },
