@@ -771,150 +771,13 @@ fun ScheduleMenu() {
                         }
                     )
                     if (text == RepeatTypes.WEEKLY && selected == RepeatTypes.WEEKLY) {
-                        var selectedDays by remember { mutableStateOf(emptyList<String>()) }
-                        FadingLazyRow {
-                            listOf(
-                                "S" to WeekDays.SUN,
-                                "M" to WeekDays.MON,
-                                "T" to WeekDays.TUE,
-                                "W" to WeekDays.WED,
-                                "T" to WeekDays.THU,
-                                "F" to WeekDays.FRI,
-                                "S" to WeekDays.SAT,
-                            ).forEach { (label, day) ->
-                                item {
-                                    FilterChip(
-                                        onClick = {
-                                            selectedDays =
-                                                if (day in selectedDays) selectedDays - day else selectedDays + day
-                                        },
-                                        label = { Text(label) },
-                                        selected = day in selectedDays,
-                                        shape = RoundedCornerShape(50)
-                                    )
-                                }
-                            }
-                        }
+                        WeekDayRow {}
                     }
                     if (text == RepeatTypes.MONTHLY && selected == RepeatTypes.MONTHLY) {
-                        var selectedDates by remember { mutableStateOf(emptyList<String>()) }
-                        var showDateDialog by remember { mutableStateOf(false) }
-                        var showDuplicateDateAlert by remember { mutableStateOf(false) }
-
-                        FadingLazyRow {
-                            selectedDates.forEach { date ->
-                                item {
-                                    FilterChip(
-                                        onClick = {
-                                            selectedDates = selectedDates - date
-                                        },
-                                        selected = date in selectedDates,
-                                        label = {
-                                            Text(date)
-                                        },
-                                        shape = RoundedCornerShape(50)
-                                    )
-                                }
-                            }
-                            item {
-                                FilterChip(
-                                    onClick = { showDateDialog = true },
-                                    selected = false,
-                                    label = {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = null
-                                        )
-                                    },
-                                    shape = RoundedCornerShape(50)
-                                )
-                            }
-                        }
-                        if (showDateDialog) {
-                            DatePickerTidy(
-                                onDismiss = { showDateDialog = false },
-                                onDateSelected = {
-                                    if (it != null) {
-                                        val date = Utils.changeDateFormat(it, "dd")
-                                        if (date in selectedDates) showDuplicateDateAlert =
-                                            true else selectedDates = selectedDates + date
-                                    }
-                                }
-                            )
-                        }
-                        if (showDuplicateDateAlert) {
-                            AlertDialog(
-                                onDismissRequest = { showDuplicateDateAlert = false },
-                                title = { Text("Duplicate Date Chosen") },
-                                text = { Text("You have already selected this date, please chose different one.") },
-                                confirmButton = {
-                                    TextButton(onClick = { showDuplicateDateAlert = false }) {
-                                        Text("Ok")
-                                    }
-                                }
-                            )
-                        }
+                        MonthRow {}
                     }
                     if (text == RepeatTypes.CUSTOM && selected == RepeatTypes.CUSTOM) {
-                        var frequencyNumber by remember { mutableStateOf("1") }
-                        var frequencyType by remember { mutableStateOf("Day") }
-                        var showFrequencyOptions by remember { mutableStateOf(false) }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(IntrinsicSize.Min)
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            Text("Every")
-                            OutlinedTextField(
-                                value = frequencyNumber,
-                                onValueChange = { newValue ->
-                                    if (newValue.all { it.isDigit() }) frequencyNumber = newValue
-                                },
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Number
-                                ),
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier
-                                    .width(80.dp)
-                                    .fillMaxHeight()
-                            )
-                            Box {
-                                OutlinedDropDownButton(
-                                    frequencyType,
-                                    onClick = { showFrequencyOptions = true },
-                                    modifier = Modifier.fillMaxHeight().width(100.dp)
-
-                                )
-                                DropdownMenu(expanded = showFrequencyOptions, onDismissRequest = {
-                                    showFrequencyOptions = false
-                                }) {
-                                    listOf(
-                                        RepeatFrequency.MINUTE,
-                                        RepeatFrequency.HOUR,
-                                        RepeatFrequency.DAY,
-                                        RepeatFrequency.WEEK,
-                                        RepeatFrequency.MONTH,
-                                        RepeatFrequency.YEAR,
-                                    ).forEach { f ->
-                                        val name =
-                                            f.lowercase().replaceFirstChar { it.uppercase() }
-                                        DropdownMenuItem(
-                                            text = {
-                                                Text(name)
-                                            },
-                                            onClick = {
-                                                frequencyType = name
-                                                showFrequencyOptions = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        CustomRow({}, {})
                     }
                 }
                 Text(
@@ -922,92 +785,255 @@ fun ScheduleMenu() {
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Medium
                 )
+                DateRow("Start Date") {}
+                DateRow("Due Date") {}
+                TimeRow {}
+            }
+        }
+    }
+}
 
-                var showStartDatePicker by remember { mutableStateOf(false) }
-                var startDate: Long? by remember { mutableStateOf(null) }
-                OutlinedMenuItem("Start Date", onClick = { showStartDatePicker = true }) {
-                    val date = startDate
-                    if (date == null) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = null
-                        )
-                    } else {
-                        Text(
-                            Utils.changeDateFormat(
-                                pattern = "MMM dd, yyyy",
-                                date = date
-                            )
-                        )
-                    }
-                }
-                if (showStartDatePicker) {
-                    DatePickerTidy(
-                        date = startDate,
-                        onDateSelected = { startDate = it }
-                    ) { showStartDatePicker = false }
-                }
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun TimeRow(
+    onTimeChange: (Long?) -> Unit
+) {
+    var showTimePicker by remember { mutableStateOf(false) }
+    var time: Long? by remember { mutableStateOf(null) }
+    OutlinedMenuItem("Time", onClick = { showTimePicker = true }) {
+        val t = time
+        if (t == null) {
+            Icon(
+                imageVector = Icons.Default.AccessTime,
+                contentDescription = null
+            )
+        } else {
+            Text(
+                Utils.changeDateFormat(t, "hh:mm a")
+            )
+        }
+    }
+    if (showTimePicker) {
+        var hour: Int? = null
+        var minute: Int? = null
+        if (time != null) {
+            hour = Utils.changeDateFormat(time!!, "HH")
+                .toInt()
+            minute = Utils.changeDateFormat(time!!, "mm")
+                .toInt()
+        }
+        TimePickerTidy(
+            hour = hour,
+            minute = minute,
+            onTimeSelected = {
+                time = Utils.convertTimeToMillis(it.hour, it.minute)
+                onTimeChange(time)
+            },
+            onDismiss = { showTimePicker = false }
+        )
+    }
+}
 
-                var showDueDatePicker by remember { mutableStateOf(false) }
-                var duetDate: Long? by remember { mutableStateOf(null) }
-                OutlinedMenuItem("Due Date", onClick = { showDueDatePicker = true }) {
-                    val date = duetDate
-                    if (date == null) {
-                        Icon(
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = null
-                        )
-                    } else {
-                        Text(
-                            Utils.changeDateFormat(
-                                pattern = "MMM dd, yyyy",
-                                date = date
-                            )
-                        )
-                    }
-                }
-                if (showDueDatePicker) {
-                    DatePickerTidy(
-                        date = duetDate,
-                        onDateSelected = {
-                            duetDate = it
-                        }
-                    ) { showDueDatePicker = false }
-                }
+@Composable
+private fun DateRow(
+    menuName: String,
+    onDateChange: (Long?) -> Unit,
+) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    var date: Long? by remember { mutableStateOf(null) }
+    OutlinedMenuItem(menuName, onClick = { showDatePicker = true }) {
+        val date = date
+        if (date == null) {
+            Icon(
+                imageVector = Icons.Default.CalendarToday,
+                contentDescription = null
+            )
+        } else {
+            Text(
+                Utils.changeDateFormat(
+                    pattern = "MMM dd, yyyy",
+                    date = date
+                )
+            )
+        }
+    }
+    if (showDatePicker) {
+        DatePickerTidy(
+            date = date,
+            onDateSelected = {
+                date = it
+                onDateChange(it)
+            }
+        ) { showDatePicker = false }
+    }
+}
 
-                var showTimePicker by remember { mutableStateOf(false) }
-                var time: Long? by remember { mutableStateOf(null) }
-                OutlinedMenuItem("Time", onClick = { showTimePicker = true }) {
-                    val t = time
-                    if (t == null) {
-                        Icon(
-                            imageVector = Icons.Default.AccessTime,
-                            contentDescription = null
-                        )
-                    } else {
-                        Text(
-                            Utils.changeDateFormat(t, "hh:mm a")
-                        )
-                    }
+@Composable
+private fun CustomRow(
+    onFrequencyNumberChange: (String) -> Unit,
+    onFrequencyTypeChange: (String) -> Unit,
+) {
+    var frequencyNumber by remember { mutableStateOf("1") }
+    var frequencyType by remember { mutableStateOf("Day") }
+    var showFrequencyOptions by remember { mutableStateOf(false) }
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .padding(horizontal = 16.dp)
+    ) {
+        Text("Every")
+        OutlinedTextField(
+            value = frequencyNumber,
+            onValueChange = { newValue ->
+                if (newValue.all { it.isDigit() }) {
+                    frequencyNumber = newValue
+                    onFrequencyNumberChange(frequencyNumber)
                 }
-                if (showTimePicker) {
-                    var hour: Int? = null
-                    var minute: Int? = null
-                    if (time != null) {
-                        hour = Utils.changeDateFormat(time!!, "HH")
-                            .toInt()
-                        minute = Utils.changeDateFormat(time!!, "mm")
-                            .toInt()
-                    }
-                    TimePickerTidy(
-                        hour = hour,
-                        minute = minute,
-                        onTimeSelected = {
-                            time = Utils.convertTimeToMillis(it.hour, it.minute)
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number
+            ),
+            singleLine = true,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .width(80.dp)
+                .fillMaxHeight()
+        )
+        Box {
+            OutlinedDropDownButton(
+                frequencyType,
+                onClick = { showFrequencyOptions = true },
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(100.dp)
+
+            )
+            DropdownMenu(expanded = showFrequencyOptions, onDismissRequest = {
+                showFrequencyOptions = false
+            }) {
+                listOf(
+                    RepeatFrequency.MINUTE,
+                    RepeatFrequency.HOUR,
+                    RepeatFrequency.DAY,
+                    RepeatFrequency.WEEK,
+                    RepeatFrequency.MONTH,
+                    RepeatFrequency.YEAR,
+                ).forEach { f ->
+                    val name =
+                        f.lowercase().replaceFirstChar { it.uppercase() }
+                    DropdownMenuItem(
+                        text = {
+                            Text(name)
                         },
-                        onDismiss = { showTimePicker = false }
+                        onClick = {
+                            frequencyType = name
+                            onFrequencyTypeChange(frequencyType)
+                            showFrequencyOptions = false
+                        }
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthRow(
+    onSelectedDateChange: (List<String>) -> Unit
+) {
+    var selectedDates by remember { mutableStateOf(emptyList<String>()) }
+    var showDateDialog by remember { mutableStateOf(false) }
+    var showDuplicateDateAlert by remember { mutableStateOf(false) }
+
+    FadingLazyRow {
+        selectedDates.forEach { date ->
+            item {
+                FilterChip(
+                    onClick = {
+                        selectedDates = selectedDates - date
+                        onSelectedDateChange(selectedDates)
+                    },
+                    selected = date in selectedDates,
+                    label = {
+                        Text(date)
+                    },
+                    shape = RoundedCornerShape(50)
+                )
+            }
+        }
+        item {
+            FilterChip(
+                onClick = { showDateDialog = true },
+                selected = false,
+                label = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null
+                    )
+                },
+                shape = RoundedCornerShape(50)
+            )
+        }
+    }
+    if (showDateDialog) {
+        DatePickerTidy(
+            onDismiss = { showDateDialog = false },
+            onDateSelected = {
+                if (it != null) {
+                    val date = Utils.changeDateFormat(it, "dd")
+                    if (date in selectedDates) {
+                        showDuplicateDateAlert = true
+                    } else {
+                        selectedDates = selectedDates + date
+                        onSelectedDateChange(selectedDates)
+                    }
+                }
+            }
+        )
+    }
+    if (showDuplicateDateAlert) {
+        AlertDialog(
+            onDismissRequest = { showDuplicateDateAlert = false },
+            title = { Text("Duplicate Date Chosen") },
+            text = { Text("You have already selected this date, please chose different one.") },
+            confirmButton = {
+                TextButton(onClick = { showDuplicateDateAlert = false }) {
+                    Text("Ok")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun WeekDayRow(
+    onSelectedDayChange: (List<String>) -> Unit
+) {
+    var selectedDays by remember { mutableStateOf(emptyList<String>()) }
+    FadingLazyRow {
+        listOf(
+            "S" to WeekDays.SUN,
+            "M" to WeekDays.MON,
+            "T" to WeekDays.TUE,
+            "W" to WeekDays.WED,
+            "T" to WeekDays.THU,
+            "F" to WeekDays.FRI,
+            "S" to WeekDays.SAT,
+        ).forEach { (label, day) ->
+            item {
+                FilterChip(
+                    onClick = {
+                        selectedDays =
+                            if (day in selectedDays) selectedDays - day else selectedDays + day
+                        onSelectedDayChange(selectedDays)
+                    },
+                    label = { Text(label) },
+                    selected = day in selectedDays,
+                    shape = RoundedCornerShape(50)
+                )
             }
         }
     }
