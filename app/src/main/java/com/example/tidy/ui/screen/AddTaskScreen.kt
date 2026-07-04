@@ -132,7 +132,7 @@ fun AddTaskScreen(
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
-    var frequency by remember { mutableStateOf(RepeatTypes.DAY) }
+    var frequency by remember { mutableStateOf("1") }
     var repeatDays by remember { mutableStateOf("") }
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
@@ -929,7 +929,7 @@ private fun RepeatSection(
     onRepeatDaysChange: (List<String>) -> Unit,
     onFrequencyNumberChange: (String) -> Unit
 ) {
-    var selected by remember { mutableStateOf(repeatType) }
+    var showCustomMenu by remember { mutableStateOf(false) }
     val list = listOf(
         "None" to RepeatTypes.NONE,
         "Minute" to RepeatTypes.MINUTE,
@@ -937,7 +937,7 @@ private fun RepeatSection(
         "Day" to RepeatTypes.DAY,
         "Week" to RepeatTypes.WEEK,
         "Month" to RepeatTypes.MONTH,
-        "Year" to RepeatTypes.YEAR
+        "Year" to RepeatTypes.YEAR,
     )
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -954,7 +954,7 @@ private fun RepeatSection(
         Box {
             var showDropDownMenu by remember { mutableStateOf(false) }
             OutlinedDropDownButton(
-                label = list.first { it.second == repeatType }.first,
+                label = if (showCustomMenu) "Custom" else list.first { it.second == repeatType }.first,
                 onClick = { showDropDownMenu = true },
                 modifier = Modifier.width(160.dp)
             )
@@ -967,31 +967,37 @@ private fun RepeatSection(
                     "Daily" to RepeatTypes.DAY,
                     "Weekly" to RepeatTypes.WEEK,
                     "Monthly" to RepeatTypes.MONTH,
-                    "Custom" to "Custom"
                 ).forEach { (label, type) ->
                     DropdownMenuItem(
                         text = { Text(label) },
                         onClick = {
                             onRepeatTypeChange(type)
-                            selected = type
                             showDropDownMenu = false
                         }
                     )
                 }
+                DropdownMenuItem(
+                    text = { Text("Custom") },
+                    onClick = {
+                        showDropDownMenu = false
+                        showCustomMenu = true
+                        onRepeatTypeChange(RepeatTypes.DAY)
+                    }
+                )
             }
         }
     }
-    if (selected == RepeatTypes.WEEK) {
+    if (repeatType == RepeatTypes.WEEK) {
         WeekDayRow(
             selectedDays = repeatDays
         ) { onRepeatDaysChange(it) }
     }
-    if (selected == RepeatTypes.MONTH) {
+    if (repeatType == RepeatTypes.MONTH) {
         MonthRow(
             selectedDates = repeatDays
         ) { onRepeatDaysChange(it) }
     }
-    if (selected == "Custom") {
+    if (showCustomMenu) {
         CustomRow(
             frequencyNumber = frequency,
             frequencyType = repeatType,
@@ -1012,7 +1018,7 @@ private fun RepeatSection(
 
         }
     }
-    if (selected != RepeatTypes.NONE) {
+    if (repeatType != RepeatTypes.NONE) {
         TimeRow(
             time = null
         ) {
@@ -1105,8 +1111,6 @@ private fun CustomRow(
     onFrequencyNumberChange: (String) -> Unit,
     onFrequencyTypeChange: (String) -> Unit,
 ) {
-    var frequencyNumber by remember { mutableStateOf(frequencyNumber) }
-    var frequencyType by remember { mutableStateOf(frequencyType) }
     var showFrequencyOptions by remember { mutableStateOf(false) }
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -1121,7 +1125,6 @@ private fun CustomRow(
             value = frequencyNumber,
             onValueChange = { newValue ->
                 if (newValue.all { it.isDigit() }) {
-                    frequencyNumber = newValue
                     onFrequencyNumberChange(frequencyNumber)
                 }
             },
@@ -1163,7 +1166,6 @@ private fun CustomRow(
                             Text(label)
                         },
                         onClick = {
-                            frequencyType = frequency
                             onFrequencyTypeChange(frequency)
                             showFrequencyOptions = false
                         }
