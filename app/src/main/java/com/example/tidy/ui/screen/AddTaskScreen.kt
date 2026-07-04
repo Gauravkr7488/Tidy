@@ -305,8 +305,10 @@ fun AddTaskScreen(
                 onStartDateChange = { startDate = it },
                 onEndDateChange = { endDate = it },
                 onTimeChange = { time = it },
-                dueDateAndTime = dueDateAndTime,
-                onDueDateAndTimeChange = { dueDateAndTime = it }
+                dueDate = null,
+                dueTime = null,
+                onDueDateChange = {},
+                onDueTImeChange = {}
             )
             PriorityMenu(
                 priorityValue = priority,
@@ -788,14 +790,16 @@ private fun ScheduleMenu(
     startDate: Long?,
     endDate: Long?,
     time: Long?,
-    dueDateAndTime: Long?,
+    dueDate: Long?,
+    dueTime: Long?,
     onRepeatTypeChange: (String) -> Unit,
     onRepeatDaysChange: (List<String>) -> Unit,
     onFrequencyNumberChange: (String) -> Unit,
     onStartDateChange: (Long?) -> Unit,
     onEndDateChange: (Long?) -> Unit,
     onTimeChange: (Long?) -> Unit,
-    onDueDateAndTimeChange: (Long?) -> Unit,
+    onDueDateChange: (Long?) -> Unit,
+    onDueTImeChange: (Long?) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
@@ -807,8 +811,9 @@ private fun ScheduleMenu(
     if (showDialog) {
         SimpleDialog(
             onDismissRequest = { showDialog = false },
-            onConfirm = {},
-            title = "Add Schedule"
+            title = "Add Schedule",
+            onConfirm = { showDialog = false },
+            showCancelButtons = false
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -822,10 +827,10 @@ private fun ScheduleMenu(
                     onFrequencyNumberChange = onFrequencyNumberChange
                 )
                 DueSection(
-                    dueDate = null,
-                    dueTime = null,
-                    onDueDateChange = {},
-                    onDueTImeChange = {},
+                    dueDate = dueDate,
+                    dueTime = dueTime,
+                    onDueDateChange = onDueDateChange,
+                    onDueTImeChange = onDueTImeChange,
                 )
             }
         }

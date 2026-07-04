@@ -41,6 +41,7 @@ fun SimpleDialog(
     onConfirm: () -> Unit,
     modifier: Modifier = Modifier,
     title: String,
+    showCancelButtons: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
@@ -65,10 +66,10 @@ fun SimpleDialog(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Absolute.Right
                 ) {
-                    SimpleTextButton("Cancel") { onDismissRequest() }
-                    SimpleTextButton("Ok") {
+                    if (showCancelButtons) SimpleTextButton("Cancel") { onDismissRequest() }
+                    SimpleTextButton("OK") {
                         onConfirm()
                     }
                 }
