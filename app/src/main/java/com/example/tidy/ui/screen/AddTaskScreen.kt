@@ -786,16 +786,6 @@ private fun ScheduleMenu(
                     frequency = frequency,
                     onFrequencyNumberChange = onFrequencyNumberChange
                 )
-                Text(
-                    "More Details",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Medium
-                )
-                TimeRow(
-                    time = time
-                ) {
-                    onTimeChange(it)
-                }
                 DueMenu(
                     dueDateAndTime = dueDateAndTime,
                     onDueDateAndTimeChange = onDueDateAndTimeChange,
@@ -815,63 +805,93 @@ private fun RepeatSection(
     onFrequencyNumberChange: (String) -> Unit
 ) {
     var selected by remember { mutableStateOf(repeatType) }
-    Text(
-        "Repeat Types",
-        style = MaterialTheme.typography.labelMedium,
-        fontWeight = FontWeight.Medium
-    )
-    listOf(
+    val list = listOf(
         "None" to RepeatTypes.NONE,
-        "Daily" to RepeatTypes.DAY,
-        "Weekly" to RepeatTypes.WEEK,
-        "Monthly" to RepeatTypes.MONTH,
-        "Custom" to ""
-    ).forEach { (label, type) ->
-        OutlinedMenuItem(
-            label,
-            onClick = {
-                selected = if (type == "Custom") "" else type
-                onRepeatTypeChange(type)
-            },
-            content = {
-                if (selected == label) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = "selected",
+        "Minute" to RepeatTypes.MINUTE,
+        "Hour" to RepeatTypes.HOUR,
+        "Day" to RepeatTypes.DAY,
+        "Week" to RepeatTypes.WEEK,
+        "Month" to RepeatTypes.MONTH,
+        "Year" to RepeatTypes.YEAR
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Repeat Type",
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(4.dp)
+        )
+        Box {
+            var showDropDownMenu by remember { mutableStateOf(false) }
+            OutlinedDropDownButton(
+                label = list.first { it.second == repeatType }.first,
+                onClick = { showDropDownMenu = true },
+                modifier = Modifier.width(100.dp)
+            )
+            DropdownMenu(
+                onDismissRequest = { showDropDownMenu = false },
+                expanded = showDropDownMenu
+            ) {
+                listOf(
+                    "None" to RepeatTypes.NONE,
+                    "Daily" to RepeatTypes.DAY,
+                    "Weekly" to RepeatTypes.WEEK,
+                    "Monthly" to RepeatTypes.MONTH,
+                    "Custom" to "Custom"
+                ).forEach { (label, type) ->
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            onRepeatTypeChange(type)
+                            selected = type
+                            showDropDownMenu = false
+                        }
                     )
                 }
             }
+        }
+    }
+    if (selected == RepeatTypes.WEEK) {
+        WeekDayRow(
+            selectedDays = repeatDays
+        ) { onRepeatDaysChange(it) }
+    }
+    if (selected == RepeatTypes.MONTH) {
+        MonthRow(
+            selectedDates = repeatDays
+        ) { onRepeatDaysChange(it) }
+    }
+    if (selected == "Custom") {
+        CustomRow(
+            frequencyNumber = frequency,
+            frequencyType = repeatType,
+            onFrequencyNumberChange = { onFrequencyNumberChange(it) },
+            onFrequencyTypeChange = { onRepeatTypeChange(it) }
         )
-        if (label == "Weekly" && selected == RepeatTypes.WEEK) {
-            WeekDayRow(
-                selectedDays = repeatDays
-            ) { onRepeatDaysChange(it) }
-        }
-        if (label == "Monthly" && selected == RepeatTypes.MONTH) {
-            MonthRow(
-                selectedDates = repeatDays
-            ) { onRepeatDaysChange(it) }
-        }
-        if (label == "Custom" && selected == "") {
-            val frequencyType = if (repeatType == "") RepeatTypes.DAY else repeatType
-            CustomRow(
-                frequencyNumber = frequency,
-                frequencyType = frequencyType,
-                onFrequencyNumberChange = { onFrequencyNumberChange(it) },
-                onFrequencyTypeChange = { onRepeatTypeChange(it) }
-            )
-            DateRow(
-                "Start Date",
-                date = null
-            ) {
 
-            }
-            DateRow(
-                "End Date",
-                date = null
-            ) {
+        DateRow(
+            "Start Date",
+            date = null
+        ) {
 
-            }
+        }
+        DateRow(
+            "End Date",
+            date = null
+        ) {
+
+        }
+    }
+    if (selected != RepeatTypes.NONE) {
+        TimeRow(
+            time = null
+        ) {
+            {}
         }
     }
 }

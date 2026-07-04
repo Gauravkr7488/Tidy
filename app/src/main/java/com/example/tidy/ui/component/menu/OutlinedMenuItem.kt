@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OutlinedMenuItem(
     menuName: String,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     content: @Composable () -> Unit
 ) {
@@ -49,7 +50,7 @@ fun OutlinedMenuItem(
             containerColor = Color.Transparent
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = Modifier
+        modifier = modifier
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
