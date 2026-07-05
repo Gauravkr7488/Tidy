@@ -25,11 +25,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -1015,10 +1013,8 @@ private fun CustomRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
-            .height(IntrinsicSize.Min)
-            .padding(horizontal = 16.dp)
     ) {
-        Text("Every")
+        Text("Repeat Every")
         OutlinedTextField(
             value = frequencyNumber,
             onValueChange = { newValue ->
@@ -1033,7 +1029,6 @@ private fun CustomRow(
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .width(80.dp)
-                .fillMaxHeight()
         )
         Box {
             val list = listOf(
@@ -1049,11 +1044,7 @@ private fun CustomRow(
             }.first
             OutlinedDropDownButton(
                 frequencyTypeLabel,
-                onClick = { showFrequencyOptions = true },
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(100.dp)
-
+                onClick = { showFrequencyOptions = true }
             )
             DropdownMenu(expanded = showFrequencyOptions, onDismissRequest = {
                 showFrequencyOptions = false
