@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,8 +51,6 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -66,7 +63,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -110,7 +106,6 @@ import com.example.tidy.ui.component.topAppBar.TopAppBar
 import com.example.tidy.viewModels.SharedViewModel
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 @Composable
 fun AddTaskScreen(
@@ -129,7 +124,7 @@ fun AddTaskScreen(
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
-    var frequencyNumber by remember { mutableStateOf("1") }
+    var frequencyNumber: String? by remember { mutableStateOf(null) }
     var repeatDays by remember { mutableStateOf("") }
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
@@ -160,6 +155,10 @@ fun AddTaskScreen(
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
             dueDate = task.dueDateAndTime
             dueTime = task.dueDateAndTime
+            frequencyNumber = task.frequencyNumber
+            startDate = task.startDate
+            endDate = task.endDate
+            time = task.time
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -292,12 +291,6 @@ fun AddTaskScreen(
                 singleLine = false,
                 modifier = Modifier.fillMaxWidth()
             )
-            RepeatMenu(
-                repeatType = repeatType,
-                repeatDays = repeatDays,
-                onRepeatTypeChange = { repeatType = it },
-                onRepeatDaysChange = { repeatDays = it },
-            )
             ScheduleMenu(
                 repeatType = repeatType,
                 repeatDays = if (repeatDays == "") emptyList() else repeatDays.split(","),
@@ -314,7 +307,7 @@ fun AddTaskScreen(
                 dueDate = dueDate,
                 dueTime = dueTime,
                 onDueDateChange = { dueDate = it },
-                onDueTImeChange = { dueTime = it }
+                onDueTimeChange = { dueTime = it }
             )
             PriorityMenu(
                 priorityValue = priority,
@@ -437,189 +430,12 @@ fun EmptyTitleDialog(onDismiss: () -> Unit) {
     )
 }
 
-@Composable
-fun RepeatMenu(
-    repeatType: String,
-    repeatDays: String,
-    onRepeatTypeChange: (String) -> Unit,
-    onRepeatDaysChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    var showDateDialog by remember { mutableStateOf(false) }
-    var showAlert by remember { mutableStateOf(false) }
-
-    Column(modifier = modifier) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            var expanded by remember { mutableStateOf(false) }
-
-            Text("Repeat")
-            Spacer(modifier = Modifier.weight(1f))
-            Box {
-                TextButton(
-                    onClick = { expanded = !expanded },
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        repeatType.lowercase().replaceFirstChar { it.uppercase() },
-                        modifier = Modifier.widthIn(min = 60.dp)
-                    )
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    listOf(
-                        RepeatTypes.NONE,
-                        RepeatTypes.DAY,
-                        RepeatTypes.WEEK,
-                        RepeatTypes.MONTH
-                    ).forEach { t ->
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    t.lowercase().replaceFirstChar { it.uppercase() }
-                                )
-                            },
-                            onClick = {
-                                onRepeatTypeChange(t)
-                                expanded = false
-                            },
-                        )
-                    }
-                }
-            }
-        }
-        if (repeatType == RepeatTypes.WEEK) {
-            var selectedDays by remember {
-                mutableStateOf(
-                    repeatDays.split(",")
-                        .map { it.trim() }
-                        .filter { it.isNotEmpty() }
-                )
-            }
-
-            val chips = listOf(
-                "S" to WeekDays.SUN,
-                "M" to WeekDays.MON,
-                "T" to WeekDays.TUE,
-                "W" to WeekDays.WED,
-                "T" to WeekDays.THU,
-                "F" to WeekDays.FRI,
-                "S" to WeekDays.SAT,
-            )
-            Row(
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                chips.forEach { (label, day) ->
-                    FilterChip(
-                        onClick = {
-                            selectedDays =
-                                if (day in selectedDays) selectedDays - day else selectedDays + day
-                            onRepeatDaysChange(
-                                selectedDays.joinToString(",")
-                            )
-                        },
-                        label = { Text(label) },
-                        selected = day in selectedDays,
-                    )
-                }
-            }
-        }
-        if (repeatType == RepeatTypes.MONTH) {
-            if (repeatDays == "") {
-                Button(
-                    onClick = { showDateDialog = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Select Date")
-                }
-            } else {
-                val chips = repeatDays
-                    .split(",")
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
-                val listState = rememberLazyListState()
-
-                LazyRow(
-                    state = listState,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    items(chips) { chip ->
-                        FilterChip(
-                            onClick = {
-                                val updated = chips.toMutableList().apply {
-                                    remove(chip)
-                                }
-                                onRepeatDaysChange(updated.joinToString(","))
-                            },
-                            label = { Text(chip) },
-                            selected = chip in repeatDays,
-                            modifier = Modifier.padding(end = 10.dp)
-                        )
-                    }
-                }
-
-                Button(
-                    onClick = { showDateDialog = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Select more Dates")
-                }
-            }
-            val state = rememberDatePickerState()
-            if (showDateDialog) {
-                DatePickerDialog(
-                    onDismissRequest = { showDateDialog = false },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            val milli = state.selectedDateMillis
-                            val calendar = Calendar.getInstance().apply {
-                                if (milli != null) {
-                                    timeInMillis = milli
-                                }
-                            }
-                            val formatted =
-                                "%02d".format(calendar.get(Calendar.DAY_OF_MONTH))
-                            if (formatted in repeatDays) {
-                                showAlert = true
-                            } else {
-                                onRepeatDaysChange("$repeatDays,$formatted")
-                            }
-
-                            showDateDialog = false
-                        }) {
-                            Text("OK")
-                        }
-                    }
-                ) {
-                    DatePicker(state = state)
-                }
-            }
-        }
-    }
-    if (showAlert) {
-        AlertDialog(
-            onDismissRequest = { showAlert = false },
-            title = { Text("Duplicate Date Chosen") },
-            text = { Text("You have already selected this date, please chose different one.") },
-            confirmButton = {
-                TextButton(onClick = { showAlert = false }) {
-                    Text("Ok")
-                }
-            }
-        )
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ScheduleMenu(
     repeatType: String,
     repeatDays: List<String>,
-    frequencyNumber: String,
+    frequencyNumber: String?,
     startDate: Long?,
     endDate: Long?,
     time: Long?,
@@ -627,17 +443,17 @@ private fun ScheduleMenu(
     dueTime: Long?,
     onRepeatTypeChange: (String) -> Unit,
     onRepeatDaysChange: (List<String>) -> Unit,
-    onFrequencyNumberChange: (String) -> Unit,
+    onFrequencyNumberChange: (String?) -> Unit,
     onStartDateChange: (Long?) -> Unit,
     onEndDateChange: (Long?) -> Unit,
     onTimeChange: (Long?) -> Unit,
     onDueDateChange: (Long?) -> Unit,
-    onDueTImeChange: (Long?) -> Unit,
+    onDueTimeChange: (Long?) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
         RoundedOutlineButtonTidy(
-            "Add",
+            text = if (repeatType == RepeatTypes.NONE && dueDate == null) "Add" else "View",
             onClick = { showDialog = true },
         )
     }
@@ -669,7 +485,7 @@ private fun ScheduleMenu(
                     dueDate = dueDate,
                     dueTime = dueTime,
                     onDueDateChange = onDueDateChange,
-                    onDueTimeChange = onDueTImeChange,
+                    onDueTimeChange = onDueTimeChange,
                 )
             }
         }
@@ -699,13 +515,13 @@ private fun DueSection(
 private fun RepeatSection(
     repeatType: String,
     repeatDays: List<String>,
-    frequencyNumber: String,
+    frequencyNumber: String?,
     startDate: Long?,
     endDate: Long?,
     time: Long?,
     onRepeatTypeChange: (String) -> Unit,
     onRepeatDaysChange: (List<String>) -> Unit,
-    onFrequencyNumberChange: (String) -> Unit,
+    onFrequencyNumberChange: (String?) -> Unit,
     onStartDateChange: (Long?) -> Unit,
     onEndDateChange: (Long?) -> Unit,
     onTimeChange: (Long?) -> Unit
@@ -731,8 +547,9 @@ private fun RepeatSection(
         )
         Box {
             var showDropDownMenu by remember { mutableStateOf(false) }
+            println(frequencyNumber)
             OutlinedDropDownButton(
-                label = if (showCustomMenu) "Custom" else repeatTypeDisplayList.first { it.second == repeatType }.first,
+                label = if (showCustomMenu || frequencyNumber != null) "Custom" else repeatTypeDisplayList.first { it.second == repeatType }.first,
                 onClick = { showDropDownMenu = true },
             )
             DropdownMenu(
@@ -748,7 +565,7 @@ private fun RepeatSection(
                             showDropDownMenu = false
                             if (showCustomMenu) {
                                 showCustomMenu = false
-                                onFrequencyNumberChange("1")
+                                onFrequencyNumberChange(null)
                                 onStartDateChange(null)
                                 onEndDateChange(null)
                             }
@@ -768,9 +585,9 @@ private fun RepeatSection(
             }
         }
     }
-    if (showCustomMenu) {
+    if (showCustomMenu || frequencyNumber != null) {
         CustomRow(
-            frequencyNumber = frequencyNumber,
+            frequencyNumber = frequencyNumber ?: "1",
             frequencyType = repeatType,
             onFrequencyNumberChange = onFrequencyNumberChange,
             onFrequencyTypeChange = onRepeatTypeChange
