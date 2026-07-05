@@ -107,7 +107,7 @@ object Utils {
         val blockerList = taskBlocks.groupBy { it.task_id }
         val taskDtos = tasks.map { task ->
             val string =
-                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(", ") { it.blockedBy_id.toString() } else null
+                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(",") { it.blockedBy_id.toString() } else null
             task.toTaskDto(string)
         }
         val backupDto = BackupDto(lastResetDate, taskDtos)
