@@ -651,9 +651,7 @@ fun RepeatMenu(
                             selectedDays =
                                 if (day in selectedDays) selectedDays - day else selectedDays + day
                             onRepeatDaysChange(
-                                selectedDays.joinToString(
-                                    ","
-                                )
+                                selectedDays.joinToString(",")
                             )
                         },
                         label = { Text(label) },
