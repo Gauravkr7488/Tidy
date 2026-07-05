@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -317,7 +316,6 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
-//            DueMenu(dueDateAndTime, { dueDateAndTime = it })
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -360,140 +358,6 @@ fun AddTaskScreen(
                 EmptyTitleDialog { showAlertDialog = false }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DueMenu(
-    dueDateAndTime: Long?,
-    onDueDateAndTimeChange: (Long?) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var showTimeDialog by remember { mutableStateOf(false) }
-    var showDateDialog by remember { mutableStateOf(false) }
-    var showAlertDialog by remember { mutableStateOf(false) }
-    var date by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
-    var time by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
-    var dateAndTime: Long? by remember(dueDateAndTime) { mutableStateOf(dueDateAndTime) }
-    Column(modifier = modifier) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Due On")
-            Spacer(modifier = Modifier.weight(1f))
-            TextButton(
-                onClick = { expanded = !expanded },
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    if (dateAndTime == null) "Pick" else Utils.changeDateFormat(
-                        dateAndTime!!,
-                        "hh:mm a 'On' MMM dd, yyyy"
-                    ),
-                    modifier = Modifier.widthIn(min = 60.dp)
-                )
-                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-            }
-            if (expanded) {
-                SimpleDialog(
-                    onDismissRequest = { expanded = false },
-                    title = "Select Date and Time",
-                    content = {
-                        DropDownMenuTextButton(
-                            { showDateDialog = true },
-                            content = {
-                                Text(
-                                    if (date != null) {
-                                        Utils.changeDateFormat(
-                                            pattern = "MMM dd, yyyy",
-                                            date = date!!
-                                        )
-                                    } else {
-                                        "Today"
-                                    }
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                            },
-                            modifier = Modifier.padding(5.dp)
-                        )
-                        DropDownMenuTextButton(
-                            { showTimeDialog = true },
-                            content = {
-                                Text(
-                                    if (time != null) {
-                                        Utils.changeDateFormat(time!!, "hh:mm a")
-                                    } else {
-                                        "Select Time"
-                                    }
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                            },
-                            modifier = Modifier.padding(5.dp)
-
-                        )
-                    },
-                    onConfirm = {
-                        dateAndTime =
-                            if (date == null && time == null) dueDateAndTime
-                            else Utils.combineDateAndTimeMillis(date, time)
-                        dateAndTime?.let {
-                            if (it <= System.currentTimeMillis()) {
-                                showAlertDialog = true
-                                dateAndTime = null
-                            } else {
-                                onDueDateAndTimeChange(dateAndTime)
-                                expanded = false
-                            }
-                        }
-                    }
-                )
-            }
-        }
-    }
-    if (showDateDialog) {
-        DatePickerTidy(
-            onDismiss = { showDateDialog = false },
-            onDateSelected = {
-                date = it
-            },
-            date = date
-        )
-    }
-    if (showTimeDialog) {
-        var hour: Int? = null
-        var minute: Int? = null
-        if (time != null) {
-            hour = Utils.changeDateFormat(time!!, "HH")
-                .toInt()
-            minute = Utils.changeDateFormat(time!!, "mm")
-                .toInt()
-        }
-        TimePickerTidy(
-            hour = hour,
-            minute = minute,
-            onTimeSelected = {
-                time = Utils.convertTimeToMillis(it.hour, it.minute)
-            },
-            onDismiss = { showTimeDialog = false }
-        )
-    }
-    if (showAlertDialog) {
-        AlertDialog(
-            onDismissRequest = { showAlertDialog = false },
-            title = { Text("Past or Current time can not be selected") },
-            text = { Text("Please select a time after the current time.") },
-            confirmButton = {
-                TextButton(onClick = { showAlertDialog = false }) {
-                    Text("Ok")
-                }
-            }
-        )
     }
 }
 
@@ -1334,22 +1198,6 @@ fun SubTaskMenu(
                 }
             )
         }
-    }
-}
-
-@Composable
-fun DropDownMenuTextButton( // skip transfer
-    onClick: () -> Unit,
-    content: @Composable RowScope.() -> Unit,
-    modifier: Modifier = Modifier
-) {
-    TextButton(
-        onClick = onClick,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        shape = RoundedCornerShape(8.dp),
-        modifier = modifier
-    ) {
-        content()
     }
 }
 
