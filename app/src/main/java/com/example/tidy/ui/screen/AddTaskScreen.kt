@@ -878,14 +878,11 @@ private fun RepeatSection(
     onTimeChange: (Long?) -> Unit
 ) {
     var showCustomMenu by remember { mutableStateOf(false) }
-    val list = listOf(
+    val repeatTypeDisplayList = listOf(
         "None" to RepeatTypes.NONE,
-        "Minute" to RepeatTypes.MINUTE,
-        "Hour" to RepeatTypes.HOUR,
-        "Day" to RepeatTypes.DAY,
-        "Week" to RepeatTypes.WEEK,
-        "Month" to RepeatTypes.MONTH,
-        "Year" to RepeatTypes.YEAR,
+        "Daily" to RepeatTypes.DAY,
+        "Weekly" to RepeatTypes.WEEK,
+        "Monthly" to RepeatTypes.MONTH,
     )
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -902,20 +899,14 @@ private fun RepeatSection(
         Box {
             var showDropDownMenu by remember { mutableStateOf(false) }
             OutlinedDropDownButton(
-                label = if (showCustomMenu) "Custom" else list.first { it.second == repeatType }.first,
+                label = if (showCustomMenu) "Custom" else repeatTypeDisplayList.first { it.second == repeatType }.first,
                 onClick = { showDropDownMenu = true },
-                modifier = Modifier.width(100.dp)
             )
             DropdownMenu(
                 onDismissRequest = { showDropDownMenu = false },
                 expanded = showDropDownMenu
             ) {
-                listOf(
-                    "None" to RepeatTypes.NONE,
-                    "Daily" to RepeatTypes.DAY,
-                    "Weekly" to RepeatTypes.WEEK,
-                    "Monthly" to RepeatTypes.MONTH,
-                ).forEach { (label, type) ->
+                repeatTypeDisplayList.forEach { (label, type) ->
                     DropdownMenuItem(
                         text = { Text(label) },
                         onClick = {
