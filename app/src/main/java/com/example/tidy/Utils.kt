@@ -128,7 +128,11 @@ object Utils {
             parentId = null,
             blockStatus = 0,
             priority = null,
-            dueDateAndTime = null
+            dueDateAndTime = null,
+            frequencyNumber = null,
+            startDate = null,
+            endDate = null,
+            time = null
         )
     }
 
@@ -146,7 +150,11 @@ object Utils {
             blockedBy = taskBlockString,
             blockedStatus = blockStatus != 0L,
             priority = priority,
-            dueDateAndTime = dueDateAndTime
+            dueDateAndTime = dueDateAndTime,
+            frequencyNumber = frequencyNumber,
+            startDate = startDate,
+            endDate = endDate,
+            time = time
         )
     }
 
@@ -163,7 +171,11 @@ object Utils {
             blockStatus = if (blockedStatus) 1L else 0L,
             createdAt = createdAt,
             priority = priority,
-            dueDateAndTime = dueDateAndTime
+            dueDateAndTime = dueDateAndTime,
+            frequencyNumber = frequencyNumber,
+            startDate = startDate,
+            endDate = endDate,
+            time = time
         )
     }
 

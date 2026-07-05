@@ -43,7 +43,11 @@ class DbOperation(
                 parentId = task.parentId,
                 blockStatus = task.blockStatus,
                 priority = task.priority,
-                dueDateAndTime = task.dueDateAndTime
+                dueDateAndTime = task.dueDateAndTime,
+                frequencyNumber = task.frequencyNumber,
+                startDate = task.startDate,
+                endDate = task.endDate,
+                time = task.time
             )
         }
     }
@@ -95,7 +99,11 @@ class DbOperation(
                 parentId = task.parentId,
                 blockStatus = task.blockStatus,
                 priority = task.priority,
-                dueDateAndTime = task.dueDateAndTime
+                dueDateAndTime = task.dueDateAndTime,
+                frequencyNumber = task.frequencyNumber,
+                startDate = task.startDate,
+                endDate = task.endDate,
+                time = task.time
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
             if (task.dueDateAndTime != null && id != null) Utils.scheduleDueDateWork(
@@ -117,7 +125,11 @@ class DbOperation(
                 parentId = task.parentId,
                 blockStatus = task.blockStatus,
                 priority = task.priority,
-                dueDateAndTime = task.dueDateAndTime
+                dueDateAndTime = task.dueDateAndTime,
+                frequencyNumber = task.frequencyNumber,
+                startDate = task.startDate,
+                endDate = task.endDate,
+                time = task.time
             )
             if (task.dueDateAndTime != null) {
                 Utils.cancelDueDateWork(context, task.id)

@@ -207,7 +207,11 @@ fun AddTaskScreen(
                                         dueDateAndTime = Utils.combineDateAndTimeMillis(
                                             dueDate,
                                             dueTime
-                                        )
+                                        ),
+                                        frequencyNumber = frequencyNumber,
+                                        startDate = startDate,
+                                        endDate = endDate,
+                                        time = time
                                     )
                                 )
                                 if (savedTaskId == null) return@launch
@@ -215,7 +219,7 @@ fun AddTaskScreen(
                                     val blockerId =
                                         if (it.id == 0L) sharedViewModel.saveTask(it) else it.id
                                     if (blockerId == null) {
-                                        println("issue while saving new blocker") // todo better logging or errs
+                                        println("issue while saving new blocker")
                                         return@forEach
                                     }
                                     sharedViewModel.addBlockedByTasks(savedTaskId, blockerId)
