@@ -55,7 +55,7 @@ fun FadingLazyRow(
                     ),
                 )
             },
-        contentPadding = PaddingValues(horizontal = 16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp),
     ) {
         content()
     }
