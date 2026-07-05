@@ -293,7 +293,7 @@ fun AddTaskScreen(
             )
             ScheduleMenu(
                 repeatType = repeatType,
-                repeatDays = repeatDays.split(","),
+                repeatDays = if (repeatDays == "") emptyList() else repeatDays.split(","),
                 frequencyNumber = frequencyNumber,
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it.joinToString(",") },
