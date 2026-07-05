@@ -20,7 +20,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -41,6 +40,7 @@ fun OutlinedMenuItem(
     menuName: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
+    removeSpacer: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val cardShape = RoundedCornerShape(25)
@@ -65,7 +65,6 @@ fun OutlinedMenuItem(
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .fillMaxWidth()
                 .padding(vertical = 8.dp, horizontal = 16.dp)
         ) {
             Text(
@@ -75,8 +74,7 @@ fun OutlinedMenuItem(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(4.dp)
             )
-
-            Spacer(modifier = Modifier.weight(1f))
+            if (!removeSpacer) Spacer(modifier = Modifier.weight(1f))
             content()
         }
     }

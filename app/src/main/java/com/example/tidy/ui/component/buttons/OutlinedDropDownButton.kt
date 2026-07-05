@@ -30,7 +30,7 @@ fun OutlinedDropDownButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    OutlinedMenuItem(menuName = label, onClick = onClick, modifier = modifier) {
+    OutlinedMenuItem(menuName = label, onClick = onClick, removeSpacer = true, modifier = modifier) {
             Icon(Icons.Default.ArrowDropDown, contentDescription = null)
     }
 }
