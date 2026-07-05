@@ -361,42 +361,6 @@ fun AddTaskScreen(
     }
 }
 
-@Composable
-fun DropDownMenuTidy(
-    menuName: String,
-    buttonText: String,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = menuName,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(4.dp)
-        )
-        Box {
-            var showDropDownMenu by remember { mutableStateOf(false) }
-            OutlinedDropDownButton(
-                label = buttonText,
-                onClick = { showDropDownMenu = true },
-                modifier = Modifier.width(100.dp)
-            )
-            DropdownMenu(
-                onDismissRequest = { showDropDownMenu = false },
-                expanded = showDropDownMenu
-            ) {
-                content()
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DueMenu(
@@ -912,6 +876,7 @@ private fun RepeatSection(
                         onClick = {
                             onRepeatTypeChange(type)
                             showDropDownMenu = false
+                            showCustomMenu = false
                         }
                     )
                 }
