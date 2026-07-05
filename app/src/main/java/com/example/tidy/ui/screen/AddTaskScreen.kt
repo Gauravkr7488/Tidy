@@ -874,6 +874,7 @@ private fun RepeatSection(
                         text = { Text(label) },
                         onClick = {
                             onRepeatTypeChange(type)
+                            onRepeatDaysChange(emptyList())
                             showDropDownMenu = false
                             if (showCustomMenu) {
                                 showCustomMenu = false
@@ -891,6 +892,7 @@ private fun RepeatSection(
                         showDropDownMenu = false
                         showCustomMenu = true
                         onRepeatTypeChange(RepeatTypes.DAY)
+                        onRepeatDaysChange(emptyList())
                     }
                 )
             }
