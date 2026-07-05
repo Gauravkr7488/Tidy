@@ -825,7 +825,13 @@ private fun ScheduleMenu(
                     onRepeatTypeChange = onRepeatTypeChange,
                     onRepeatDaysChange = onRepeatDaysChange,
                     frequency = frequency,
-                    onFrequencyNumberChange = onFrequencyNumberChange
+                    onFrequencyNumberChange = onFrequencyNumberChange,
+                    startDate = startDate,
+                    endDate = endDate,
+                    time = time,
+                    onStartDateChange = onStartDateChange,
+                    onEndDateChange = onEndDateChange,
+                    onTimeChange = onTimeChange
                 )
                 DueSection(
                     dueDate = dueDate,
@@ -861,9 +867,15 @@ private fun RepeatSection(
     repeatType: String,
     repeatDays: List<String>,
     frequency: String,
+    startDate: Long?,
+    endDate: Long?,
+    time: Long?,
     onRepeatTypeChange: (String) -> Unit,
     onRepeatDaysChange: (List<String>) -> Unit,
-    onFrequencyNumberChange: (String) -> Unit
+    onFrequencyNumberChange: (String) -> Unit,
+    onStartDateChange: (Long?) -> Unit,
+    onEndDateChange: (Long?) -> Unit,
+    onTimeChange: (Long?) -> Unit
 ) {
     var showCustomMenu by remember { mutableStateOf(false) }
     val list = listOf(
@@ -945,26 +957,20 @@ private fun RepeatSection(
     }
 
     if (showCustomMenu) {
-
         DateRow(
             "Start Date",
-            date = null
-        ) {
-
-        }
+            date = startDate
+        ) { onStartDateChange(it) }
         DateRow(
             "End Date",
-            date = null
-        ) {
-
-        }
+            date = endDate
+        ) { onEndDateChange(it) }
     }
     if (repeatType != RepeatTypes.NONE) {
         TimeRow(
-            time = null,
+            time = time,
             menuName = "Time"
-        ) {
-        }
+        ) { onTimeChange(it) }
     }
 }
 
