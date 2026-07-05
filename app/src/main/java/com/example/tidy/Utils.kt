@@ -53,7 +53,8 @@ object Utils {
     }
 
 
-    fun combineDateAndTimeMillis(date: Long?, time: Long?): Long {
+    fun combineDateAndTimeMillis(date: Long?, time: Long?): Long? {
+        if (date == null && time == null) return null
         val dateValue = date ?: getCurrentDateMillis()
         val timeValue = time ?: 0L
 
