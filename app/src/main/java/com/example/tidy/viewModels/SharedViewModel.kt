@@ -190,7 +190,11 @@ class SharedViewModel(
                 dbOperation.saveTask(task.copy(hide = 0L, done = 0L))
             }
 
-            if (task.repeatType == RepeatTypes.NONE) dbOperation.saveTask(task.copy(hide = 0L))
+            if (task.repeatType == RepeatTypes.NONE && task.hide == 1L) dbOperation.saveTask(
+                task.copy(
+                    hide = 0L
+                )
+            )
         }
 
     }
