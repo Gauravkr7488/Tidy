@@ -140,7 +140,8 @@ fun AddTaskScreen(
     var hide: Long by remember { mutableLongStateOf(0) }
     var done: Long by remember { mutableLongStateOf(0) }
     var priority: Long? by remember { mutableStateOf(null) }
-    var dueDateAndTime: Long? by remember { mutableStateOf(null) }
+    var dueDate: Long? by remember { mutableStateOf(null) }
+    var dueTime: Long? by remember { mutableStateOf(null) }
     var startDate: Long? by remember { mutableStateOf(null) }
     var endDate: Long? by remember { mutableStateOf(null) }
     var time: Long? by remember { mutableStateOf(null) }
@@ -160,7 +161,7 @@ fun AddTaskScreen(
             done = task.done
             priority = task.priority
             repeatDays = if (repeatType == RepeatTypes.NONE) "" else task.repeatDays
-            dueDateAndTime = task.dueDateAndTime
+//            dueDateAndTime = task.dueDateAndTime
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -205,7 +206,7 @@ fun AddTaskScreen(
                                         parentId = parentId,
                                         blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
                                         priority = priority,
-                                        dueDateAndTime = dueDateAndTime
+                                        dueDateAndTime = dueDate
                                     )
                                 )
                                 if (savedTaskId == null) return@launch
@@ -305,16 +306,16 @@ fun AddTaskScreen(
                 onStartDateChange = { startDate = it },
                 onEndDateChange = { endDate = it },
                 onTimeChange = { time = it },
-                dueDate = null,
-                dueTime = null,
-                onDueDateChange = {},
-                onDueTImeChange = {}
+                dueDate = dueDate,
+                dueTime = dueTime,
+                onDueDateChange = { dueDate = it },
+                onDueTImeChange = { dueTime = it }
             )
             PriorityMenu(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
-            DueMenu(dueDateAndTime, { dueDateAndTime = it })
+//            DueMenu(dueDateAndTime, { dueDateAndTime = it })
             SubTaskMenu(
                 taskChildren,
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
@@ -844,78 +845,13 @@ private fun DueSection(
     dueTime: Long?,
     onDueDateChange: (Long?) -> Unit,
     onDueTImeChange: (Long?) -> Unit,
-    modifier: Modifier = Modifier
 ) {
-    Column {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = modifier.fillMaxWidth()
-        ) {
-            var showDatePicker by remember { mutableStateOf(false) }
-            Text(
-                text = "Due Date",
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(4.dp)
-            )
-            OutlinedDropDownButton(
-                label = if (dueDate == null) "None" else Utils.changeDateFormat(
-                    dueDate,
-                    "MMM dd, yyyy"
-                ),
-                modifier = Modifier.width(160.dp),
-                onClick = { showDatePicker = true }
-            )
-            if (showDatePicker) {
-                DatePickerTidy(
-                    onDismiss = { showDatePicker = false },
-                    onDateSelected = {
-                        onDueDateChange(it)
-                    },
-                    date = dueDate
-                )
-            }
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = modifier.fillMaxWidth()
-        ) {
-            if (dueDate != null) {
-                var showTimePicker by remember { mutableStateOf(false) }
-                Text(
-                    text = "Due Time",
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(4.dp)
-                )
-                OutlinedDropDownButton(
-                    label = dueTime?.toString() ?: "None",
-                    modifier = Modifier.width(160.dp),
-                    onClick = { showTimePicker = true }
-                )
-                if (showTimePicker) {
-                    var hour: Int? = null
-                    var minute: Int? = null
-                    if (dueTime != null) {
-                        hour = Utils.changeDateFormat(dueTime, "HH")
-                            .toInt()
-                        minute = Utils.changeDateFormat(dueTime, "mm")
-                            .toInt()
-                    }
-                    TimePickerTidy(
-                        hour = hour,
-                        minute = minute,
-                        onTimeSelected = {
-                            onDueTImeChange(Utils.convertTimeToMillis(it.hour, it.minute))
-                        },
-                        onDismiss = { showTimePicker = false }
-                    )
-                }
-            }
+    DateRow("Due Date", date = dueDate) {
+        onDueDateChange(it)
+    }
+    if (dueDate != null) {
+        TimeRow("DueTime", time = dueTime) {
+            onDueTImeChange(it)
         }
     }
 }
@@ -956,7 +892,7 @@ private fun RepeatSection(
             OutlinedDropDownButton(
                 label = if (showCustomMenu) "Custom" else list.first { it.second == repeatType }.first,
                 onClick = { showDropDownMenu = true },
-                modifier = Modifier.width(160.dp)
+                modifier = Modifier.width(100.dp)
             )
             DropdownMenu(
                 onDismissRequest = { showDropDownMenu = false },
@@ -1008,7 +944,7 @@ private fun RepeatSection(
         ) { onRepeatDaysChange(it) }
     }
 
-    if (showCustomMenu){
+    if (showCustomMenu) {
 
         DateRow(
             "Start Date",
@@ -1025,9 +961,9 @@ private fun RepeatSection(
     }
     if (repeatType != RepeatTypes.NONE) {
         TimeRow(
-            time = null
+            time = null,
+            menuName = "Time"
         ) {
-            {}
         }
     }
 }
@@ -1035,21 +971,20 @@ private fun RepeatSection(
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TimeRow(
+    menuName: String,
     time: Long?,
     onTimeChange: (Long?) -> Unit
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
-    var time: Long? by remember { mutableStateOf(time) }
-    OutlinedMenuItem("Time", onClick = { showTimePicker = true }) {
-        val t = time
-        if (t == null) {
+    OutlinedMenuItem(menuName, onClick = { showTimePicker = true }) {
+        if (time == null) {
             Icon(
                 imageVector = Icons.Default.AccessTime,
                 contentDescription = null
             )
         } else {
             Text(
-                Utils.changeDateFormat(t, "hh:mm a")
+                Utils.changeDateFormat(time, "hh:mm a")
             )
         }
     }
@@ -1057,17 +992,16 @@ private fun TimeRow(
         var hour: Int? = null
         var minute: Int? = null
         if (time != null) {
-            hour = Utils.changeDateFormat(time!!, "HH")
+            hour = Utils.changeDateFormat(time, "HH")
                 .toInt()
-            minute = Utils.changeDateFormat(time!!, "mm")
+            minute = Utils.changeDateFormat(time, "mm")
                 .toInt()
         }
         TimePickerTidy(
             hour = hour,
             minute = minute,
             onTimeSelected = {
-                time = Utils.convertTimeToMillis(it.hour, it.minute)
-                onTimeChange(time)
+                onTimeChange(Utils.convertTimeToMillis(it.hour, it.minute))
             },
             onDismiss = { showTimePicker = false }
         )
@@ -1081,9 +1015,7 @@ private fun DateRow(
     onDateChange: (Long?) -> Unit,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    var date: Long? by remember { mutableStateOf(date) }
     OutlinedMenuItem(menuName, onClick = { showDatePicker = true }) {
-        val date = date
         if (date == null) {
             Icon(
                 imageVector = Icons.Default.CalendarToday,
@@ -1102,7 +1034,6 @@ private fun DateRow(
         DatePickerTidy(
             date = date,
             onDateSelected = {
-                date = it
                 onDateChange(it)
             }
         ) { showDatePicker = false }
