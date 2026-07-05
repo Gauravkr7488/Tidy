@@ -130,7 +130,7 @@ fun AddTaskScreen(
     var createdAt = ""
     val coroutineScope = rememberCoroutineScope()
     var repeatType by remember { mutableStateOf(RepeatTypes.NONE) }
-    var frequency by remember { mutableStateOf("1") }
+    var frequencyNumber by remember { mutableStateOf("1") }
     var repeatDays by remember { mutableStateOf("") }
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
@@ -294,10 +294,10 @@ fun AddTaskScreen(
             ScheduleMenu(
                 repeatType = repeatType,
                 repeatDays = repeatDays.split(","),
-                frequency = frequency,
+                frequencyNumber = frequencyNumber,
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it.joinToString(",") },
-                onFrequencyNumberChange = { frequency = it },
+                onFrequencyNumberChange = { frequencyNumber = it },
                 startDate = startDate,
                 endDate = endDate,
                 time = time,
@@ -749,7 +749,7 @@ fun RepeatMenu(
 private fun ScheduleMenu(
     repeatType: String,
     repeatDays: List<String>,
-    frequency: String,
+    frequencyNumber: String,
     startDate: Long?,
     endDate: Long?,
     time: Long?,
@@ -786,7 +786,7 @@ private fun ScheduleMenu(
                     repeatDays = repeatDays,
                     onRepeatTypeChange = onRepeatTypeChange,
                     onRepeatDaysChange = onRepeatDaysChange,
-                    frequency = frequency,
+                    frequencyNumber = frequencyNumber,
                     onFrequencyNumberChange = onFrequencyNumberChange,
                     startDate = startDate,
                     endDate = endDate,
@@ -828,7 +828,7 @@ private fun DueSection(
 private fun RepeatSection(
     repeatType: String,
     repeatDays: List<String>,
-    frequency: String,
+    frequencyNumber: String,
     startDate: Long?,
     endDate: Long?,
     time: Long?,
@@ -891,10 +891,10 @@ private fun RepeatSection(
     }
     if (showCustomMenu) {
         CustomRow(
-            frequencyNumber = frequency,
+            frequencyNumber = frequencyNumber,
             frequencyType = repeatType,
-            onFrequencyNumberChange = { onFrequencyNumberChange(it) },
-            onFrequencyTypeChange = { onRepeatTypeChange(it) }
+            onFrequencyNumberChange = onFrequencyNumberChange,
+            onFrequencyTypeChange = onRepeatTypeChange
         )
 
     }
@@ -1019,7 +1019,7 @@ private fun CustomRow(
             value = frequencyNumber,
             onValueChange = { newValue ->
                 if (newValue.all { it.isDigit() }) {
-                    onFrequencyNumberChange(frequencyNumber)
+                    onFrequencyNumberChange(newValue)
                 }
             },
             keyboardOptions = KeyboardOptions(
@@ -1028,7 +1028,7 @@ private fun CustomRow(
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
-                .width(80.dp)
+                .width(60.dp)
         )
         Box {
             val list = listOf(
