@@ -586,8 +586,13 @@ private fun RepeatSection(
         }
     }
     if (showCustomMenu || frequencyNumber != null) {
+        var f = frequencyNumber
+        if (f == null) {
+            f = "1"
+            onFrequencyNumberChange(f)
+        }
         CustomRow(
-            frequencyNumber = frequencyNumber ?: "1",
+            frequencyNumber = f,
             frequencyType = repeatType,
             onFrequencyNumberChange = onFrequencyNumberChange,
             onFrequencyTypeChange = onRepeatTypeChange
