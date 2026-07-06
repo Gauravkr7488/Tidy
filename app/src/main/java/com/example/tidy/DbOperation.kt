@@ -17,16 +17,23 @@
 package com.example.tidy
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.TaskActions
+import com.example.tidy.constants.WeekDays
 import com.tidy.sqldelight.BlockedTask
 import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.Flow
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.Calendar
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -271,8 +278,36 @@ private fun getScheduleTime(
         RepeatTypes.MINUTE -> frequencyNumber.toInt().minutes.inWholeMilliseconds
         RepeatTypes.HOUR -> frequencyNumber.toInt().hours.inWholeMilliseconds
         RepeatTypes.DAY -> frequencyNumber.toInt().days.inWholeMilliseconds
-        RepeatTypes.WEEK -> frequencyNumber.toInt().days.inWholeMilliseconds * 7
-        RepeatTypes.MONTH -> 0
+        RepeatTypes.WEEK -> {
+            val list = task.repeatDays.split(",")
+            val today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            val x = list.map {
+                val day = when (it) {
+                    WeekDays.SUN -> Calendar.SUNDAY
+                    WeekDays.MON -> Calendar.MONDAY
+                    WeekDays.TUE -> Calendar.TUESDAY
+                    WeekDays.WED -> Calendar.WEDNESDAY
+                    WeekDays.THU -> Calendar.THURSDAY
+                    WeekDays.FRI -> Calendar.FRIDAY
+                    WeekDays.SAT -> Calendar.SATURDAY
+                    else -> 0
+                }
+                var remainingDays = day - today
+                if (remainingDays <= 0) remainingDays += 7
+                val c = Calendar.getInstance()
+                c.add(Calendar.DAY_OF_YEAR, remainingDays)
+                c.timeInMillis
+            }
+            x.min()
+        }
+
+        RepeatTypes.MONTH -> {
+            val list = task.repeatDays.split(",").map { it.toLong() }
+            val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
+            val next = list.filter { it <= today }.min()
+            val interval = next - today
+            interval.toInt().days.inWholeMilliseconds
+        }
         RepeatTypes.YEAR -> 0
 
         else -> 0
