@@ -80,23 +80,28 @@ object Utils {
         }.timeInMillis
     }
 
-    fun scheduleDueDateWork(context: Context, taskId: Long, dueDateMillis: Long) {
-        val delay = dueDateMillis - System.currentTimeMillis()
+    fun scheduleWork(context: Context, taskId: Long, scheduleTime: Long, action: String) {
+        val delay = scheduleTime - System.currentTimeMillis()
 
         if (delay <= 0) return // Due date already passed
 
-        val data = workDataOf("task_id" to taskId)
+        val data = workDataOf("task_id" to taskId, "action" to action)
 
-        val request = OneTimeWorkRequestBuilder<DueDateWorker>()
+        val request = OneTimeWorkRequestBuilder<TidyWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setInputData(data)
-            .addTag("due_date_$taskId") // Tag for cancellation
+            .addTag("tidy-$taskId,$action") // Tag for cancellation
+            .addTag("tidy-$taskId")
             .build()
         WorkManager.getInstance(context).enqueue(request)
     }
 
-    fun cancelDueDateWork(context: Context, taskId: Long) {
-        WorkManager.getInstance(context).cancelAllWorkByTag("due_date_$taskId")
+    fun cancelDueDateWork(context: Context, taskId: Long, action: String) {
+        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId,$action")
+    }
+
+    fun cancelAllWork(context: Context, taskId: Long) {
+        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
     }
 
     fun createBackupJson(

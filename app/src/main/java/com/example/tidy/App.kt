@@ -45,7 +45,7 @@ class App : Application() {
 
         val dbOperation = DbOperation(database, this)
         val config = Configuration.Builder()
-            .setWorkerFactory(DueDateWorkerFactory(dbOperation))
+            .setWorkerFactory(TidyWorkerFactory(dbOperation))
             .build()
         WorkManager.initialize(this, config)
     }

@@ -19,12 +19,17 @@ package com.example.tidy
 import android.content.Context
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.example.tidy.constants.RepeatTypes
+import com.example.tidy.constants.TaskActions
 import com.tidy.sqldelight.BlockedTask
 import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.Flow
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 class DbOperation(
     private val db: AppDatabase, private val context: Context
@@ -106,11 +111,23 @@ class DbOperation(
                 time = task.time
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
-            if (task.dueDateAndTime != null && id != null) Utils.scheduleDueDateWork(
+            if (task.dueDateAndTime != null && id != null) Utils.scheduleWork(
                 context,
-                id,
-                task.dueDateAndTime
+                taskId = id,
+                scheduleTime = task.dueDateAndTime,
+                action = TaskActions.UPDATE_PRIORITY
             )
+            if (task.frequencyNumber != null && id != null) {
+                val scheduleTime: Long = getScheduleTime(task.frequencyNumber, task)
+                if (task.endDate == null || task.endDate > scheduleTime) {
+                    Utils.scheduleWork(
+                        context = context,
+                        taskId = id,
+                        scheduleTime = scheduleTime,
+                        action = TaskActions.UNARCHIVE
+                    )
+                }
+            }
             return@withContext id
 
         } else {
@@ -132,8 +149,29 @@ class DbOperation(
                 time = task.time
             )
             if (task.dueDateAndTime != null) {
-                Utils.cancelDueDateWork(context, task.id)
-                Utils.scheduleDueDateWork(context, task.id, task.dueDateAndTime)
+                Utils.cancelDueDateWork(
+                    context, task.id,
+                    action = TaskActions.UPDATE_PRIORITY
+                )
+                Utils.scheduleWork(
+                    context,
+                    taskId = task.id,
+                    scheduleTime = task.dueDateAndTime,
+                    action = TaskActions.UPDATE_PRIORITY
+                )
+            }
+            if (task.frequencyNumber != null) {
+                Utils.cancelDueDateWork(
+                    context, task.id,
+                    action = TaskActions.UNARCHIVE
+                )
+                val scheduleTime = getScheduleTime(task.frequencyNumber, task)
+                Utils.scheduleWork(
+                    context,
+                    taskId = task.id,
+                    scheduleTime = scheduleTime,
+                    action = TaskActions.UNARCHIVE
+                )
             }
             return@withContext task.id
         }
@@ -179,7 +217,9 @@ class DbOperation(
 
     suspend fun deleteTask(id: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.deleteTask(id)
-        Utils.cancelDueDateWork(context, id)
+        Utils.cancelAllWork(
+            context = context, taskId = id
+        )
     }
 
     suspend fun getChildren(id: Long) = withContext(Dispatchers.IO) {
@@ -220,4 +260,26 @@ class DbOperation(
         db.taskQueries.getAll()
             .asFlow()
             .mapToList(Dispatchers.IO)
+}
+
+private fun getScheduleTime(
+    frequencyNumber: String,
+    task: Task
+): Long {
+    var scheduleTime: Long
+    val duration: Long = when (task.repeatType) {
+        RepeatTypes.MINUTE -> frequencyNumber.toInt().minutes.inWholeMilliseconds
+        RepeatTypes.HOUR -> frequencyNumber.toInt().hours.inWholeMilliseconds
+        RepeatTypes.DAY -> frequencyNumber.toInt().days.inWholeMilliseconds
+        RepeatTypes.WEEK -> frequencyNumber.toInt().days.inWholeMilliseconds * 7
+        RepeatTypes.MONTH -> 0
+        RepeatTypes.YEAR -> 0
+
+        else -> 0
+    }
+    scheduleTime = System.currentTimeMillis() + duration
+    if (task.startDate != null) {
+        while (task.startDate > scheduleTime) scheduleTime += duration
+    }
+    return scheduleTime
 }
