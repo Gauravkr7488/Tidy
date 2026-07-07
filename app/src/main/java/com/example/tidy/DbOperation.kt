@@ -125,25 +125,10 @@ class DbOperation(
                     repeatType = task.repeatType,
                     repeatDays = task.repeatDays.split(",")
                 )
-                if (scheduleTime != null) {
-                    if (task.endDate == null || task.endDate > scheduleTime) {
-                        var s: Long
-                        val a: String
-                        if (task.startDate == null || task.startDate < scheduleTime) {
-                            s = scheduleTime
-                            a = TaskActions.UNARCHIVE
-                        } else {
-                            s = task.startDate
-                            a = TaskActions.RESCHEDULE
-                        }
-                        Utils.scheduleWork(
-                            context = context,
-                            taskId = id,
-                            scheduleTime = s,
-                            action = a
-                        )
-                    }
-                }
+                scheduleTask(
+                    scheduleTime = scheduleTime,
+                    task = task
+                )
             }
             return@withContext id
 
@@ -187,27 +172,31 @@ class DbOperation(
                     repeatType = task.repeatType,
                     repeatDays = task.repeatDays.split(",")
                 )
-                if (scheduleTime != null) {
-                    if (task.endDate == null || task.endDate > scheduleTime) {
-                        var s: Long
-                        val a: String
-                        if (task.startDate == null || task.startDate < scheduleTime) {
-                            s = scheduleTime
-                            a = TaskActions.UNARCHIVE
-                        } else {
-                            s = task.startDate
-                            a = TaskActions.RESCHEDULE
-                        }
-                        Utils.scheduleWork(
-                            context = context,
-                            taskId = task.id,
-                            scheduleTime = s,
-                            action = a
-                        )
-                    }
-                }
+                scheduleTask(scheduleTime, task)
             }
             return@withContext task.id
+        }
+    }
+
+    private fun scheduleTask(scheduleTime: Long?, task: Task) {
+        if (scheduleTime != null) {
+            if (task.endDate == null || task.endDate > scheduleTime) {
+                var s: Long
+                val a: String
+                if (task.startDate == null || task.startDate < scheduleTime) {
+                    s = scheduleTime
+                    a = TaskActions.UNARCHIVE
+                } else {
+                    s = task.startDate
+                    a = TaskActions.RESCHEDULE
+                }
+                Utils.scheduleWork(
+                    context = context,
+                    taskId = task.id,
+                    scheduleTime = s,
+                    action = a
+                )
+            }
         }
     }
 
