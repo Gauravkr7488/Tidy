@@ -14,27 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+package com.example.tidy.ui.component.buttons
 
-package com.example.tidy
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.example.tidy.ui.component.menu.OutlinedMenuItem
 
-import com.example.tidy.constants.RepeatTypes
 
-data class TaskBackupDto(
-    var id: Long = 0,
-    var title: String,
-    var done: Boolean = false,
-    var repeatType: String = RepeatTypes.NONE,
-    var repeatOn: String = "",
-    var description: String? = null,
-    var hide: Boolean = false,
-    var parentId: Long? = null,
-    var blockedStatus: Boolean = false,
-    var blockedBy: String? = null,
-    var priority: Long? = null,
-    var dueDateAndTime: Long? = null,
-    var frequencyNumber: String? = null,
-    var startDate: Long? = null,
-    var endDate: Long? = null,
-    var time: Long? = null,
-    var createdAt: Long = System.currentTimeMillis(),
-)
+@Composable
+fun OutlinedDropDownButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedMenuItem(menuName = label, onClick = onClick, removeSpacer = true, modifier = modifier) {
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
+    }
+}

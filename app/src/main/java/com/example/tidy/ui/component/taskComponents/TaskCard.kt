@@ -144,19 +144,20 @@ fun TaskCard(
                 }
                 if (task.repeatType != RepeatTypes.NONE) {
                     Badge(
-                        text = task.repeatType.lowercase().replaceFirstChar { it.uppercase() } ,
+                        text = if (task.frequencyNumber == null) task.repeatType.lowercase()
+                            .replaceFirstChar { it.uppercase() } else "Custom",
                         imageVector = Icons.Default.Repeat,
                         contentDescription = "Repeats ${task.repeatType}"
                     )
                 }
-                if (task.hide == 1L){
+                if (task.hide == 1L) {
                     Badge(
                         text = "Archived",
                         imageVector = Icons.Outlined.Archive,
                         contentDescription = "Archived"
                     )
                 }
-                if (task.blockStatus == 1L){
+                if (task.blockStatus == 1L) {
                     Badge(
                         text = "Blocked",
                         imageVector = Icons.Default.Block,

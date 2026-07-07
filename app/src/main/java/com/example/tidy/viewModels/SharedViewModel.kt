@@ -181,16 +181,20 @@ class SharedViewModel(
 
         tasks.value.forEach { task ->
             val shouldReset = when (task.repeatType) {
-                RepeatTypes.DAILY -> true
-                RepeatTypes.WEEKLY -> task.repeatDays.contains(todayDay)
-                RepeatTypes.MONTHLY -> task.repeatDays.contains(todayDate)
+                RepeatTypes.DAY -> true
+                RepeatTypes.WEEK -> task.repeatDays.contains(todayDay)
+                RepeatTypes.MONTH -> task.repeatDays.contains(todayDate)
                 else -> false
             }
             if (shouldReset) {
                 dbOperation.saveTask(task.copy(hide = 0L, done = 0L))
             }
 
-            if (task.repeatType == RepeatTypes.NONE) dbOperation.saveTask(task.copy(hide = 0L))
+            if (task.repeatType == RepeatTypes.NONE && task.hide == 1L) dbOperation.saveTask(
+                task.copy(
+                    hide = 0L
+                )
+            )
         }
 
     }

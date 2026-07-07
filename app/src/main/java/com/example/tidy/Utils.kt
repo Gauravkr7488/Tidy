@@ -53,7 +53,8 @@ object Utils {
     }
 
 
-    fun combineDateAndTimeMillis(date: Long?, time: Long?): Long {
+    fun combineDateAndTimeMillis(date: Long?, time: Long?): Long? {
+        if (date == null && time == null) return null
         val dateValue = date ?: getCurrentDateMillis()
         val timeValue = time ?: 0L
 
@@ -79,23 +80,28 @@ object Utils {
         }.timeInMillis
     }
 
-    fun scheduleDueDateWork(context: Context, taskId: Long, dueDateMillis: Long) {
-        val delay = dueDateMillis - System.currentTimeMillis()
+    fun scheduleWork(context: Context, taskId: Long, scheduleTime: Long, action: String) {
+        val delay = scheduleTime - System.currentTimeMillis()
 
         if (delay <= 0) return // Due date already passed
 
-        val data = workDataOf("task_id" to taskId)
+        val data = workDataOf("task_id" to taskId, "action" to action)
 
-        val request = OneTimeWorkRequestBuilder<DueDateWorker>()
+        val request = OneTimeWorkRequestBuilder<TidyWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setInputData(data)
-            .addTag("due_date_$taskId") // Tag for cancellation
+            .addTag("tidy-$taskId,$action") // Tag for cancellation
+            .addTag("tidy-$taskId")
             .build()
         WorkManager.getInstance(context).enqueue(request)
     }
 
-    fun cancelDueDateWork(context: Context, taskId: Long) {
-        WorkManager.getInstance(context).cancelAllWorkByTag("due_date_$taskId")
+    fun cancelDueDateWork(context: Context, taskId: Long, action: String) {
+        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId,$action")
+    }
+
+    fun cancelAllWork(context: Context, taskId: Long) {
+        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
     }
 
     fun createBackupJson(
@@ -106,7 +112,7 @@ object Utils {
         val blockerList = taskBlocks.groupBy { it.task_id }
         val taskDtos = tasks.map { task ->
             val string =
-                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(", ") { it.blockedBy_id.toString() } else null
+                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(",") { it.blockedBy_id.toString() } else null
             task.toTaskDto(string)
         }
         val backupDto = BackupDto(lastResetDate, taskDtos)
@@ -127,7 +133,11 @@ object Utils {
             parentId = null,
             blockStatus = 0,
             priority = null,
-            dueDateAndTime = null
+            dueDateAndTime = null,
+            frequencyNumber = null,
+            startDate = null,
+            endDate = null,
+            time = null
         )
     }
 
@@ -145,7 +155,11 @@ object Utils {
             blockedBy = taskBlockString,
             blockedStatus = blockStatus != 0L,
             priority = priority,
-            dueDateAndTime = dueDateAndTime
+            dueDateAndTime = dueDateAndTime,
+            frequencyNumber = frequencyNumber,
+            startDate = startDate,
+            endDate = endDate,
+            time = time
         )
     }
 
@@ -162,7 +176,11 @@ object Utils {
             blockStatus = if (blockedStatus) 1L else 0L,
             createdAt = createdAt,
             priority = priority,
-            dueDateAndTime = dueDateAndTime
+            dueDateAndTime = dueDateAndTime,
+            frequencyNumber = frequencyNumber,
+            startDate = startDate,
+            endDate = endDate,
+            time = time
         )
     }
 
