@@ -17,8 +17,6 @@
 package com.example.tidy
 
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.example.tidy.constants.RepeatTypes
@@ -30,9 +28,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.Flow
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.Calendar
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
@@ -270,51 +265,66 @@ class DbOperation(
 }
 
 private fun getScheduleTime(
-    frequencyNumber: String,
-    task: Task
-): Long {
-    var scheduleTime: Long
-    val duration: Long = when (task.repeatType) {
-        RepeatTypes.MINUTE -> frequencyNumber.toInt().minutes.inWholeMilliseconds
-        RepeatTypes.HOUR -> frequencyNumber.toInt().hours.inWholeMilliseconds
-        RepeatTypes.DAY -> frequencyNumber.toInt().days.inWholeMilliseconds
+    frequencyNumber: Long,
+    repeatType: String,
+    repeatDays: List<String>,
+    startDate: Long?,
+    endDate: Long?,
+): Long? {
+    val c = Calendar.getInstance()
+    val scheduleTime = when (repeatType) {
+        RepeatTypes.MINUTE -> frequencyNumber.minutes.inWholeMilliseconds
+        RepeatTypes.HOUR -> frequencyNumber.hours.inWholeMilliseconds
+        RepeatTypes.DAY -> frequencyNumber.days.inWholeMilliseconds
         RepeatTypes.WEEK -> {
-            val list = task.repeatDays.split(",")
-            val today = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-            val x = list.map {
-                val day = when (it) {
-                    WeekDays.SUN -> Calendar.SUNDAY
-                    WeekDays.MON -> Calendar.MONDAY
-                    WeekDays.TUE -> Calendar.TUESDAY
-                    WeekDays.WED -> Calendar.WEDNESDAY
-                    WeekDays.THU -> Calendar.THURSDAY
-                    WeekDays.FRI -> Calendar.FRIDAY
-                    WeekDays.SAT -> Calendar.SATURDAY
-                    else -> 0
-                }
-                var remainingDays = day - today
-                if (remainingDays <= 0) remainingDays += 7
-                val c = Calendar.getInstance()
-                c.add(Calendar.DAY_OF_YEAR, remainingDays)
-                c.timeInMillis
+            val today = c.get(Calendar.DAY_OF_WEEK)
+            val listScheduleDays: List<Int> = repeatDays.mapNotNull {
+                getWeekDayNum(it)
             }
-            x.min()
+            if (listScheduleDays.any { it > today }) {
+                c.set(Calendar.DAY_OF_WEEK, listScheduleDays.first { it > today })
+            } else {
+                c.set(Calendar.DAY_OF_WEEK, listScheduleDays.first())
+                c.add(Calendar.WEEK_OF_YEAR, frequencyNumber.toInt())
+            }
+            c.timeInMillis
         }
 
         RepeatTypes.MONTH -> {
-            val list = task.repeatDays.split(",").map { it.toLong() }
-            val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-            val next = list.filter { it <= today }.min()
-            val interval = next - today
-            interval.toInt().days.inWholeMilliseconds
+            val today = c.get(Calendar.DAY_OF_MONTH)
+            val listScheduleDays = repeatDays.map { it.toInt() }
+            if (listScheduleDays.any { it > today }) {
+                c.set(Calendar.DAY_OF_MONTH, listScheduleDays.first { it > today })
+            } else {
+                c.set(Calendar.DAY_OF_MONTH, listScheduleDays.first())
+                c.add(Calendar.MONTH, frequencyNumber.toInt())
+            }
+            c.timeInMillis
         }
-        RepeatTypes.YEAR -> 0
 
-        else -> 0
-    }
-    scheduleTime = System.currentTimeMillis() + duration
-    if (task.startDate != null) {
-        while (task.startDate > scheduleTime) scheduleTime += duration
+        RepeatTypes.YEAR -> {
+            val today = c.timeInMillis
+            val listScheduleDays = repeatDays.map { it.toLong() }
+            if (listScheduleDays.any { it > today }) {
+                val next = listScheduleDays.first { it > today }
+                c.timeInMillis = next
+            } else {
+                c.add(Calendar.YEAR, frequencyNumber.toInt())
+            }
+            c.timeInMillis
+        }
+        else -> null
     }
     return scheduleTime
+}
+
+private fun getWeekDayNum(string: String): Int? = when (string) {
+    WeekDays.SUN -> Calendar.SUNDAY
+    WeekDays.MON -> Calendar.MONDAY
+    WeekDays.TUE -> Calendar.TUESDAY
+    WeekDays.WED -> Calendar.WEDNESDAY
+    WeekDays.THU -> Calendar.THURSDAY
+    WeekDays.FRI -> Calendar.FRIDAY
+    WeekDays.SAT -> Calendar.SATURDAY
+    else -> null
 }
