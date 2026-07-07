@@ -120,14 +120,29 @@ class DbOperation(
                 action = TaskActions.UPDATE_PRIORITY
             )
             if (task.frequencyNumber != null && id != null) {
-                val scheduleTime: Long = getScheduleTime(task.frequencyNumber, task)
-                if (task.endDate == null || task.endDate > scheduleTime) {
-                    Utils.scheduleWork(
-                        context = context,
-                        taskId = id,
-                        scheduleTime = scheduleTime,
-                        action = TaskActions.UNARCHIVE
-                    )
+                val scheduleTime: Long? = getScheduleTime(
+                    frequencyNumber = task.frequencyNumber.toInt(),
+                    repeatType = task.repeatType,
+                    repeatDays = task.repeatDays.split(",")
+                )
+                if (scheduleTime != null) {
+                    if (task.endDate == null || task.endDate > scheduleTime) {
+                        var s: Long
+                        val a: String
+                        if (task.startDate == null || task.startDate < scheduleTime) {
+                            s = scheduleTime
+                            a = TaskActions.UNARCHIVE
+                        } else {
+                            s = task.startDate
+                            a = TaskActions.RESCHEDULE
+                        }
+                        Utils.scheduleWork(
+                            context = context,
+                            taskId = id,
+                            scheduleTime = s,
+                            action = a
+                        )
+                    }
                 }
             }
             return@withContext id
@@ -167,13 +182,30 @@ class DbOperation(
                     context, task.id,
                     action = TaskActions.UNARCHIVE
                 )
-                val scheduleTime = getScheduleTime(task.frequencyNumber, task)
-                Utils.scheduleWork(
-                    context,
-                    taskId = task.id,
-                    scheduleTime = scheduleTime,
-                    action = TaskActions.UNARCHIVE
+                val scheduleTime: Long? = getScheduleTime(
+                    frequencyNumber = task.frequencyNumber.toInt(),
+                    repeatType = task.repeatType,
+                    repeatDays = task.repeatDays.split(",")
                 )
+                if (scheduleTime != null) {
+                    if (task.endDate == null || task.endDate > scheduleTime) {
+                        var s: Long
+                        val a: String
+                        if (task.startDate == null || task.startDate < scheduleTime) {
+                            s = scheduleTime
+                            a = TaskActions.UNARCHIVE
+                        } else {
+                            s = task.startDate
+                            a = TaskActions.RESCHEDULE
+                        }
+                        Utils.scheduleWork(
+                            context = context,
+                            taskId = task.id,
+                            scheduleTime = s,
+                            action = a
+                        )
+                    }
+                }
             }
             return@withContext task.id
         }
@@ -265,11 +297,9 @@ class DbOperation(
 }
 
 private fun getScheduleTime(
-    frequencyNumber: Long,
+    frequencyNumber: Int,
     repeatType: String,
     repeatDays: List<String>,
-    startDate: Long?,
-    endDate: Long?,
 ): Long? {
     val c = Calendar.getInstance()
     val scheduleTime = when (repeatType) {
@@ -285,7 +315,7 @@ private fun getScheduleTime(
                 c.set(Calendar.DAY_OF_WEEK, listScheduleDays.first { it > today })
             } else {
                 c.set(Calendar.DAY_OF_WEEK, listScheduleDays.first())
-                c.add(Calendar.WEEK_OF_YEAR, frequencyNumber.toInt())
+                c.add(Calendar.WEEK_OF_YEAR, frequencyNumber)
             }
             c.timeInMillis
         }
@@ -297,7 +327,7 @@ private fun getScheduleTime(
                 c.set(Calendar.DAY_OF_MONTH, listScheduleDays.first { it > today })
             } else {
                 c.set(Calendar.DAY_OF_MONTH, listScheduleDays.first())
-                c.add(Calendar.MONTH, frequencyNumber.toInt())
+                c.add(Calendar.MONTH, frequencyNumber)
             }
             c.timeInMillis
         }
@@ -309,10 +339,11 @@ private fun getScheduleTime(
                 val next = listScheduleDays.first { it > today }
                 c.timeInMillis = next
             } else {
-                c.add(Calendar.YEAR, frequencyNumber.toInt())
+                c.add(Calendar.YEAR, frequencyNumber)
             }
             c.timeInMillis
         }
+
         else -> null
     }
     return scheduleTime

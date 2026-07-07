@@ -7,7 +7,8 @@ import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.example.tidy.constants.TaskActions
 
-class TidyWorker(context: Context, params: WorkerParameters, private val dbOperation: DbOperation) : CoroutineWorker(context, params){
+class TidyWorker(context: Context, params: WorkerParameters, private val dbOperation: DbOperation) :
+    CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val taskId = inputData.getLong("task_id", -1L)
         val action = inputData.getString("action")
@@ -16,7 +17,7 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
 
         val task = dbOperation.getTask(taskId) ?: return Result.failure()
 
-        return when(action){
+        return when (action) {
             TaskActions.UNARCHIVE -> {
                 dbOperation.saveTask(task.copy(done = 0, hide = 0))
                 Result.success()
@@ -26,6 +27,12 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
                 dbOperation.saveTask(task.copy(priority = 1))
                 Result.success()
             }
+
+            TaskActions.RESCHEDULE -> {
+                dbOperation.saveTask(task)
+                Result.success()
+            }
+
             else -> Result.failure()
         }
 
