@@ -50,12 +50,6 @@ class SharedViewModel(
             emptyList()
         )
 
-    init {
-        viewModelScope.launch {
-            resetTasksForToday()
-        }
-    }
-
     fun sortByPriority(tasks: List<Task>): List<Task> {
 
         val sorted = tasks.sortedWith(compareBy {

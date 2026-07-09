@@ -22,17 +22,6 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
                 dbOperation.saveTask(task.copy(done = 0, hide = 0))
                 Result.success()
             }
-
-            TaskActions.UPDATE_PRIORITY -> {
-                dbOperation.saveTask(task.copy(priority = 1))
-                Result.success()
-            }
-
-            TaskActions.RESCHEDULE -> {
-                dbOperation.saveTask(task)
-                Result.success()
-            }
-
             else -> Result.failure()
         }
 
