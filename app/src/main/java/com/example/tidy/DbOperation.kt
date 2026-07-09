@@ -52,9 +52,7 @@ class DbOperation(
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime,
                 frequencyNumber = task.frequencyNumber,
-                startDate = task.startDate,
                 endDate = task.endDate,
-                time = task.time
             )
         }
     }
@@ -108,9 +106,7 @@ class DbOperation(
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime,
                 frequencyNumber = task.frequencyNumber,
-                startDate = task.startDate,
                 endDate = task.endDate,
-                time = task.time
             )
             val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
             if (task.dueDateAndTime != null && id != null) Utils.scheduleWork(
@@ -120,13 +116,16 @@ class DbOperation(
                 action = TaskActions.UPDATE_PRIORITY
             )
             if (task.frequencyNumber != null && id != null) {
-                val scheduleTime: Long? = getScheduleTime(
+                val scheduleTime: Long? = getScheduleDate(
                     frequencyNumber = task.frequencyNumber.toInt(),
                     repeatType = task.repeatType,
                     repeatDays = task.repeatDays.split(",")
                 )
                 scheduleTask(
-                    scheduleTime = scheduleTime,
+                    scheduleTime = Utils.combineDateAndTimeMillis(
+                        scheduleTime,
+                        task.dueDateAndTime
+                    ),
                     task = task
                 )
             }
@@ -146,9 +145,7 @@ class DbOperation(
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime,
                 frequencyNumber = task.frequencyNumber,
-                startDate = task.startDate,
                 endDate = task.endDate,
-                time = task.time
             )
             if (task.dueDateAndTime != null) {
                 Utils.cancelDueDateWork(
@@ -167,12 +164,18 @@ class DbOperation(
                     context, task.id,
                     action = TaskActions.UNARCHIVE
                 )
-                val scheduleTime: Long? = getScheduleTime(
+                val scheduleTime: Long? = getScheduleDate(
                     frequencyNumber = task.frequencyNumber.toInt(),
                     repeatType = task.repeatType,
                     repeatDays = task.repeatDays.split(",")
                 )
-                scheduleTask(scheduleTime, task)
+                scheduleTask(
+                    scheduleTime = Utils.combineDateAndTimeMillis(
+                        scheduleTime,
+                        task.dueDateAndTime
+                    ),
+                    task = task
+                )
             }
             return@withContext task.id
         }
@@ -181,20 +184,11 @@ class DbOperation(
     private fun scheduleTask(scheduleTime: Long?, task: Task) {
         if (scheduleTime != null) {
             if (task.endDate == null || task.endDate > scheduleTime) {
-                var s: Long
-                val a: String
-                if (task.startDate == null || task.startDate < scheduleTime) {
-                    s = scheduleTime
-                    a = TaskActions.UNARCHIVE
-                } else {
-                    s = task.startDate
-                    a = TaskActions.RESCHEDULE
-                }
                 Utils.scheduleWork(
                     context = context,
                     taskId = task.id,
-                    scheduleTime = s,
-                    action = a
+                    scheduleTime = scheduleTime,
+                    action = TaskActions.UNARCHIVE
                 )
             }
         }
@@ -285,7 +279,7 @@ class DbOperation(
             .mapToList(Dispatchers.IO)
 }
 
-private fun getScheduleTime(
+private fun getScheduleDate(
     frequencyNumber: Int,
     repeatType: String,
     repeatDays: List<String>,

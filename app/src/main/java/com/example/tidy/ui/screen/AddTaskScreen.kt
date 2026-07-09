@@ -134,9 +134,7 @@ fun AddTaskScreen(
     var priority: Long? by remember { mutableStateOf(null) }
     var dueDate: Long? by remember { mutableStateOf(null) }
     var dueTime: Long? by remember { mutableStateOf(null) }
-    var startDate: Long? by remember { mutableStateOf(null) }
     var endDate: Long? by remember { mutableStateOf(null) }
-    var time: Long? by remember { mutableStateOf(null) }
 
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
@@ -156,9 +154,7 @@ fun AddTaskScreen(
             dueDate = task.dueDateAndTime
             dueTime = task.dueDateAndTime
             frequencyNumber = task.frequencyNumber
-            startDate = task.startDate
             endDate = task.endDate
-            time = task.time
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -208,9 +204,7 @@ fun AddTaskScreen(
                                             dueTime
                                         ),
                                         frequencyNumber = frequencyNumber,
-                                        startDate = startDate,
                                         endDate = endDate,
-                                        time = time
                                     )
                                 )
                                 if (savedTaskId == null) return@launch
@@ -298,12 +292,8 @@ fun AddTaskScreen(
                 onRepeatTypeChange = { repeatType = it },
                 onRepeatDaysChange = { repeatDays = it.joinToString(",") },
                 onFrequencyNumberChange = { frequencyNumber = it },
-                startDate = startDate,
                 endDate = endDate,
-                time = time,
-                onStartDateChange = { startDate = it },
                 onEndDateChange = { endDate = it },
-                onTimeChange = { time = it },
                 dueDate = dueDate,
                 dueTime = dueTime,
                 onDueDateChange = { dueDate = it },
@@ -436,17 +426,13 @@ private fun ScheduleMenu(
     repeatType: String,
     repeatDays: List<String>,
     frequencyNumber: String?,
-    startDate: Long?,
     endDate: Long?,
-    time: Long?,
     dueDate: Long?,
     dueTime: Long?,
     onRepeatTypeChange: (String) -> Unit,
     onRepeatDaysChange: (List<String>) -> Unit,
     onFrequencyNumberChange: (String?) -> Unit,
-    onStartDateChange: (Long?) -> Unit,
     onEndDateChange: (Long?) -> Unit,
-    onTimeChange: (Long?) -> Unit,
     onDueDateChange: (Long?) -> Unit,
     onDueTimeChange: (Long?) -> Unit,
 ) {
@@ -467,177 +453,122 @@ private fun ScheduleMenu(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                RepeatSection(
-                    repeatType = repeatType,
-                    repeatDays = repeatDays,
-                    onRepeatTypeChange = onRepeatTypeChange,
-                    onRepeatDaysChange = onRepeatDaysChange,
-                    frequencyNumber = frequencyNumber,
-                    onFrequencyNumberChange = onFrequencyNumberChange,
-                    startDate = startDate,
-                    endDate = endDate,
-                    time = time,
-                    onStartDateChange = onStartDateChange,
-                    onEndDateChange = onEndDateChange,
-                    onTimeChange = onTimeChange
-                )
-                DueSection(
-                    dueDate = dueDate,
-                    dueTime = dueTime,
-                    onDueDateChange = onDueDateChange,
-                    onDueTimeChange = onDueTimeChange,
-                )
-            }
-        }
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DueSection(
-    dueDate: Long?,
-    dueTime: Long?,
-    onDueDateChange: (Long?) -> Unit,
-    onDueTimeChange: (Long?) -> Unit,
-) {
-    DateRow("Due Date", date = dueDate) {
-        onDueDateChange(it)
-        onDueTimeChange(null)
-    }
-    if (dueDate != null) {
-        TimeRow("Due Time", time = dueTime) {
-            onDueTimeChange(it)
-        }
-    }
-}
-
-@Composable
-private fun RepeatSection(
-    repeatType: String,
-    repeatDays: List<String>,
-    frequencyNumber: String?,
-    startDate: Long?,
-    endDate: Long?,
-    time: Long?,
-    onRepeatTypeChange: (String) -> Unit,
-    onRepeatDaysChange: (List<String>) -> Unit,
-    onFrequencyNumberChange: (String?) -> Unit,
-    onStartDateChange: (Long?) -> Unit,
-    onEndDateChange: (Long?) -> Unit,
-    onTimeChange: (Long?) -> Unit
-) {
-    var showCustomMenu by remember { mutableStateOf(false) }
-    val repeatTypeDisplayList = listOf(
-        "None" to RepeatTypes.NONE,
-        "Daily" to RepeatTypes.DAY,
-        "Weekly" to RepeatTypes.WEEK,
-        "Monthly" to RepeatTypes.MONTH,
-    )
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "Repeat Type",
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(4.dp)
-        )
-        Box {
-            var showDropDownMenu by remember { mutableStateOf(false) }
-            println(frequencyNumber)
-            OutlinedDropDownButton(
-                label = if (showCustomMenu || frequencyNumber != null) "Custom" else repeatTypeDisplayList.first { it.second == repeatType }.first,
-                onClick = { showDropDownMenu = true },
-            )
-            DropdownMenu(
-                onDismissRequest = { showDropDownMenu = false },
-                expanded = showDropDownMenu
-            ) {
-                repeatTypeDisplayList.forEach { (label, type) ->
-                    DropdownMenuItem(
-                        text = { Text(label) },
-                        onClick = {
-                            onRepeatTypeChange(type)
-                            onRepeatDaysChange(emptyList())
-                            showDropDownMenu = false
-                            if (showCustomMenu) {
-                                showCustomMenu = false
-                                onFrequencyNumberChange(null)
-                                onStartDateChange(null)
-                                onEndDateChange(null)
-                            }
-                            if (type == RepeatTypes.NONE) onTimeChange(null)
-                        }
+                var showCustomMenu by remember { mutableStateOf(false) }
+                val repeatTypeDisplayList = listOf(
+                    "None" to RepeatTypes.NONE,
+                    "Daily" to RepeatTypes.DAY,
+                    "Weekly" to RepeatTypes.WEEK,
+                    "Monthly" to RepeatTypes.MONTH,
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Repeat Type",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(4.dp)
                     )
-                }
-                DropdownMenuItem(
-                    text = { Text("Custom") },
-                    onClick = {
-                        showDropDownMenu = false
-                        showCustomMenu = true
-                        onRepeatTypeChange(RepeatTypes.DAY)
-                        onRepeatDaysChange(emptyList())
+                    Box {
+                        var showDropDownMenu by remember { mutableStateOf(false) }
+                        OutlinedDropDownButton(
+                            label = if (showCustomMenu || frequencyNumber != null) "Custom" else repeatTypeDisplayList.first { it.second == repeatType }.first,
+                            onClick = { showDropDownMenu = true },
+                        )
+                        DropdownMenu(
+                            onDismissRequest = { showDropDownMenu = false },
+                            expanded = showDropDownMenu
+                        ) {
+                            repeatTypeDisplayList.forEach { (label, type) ->
+                                DropdownMenuItem(
+                                    text = { Text(label) },
+                                    onClick = {
+                                        onRepeatTypeChange(type)
+                                        onRepeatDaysChange(emptyList())
+                                        onDueDateChange(null)
+                                        onDueTimeChange(null)
+                                        showDropDownMenu = false
+                                        if (showCustomMenu) {
+                                            showCustomMenu = false
+                                            onFrequencyNumberChange(null)
+                                            onEndDateChange(null)
+                                        }
+                                    }
+                                )
+                            }
+                            DropdownMenuItem(
+                                text = { Text("Custom") },
+                                onClick = {
+                                    showDropDownMenu = false
+                                    showCustomMenu = true
+                                    onRepeatTypeChange(RepeatTypes.DAY)
+                                    onRepeatDaysChange(emptyList())
+                                }
+                            )
+                        }
                     }
-                )
+                }
+                if (showCustomMenu || frequencyNumber != null) {
+                    var f = frequencyNumber
+                    if (f == null) {
+                        f = "1"
+                        onFrequencyNumberChange(f)
+                    }
+                    CustomRow(
+                        frequencyNumber = f,
+                        frequencyType = repeatType,
+                        onFrequencyNumberChange = onFrequencyNumberChange,
+                        onFrequencyTypeChange = onRepeatTypeChange
+                    )
+
+                }
+
+                if (repeatType == RepeatTypes.WEEK) {
+                    WeekDayRow(
+                        selectedDays = repeatDays
+                    ) { onRepeatDaysChange(it) }
+                }
+                if (repeatType == RepeatTypes.MONTH) {
+                    MonthRow(
+                        selectedDates = repeatDays
+                    ) { onRepeatDaysChange(it) }
+                }
+
+                if (showCustomMenu) {
+                    DateRow(
+                        "End Date",
+                        date = endDate
+                    ) { onEndDateChange(it) }
+                }
+                if (repeatType == RepeatTypes.NONE) {
+                    DateRow(
+                        menuName = "Due Date",
+                        date = dueDate
+                    ) { onDueDateChange(it) }
+                }
+                if (repeatType != RepeatTypes.NONE || dueDate != null) {
+                    TimeRow(
+                        time = dueTime,
+                    ) { onDueTimeChange(it) }
+                }
             }
         }
     }
-    if (showCustomMenu || frequencyNumber != null) {
-        var f = frequencyNumber
-        if (f == null) {
-            f = "1"
-            onFrequencyNumberChange(f)
-        }
-        CustomRow(
-            frequencyNumber = f,
-            frequencyType = repeatType,
-            onFrequencyNumberChange = onFrequencyNumberChange,
-            onFrequencyTypeChange = onRepeatTypeChange
-        )
-
-    }
-
-    if (repeatType == RepeatTypes.WEEK) {
-        WeekDayRow(
-            selectedDays = repeatDays
-        ) { onRepeatDaysChange(it) }
-    }
-    if (repeatType == RepeatTypes.MONTH) {
-        MonthRow(
-            selectedDates = repeatDays
-        ) { onRepeatDaysChange(it) }
-    }
-
-    if (showCustomMenu) {
-        DateRow(
-            "Start Date",
-            date = startDate
-        ) { onStartDateChange(it) }
-        DateRow(
-            "End Date",
-            date = endDate
-        ) { onEndDateChange(it) }
-    }
-    if (repeatType != RepeatTypes.NONE) {
-        TimeRow(
-            time = time,
-            menuName = "Time"
-        ) { onTimeChange(it) }
-    }
 }
+
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun TimeRow(
-    menuName: String,
     time: Long?,
     onTimeChange: (Long?) -> Unit
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
-    OutlinedMenuItem(menuName, onClick = { showTimePicker = true }) {
+    OutlinedMenuItem("On Time", onClick = { showTimePicker = true }) {
         if (time == null) {
             Icon(
                 imageVector = Icons.Default.AccessTime,
