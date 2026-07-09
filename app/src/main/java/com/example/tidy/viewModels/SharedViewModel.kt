@@ -22,8 +22,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
 import com.example.tidy.ExportManager
-import com.example.tidy.Utils.getCurrentDate
-import com.example.tidy.Utils.getCurrentDay
 import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -136,7 +134,6 @@ class SharedViewModel(
     fun deleteTask(id: Long, deleteSubtasks: Boolean) {
         viewModelScope.launch {
             deleteTaskAsync(id, deleteSubtasks)
-
         }
     }
 
@@ -162,35 +159,6 @@ class SharedViewModel(
             dbOperation.saveTask(parent.copy(done = if (!parentStatus) 0L else 1L))
             dbOperation.updateParentDoneStatus(parentId)
         }
-    }
-
-    private suspend fun resetTasksForToday() { // todo this should be done via work manager so that even in bg it works
-        val todayDate = getCurrentDate()
-        val todayDay = getCurrentDay()
-
-        val lastResetDate = dbOperation.getLastResetDate()
-        if (lastResetDate == todayDate) return
-
-        dbOperation.setLastResetToday(todayDate = todayDate)
-
-        tasks.value.forEach { task ->
-            val shouldReset = when (task.repeatType) {
-                RepeatTypes.DAY -> true
-                RepeatTypes.WEEK -> task.repeatDays.contains(todayDay)
-                RepeatTypes.MONTH -> task.repeatDays.contains(todayDate)
-                else -> false
-            }
-            if (shouldReset) {
-                dbOperation.saveTask(task.copy(hide = 0L, done = 0L))
-            }
-
-            if (task.repeatType == RepeatTypes.NONE && task.hide == 1L) dbOperation.saveTask(
-                task.copy(
-                    hide = 0L
-                )
-            )
-        }
-
     }
 
     @OptIn(DelicateCoroutinesApi::class)

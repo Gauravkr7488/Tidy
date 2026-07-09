@@ -540,7 +540,7 @@ private fun ScheduleMenu(
 
                 if (showCustomMenu) {
                     DateRow(
-                        "End Date",
+                        "Ends On",
                         date = endDate
                     ) { onEndDateChange(it) }
                 }
