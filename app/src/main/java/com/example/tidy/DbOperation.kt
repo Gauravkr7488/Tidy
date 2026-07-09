@@ -96,7 +96,7 @@ class DbOperation(
                 repeatType = task.repeatType,
                 repeatDays = task.repeatDays,
                 description = task.description,
-                hide = task.hide,
+                hide = if (task.dueDateAndTime == null) task.hide else 1,
                 createdAt = task.createdAt,
                 parentId = task.parentId,
                 blockStatus = task.blockStatus,
@@ -144,7 +144,7 @@ class DbOperation(
             task.dueDateAndTime
         }
         if (scheduleDate == null) return true
-        if (task.endDate == null || task.endDate > scheduleDate){
+        if (task.endDate == null || task.endDate > scheduleDate) {
             Utils.scheduleWork(
                 context = context,
                 taskId = id,
@@ -251,14 +251,17 @@ private fun getScheduleDate(
             c.add(Calendar.MINUTE, frequencyNumber)
             c.timeInMillis
         }
+
         RepeatTypes.HOUR -> {
             c.add(Calendar.HOUR, frequencyNumber)
             c.timeInMillis
         }
+
         RepeatTypes.DAY -> {
             c.add(Calendar.DAY_OF_YEAR, frequencyNumber)
             c.timeInMillis
         }
+
         RepeatTypes.WEEK -> {
             val today = c.get(Calendar.DAY_OF_WEEK)
             val listScheduleDays: List<Int> = repeatDays.mapNotNull {
