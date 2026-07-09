@@ -29,9 +29,7 @@ CREATE TABLE Task (
     priority INTEGER,
     dueDateAndTime INTEGER,
     frequencyNumber TEXT,
-    startDate INTEGER,
     endDate INTEGER,
-    time INTEGER,
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
 );
 
@@ -80,9 +78,7 @@ SET
     priority = ?,
     frequencyNumber = ?,
     dueDateAndTime = ?,
-    startDate = ?,
-    endDate = ?,
-    time = ?
+    endDate = ?
 WHERE id = ?;
 
 getTaskById:
@@ -106,13 +102,9 @@ INSERT INTO Task(
     priority,
     frequencyNumber,
     dueDateAndTime,
-    startDate,
-    endDate,
-    time
+    endDate
 )
 VALUES (
-    ?,
-    ?,
     ?,
     ?,
     ?,
@@ -160,13 +152,9 @@ INSERT INTO Task(
     priority,
     frequencyNumber,
     dueDateAndTime,
-    startDate,
-    endDate,
-    time
+    endDate
 )
 VALUES (
-    ?,
-    ?,
     ?,
     ?,
     ?,

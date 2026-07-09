@@ -33,8 +33,6 @@ data class TaskBackupDto(
     var priority: Long? = null,
     var dueDateAndTime: Long? = null,
     var frequencyNumber: String? = null,
-    var startDate: Long? = null,
     var endDate: Long? = null,
-    var time: Long? = null,
     var createdAt: Long = System.currentTimeMillis(),
 )

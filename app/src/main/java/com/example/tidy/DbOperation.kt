@@ -23,15 +23,12 @@ import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.TaskActions
 import com.example.tidy.constants.WeekDays
 import com.tidy.sqldelight.BlockedTask
+import com.tidy.sqldelight.Task
 import com.yourapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 import java.util.Calendar
-import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
 
 class DbOperation(
     private val db: AppDatabase, private val context: Context
@@ -52,9 +49,7 @@ class DbOperation(
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime,
                 frequencyNumber = task.frequencyNumber,
-                startDate = task.startDate,
                 endDate = task.endDate,
-                time = task.time
             )
         }
     }
@@ -108,28 +103,12 @@ class DbOperation(
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime,
                 frequencyNumber = task.frequencyNumber,
-                startDate = task.startDate,
                 endDate = task.endDate,
-                time = task.time
             )
-            val id: Long? = db.taskQueries.getLastId().executeAsOneOrNull()
-            if (task.dueDateAndTime != null && id != null) Utils.scheduleWork(
-                context,
-                taskId = id,
-                scheduleTime = task.dueDateAndTime,
-                action = TaskActions.UPDATE_PRIORITY
-            )
-            if (task.frequencyNumber != null && id != null) {
-                val scheduleTime: Long? = getScheduleTime(
-                    frequencyNumber = task.frequencyNumber.toInt(),
-                    repeatType = task.repeatType,
-                    repeatDays = task.repeatDays.split(",")
-                )
-                scheduleTask(
-                    scheduleTime = scheduleTime,
-                    task = task
-                )
-            }
+            val id: Long =
+                db.taskQueries.getLastId().executeAsOneOrNull() ?: return@withContext null
+            if (task.repeatType == RepeatTypes.NONE && task.dueDateAndTime == null) return@withContext id
+            if (scheduleTask(task, id)) return@withContext null
             return@withContext id
 
         } else {
@@ -146,58 +125,34 @@ class DbOperation(
                 priority = task.priority,
                 dueDateAndTime = task.dueDateAndTime,
                 frequencyNumber = task.frequencyNumber,
-                startDate = task.startDate,
                 endDate = task.endDate,
-                time = task.time
             )
-            if (task.dueDateAndTime != null) {
-                Utils.cancelDueDateWork(
-                    context, task.id,
-                    action = TaskActions.UPDATE_PRIORITY
-                )
-                Utils.scheduleWork(
-                    context,
-                    taskId = task.id,
-                    scheduleTime = task.dueDateAndTime,
-                    action = TaskActions.UPDATE_PRIORITY
-                )
-            }
-            if (task.frequencyNumber != null) {
-                Utils.cancelDueDateWork(
-                    context, task.id,
-                    action = TaskActions.UNARCHIVE
-                )
-                val scheduleTime: Long? = getScheduleTime(
-                    frequencyNumber = task.frequencyNumber.toInt(),
-                    repeatType = task.repeatType,
-                    repeatDays = task.repeatDays.split(",")
-                )
-                scheduleTask(scheduleTime, task)
-            }
+            if (scheduleTask(task, task.id)) return@withContext null
             return@withContext task.id
         }
     }
 
-    private fun scheduleTask(scheduleTime: Long?, task: Task) {
-        if (scheduleTime != null) {
-            if (task.endDate == null || task.endDate > scheduleTime) {
-                var s: Long
-                val a: String
-                if (task.startDate == null || task.startDate < scheduleTime) {
-                    s = scheduleTime
-                    a = TaskActions.UNARCHIVE
-                } else {
-                    s = task.startDate
-                    a = TaskActions.RESCHEDULE
-                }
-                Utils.scheduleWork(
-                    context = context,
-                    taskId = task.id,
-                    scheduleTime = s,
-                    action = a
-                )
-            }
+    private fun scheduleTask(task: Task, id: Long): Boolean {
+        val scheduleDate: Long? = if (task.repeatType != RepeatTypes.NONE) {
+            val t = getScheduleDate(
+                frequencyNumber = task.frequencyNumber?.toInt() ?: 1,
+                repeatType = task.repeatType,
+                repeatDays = task.repeatDays.split(",")
+            )
+            Utils.combineDateAndTimeMillis(t, task.dueDateAndTime)
+        } else {
+            task.dueDateAndTime
         }
+        if (scheduleDate == null) return true
+        if (task.endDate == null || task.endDate > scheduleDate){
+            Utils.scheduleWork(
+                context = context,
+                taskId = id,
+                scheduleTime = scheduleDate,
+                action = TaskActions.UNARCHIVE
+            )
+        }
+        return false
     }
 
     suspend fun getTask(id: Long): Task? = withContext(Dispatchers.IO) {
@@ -285,16 +240,25 @@ class DbOperation(
             .mapToList(Dispatchers.IO)
 }
 
-private fun getScheduleTime(
+private fun getScheduleDate(
     frequencyNumber: Int,
     repeatType: String,
     repeatDays: List<String>,
 ): Long? {
     val c = Calendar.getInstance()
     val scheduleTime = when (repeatType) {
-        RepeatTypes.MINUTE -> frequencyNumber.minutes.inWholeMilliseconds
-        RepeatTypes.HOUR -> frequencyNumber.hours.inWholeMilliseconds
-        RepeatTypes.DAY -> frequencyNumber.days.inWholeMilliseconds
+        RepeatTypes.MINUTE -> {
+            c.add(Calendar.MINUTE, frequencyNumber)
+            c.timeInMillis
+        }
+        RepeatTypes.HOUR -> {
+            c.add(Calendar.HOUR, frequencyNumber)
+            c.timeInMillis
+        }
+        RepeatTypes.DAY -> {
+            c.add(Calendar.DAY_OF_YEAR, frequencyNumber)
+            c.timeInMillis
+        }
         RepeatTypes.WEEK -> {
             val today = c.get(Calendar.DAY_OF_WEEK)
             val listScheduleDays: List<Int> = repeatDays.mapNotNull {

@@ -135,9 +135,7 @@ object Utils {
             priority = null,
             dueDateAndTime = null,
             frequencyNumber = null,
-            startDate = null,
             endDate = null,
-            time = null
         )
     }
 
@@ -157,9 +155,7 @@ object Utils {
             priority = priority,
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
-            startDate = startDate,
             endDate = endDate,
-            time = time
         )
     }
 
@@ -178,9 +174,7 @@ object Utils {
             priority = priority,
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
-            startDate = startDate,
             endDate = endDate,
-            time = time
         )
     }
 
