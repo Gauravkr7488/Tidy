@@ -19,12 +19,12 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
 
         return when (action) {
             TaskActions.UNARCHIVE -> {
-                dbOperation.saveTask(task.copy(done = 0, hide = 0))
+                dbOperation.saveTask(task.copy(done = 0, hide = 0, priority = 1))
                 Result.success()
             }
+
             else -> Result.failure()
         }
-
     }
 }
 

@@ -199,7 +199,7 @@ fun AddTaskScreen(
                                         repeatDays = repeatDays,
                                         description = description,
                                         done = done,
-                                        hide = if (startNow) 0 else hide,
+                                        hide = hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
                                         blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
@@ -211,7 +211,7 @@ fun AddTaskScreen(
                                         frequencyNumber = frequencyNumber,
                                         endDate = endDate,
                                         repeatAfterDone = if (repeatAfterDone) 1L else 0L,
-                                    )
+                                    ), startNow
                                 )
                                 if (savedTaskId == null) return@launch
                                 blockedByTasks.forEach {
@@ -506,6 +506,7 @@ private fun ScheduleMenu(
                                         onDueDateChange(null)
                                         onDueTimeChange(null)
                                         showDropDownMenu = false
+                                        if (startNow) onStartNowChange()
                                         if (showCustomMenu) {
                                             showCustomMenu = false
                                             onFrequencyNumberChange(null)
@@ -521,6 +522,7 @@ private fun ScheduleMenu(
                                     showCustomMenu = true
                                     onRepeatTypeChange(RepeatTypes.DAY)
                                     onRepeatDaysChange(emptyList())
+                                    if (startNow) onStartNowChange()
                                 }
                             )
                         }
@@ -552,21 +554,6 @@ private fun ScheduleMenu(
                 }
 
                 if (showCustomMenu) {
-                    OutlinedMenuItem("Starts Now", onClick = {
-                        onStartNowChange()
-                    }) {
-                        if (startNow) {
-                            Icon(
-                                imageVector = Icons.Default.CheckBox,
-                                contentDescription = null
-                            )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.CheckBoxOutlineBlank,
-                                contentDescription = null
-                            )
-                        }
-                    }
                     DateRow(
                         "Ends On",
                         date = endDate
@@ -599,6 +586,22 @@ private fun ScheduleMenu(
                     TimeRow(
                         time = dueTime,
                     ) { onDueTimeChange(it) }
+
+                    OutlinedMenuItem("Starts Now", onClick = {
+                        onStartNowChange()
+                    }) {
+                        if (startNow) {
+                            Icon(
+                                imageVector = Icons.Default.CheckBox,
+                                contentDescription = null
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.CheckBoxOutlineBlank,
+                                contentDescription = null
+                            )
+                        }
+                    }
                 }
             }
         }

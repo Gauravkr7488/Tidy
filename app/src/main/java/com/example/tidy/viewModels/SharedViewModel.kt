@@ -174,8 +174,12 @@ class SharedViewModel(
         return dbOperation.getTask(taskId)
     }
 
-    suspend fun saveTask(task: Task): Long? {
-        val i = dbOperation.saveTask(task) ?: return null
+    suspend fun saveTask(task: Task, startNow: Boolean = false): Long? {
+        println("startNow = $startNow")
+        val hide: Long =
+            if (startNow || task.repeatType == RepeatTypes.NONE && task.dueDateAndTime == null) 0 else 1
+        println("hide = $hide")
+        val i = dbOperation.saveTask(task.copy(hide = hide)) ?: return null
         dbOperation.updateChildrenRepeatAndHideStatus(i)
         return i
     }
