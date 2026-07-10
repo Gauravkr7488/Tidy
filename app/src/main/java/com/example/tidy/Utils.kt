@@ -18,6 +18,8 @@
 package com.example.tidy
 
 import android.content.Context
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -25,6 +27,9 @@ import com.example.tidy.constants.RepeatTypes
 import com.google.gson.Gson
 import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Collections.emptyList
@@ -210,4 +215,45 @@ object Utils {
         }
         return blockers
     }
+
+    suspend fun exportSilently(dbOperation: DbOperation, context: Context): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            val prefs = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
+
+            return@withContext try {
+                // TODO FIX
+                val tasks = dbOperation.taskGetAll()
+                var lastResetDate = dbOperation.getLastResetDate()
+                if (lastResetDate == null) lastResetDate = getCurrentDate()
+                val taskBlockers = dbOperation.getAllBlockers()
+                val json = createBackupJson(tasks, lastResetDate, taskBlockers)
+
+                val timestamp =
+                    SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                val fileName = "backup_$timestamp.json"
+
+                val savedUri = prefs.getString("backup_uri", null)
+
+                if (savedUri != null) {
+                    // Write to user-picked folder
+                    val treeUri = savedUri.toUri()
+                    val docTree = DocumentFile.fromTreeUri(context, treeUri)
+                    val file = docTree?.createFile("application/json", fileName)
+                    file?.uri?.let { fileUri ->
+                        context.contentResolver.openOutputStream(fileUri)?.use { stream ->
+                            stream.write(json.toByteArray())
+                        }
+                    }
+                } else {
+                    // Fallback to internal storage if no folder picked yet
+                    val backupDir = File(context.filesDir, "backups").also { it.mkdirs() }
+                    File(backupDir, fileName).writeText(json)
+                }
+
+                Result.success(Unit)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Result.failure(e)
+            }
+        }
 }

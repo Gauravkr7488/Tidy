@@ -12,7 +12,6 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
     override suspend fun doWork(): Result {
         val taskId = inputData.getLong("task_id", -1L)
         val action = inputData.getString("action")
-
         if (taskId == -1L) return Result.failure()
 
         val task = dbOperation.getTask(taskId) ?: return Result.failure()
@@ -20,6 +19,11 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
         return when (action) {
             TaskActions.UNARCHIVE -> {
                 dbOperation.saveTask(task.copy(done = 0, hide = 0, priority = 1))
+                Result.success()
+            }
+
+            TaskActions.BACKUP -> {
+                Utils.exportSilently(dbOperation, applicationContext)
                 Result.success()
             }
 
