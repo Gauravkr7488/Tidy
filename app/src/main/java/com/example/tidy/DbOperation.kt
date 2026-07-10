@@ -50,6 +50,7 @@ class DbOperation(
                 dueDateAndTime = task.dueDateAndTime,
                 frequencyNumber = task.frequencyNumber,
                 endDate = task.endDate,
+                repeatAfterDone = task.repeatAfterDone,
             )
         }
     }
@@ -83,54 +84,62 @@ class DbOperation(
             return@withContext isChildAncestorOfParent(grandParentId, childId)
         }
 
-    suspend fun saveTask(task: Task): Long? = withContext(Dispatchers.IO) {
-        if (task.parentId != null && isChildAncestorOfParent(
-                task.parentId,
-                task.id
-            )
-        ) return@withContext null // todo should return some kind of error or warning
-        if (task.id == 0L) {
-            db.taskQueries.saveTask(
-                title = task.title,
-                done = task.done,
-                repeatType = task.repeatType,
-                repeatDays = task.repeatDays,
-                description = task.description,
-                hide = if (task.dueDateAndTime == null) task.hide else 1,
-                createdAt = task.createdAt,
-                parentId = task.parentId,
-                blockStatus = task.blockStatus,
-                priority = task.priority,
-                dueDateAndTime = task.dueDateAndTime,
-                frequencyNumber = task.frequencyNumber,
-                endDate = task.endDate,
-            )
-            val id: Long =
-                db.taskQueries.getLastId().executeAsOneOrNull() ?: return@withContext null
-            if (task.repeatType == RepeatTypes.NONE && task.dueDateAndTime == null) return@withContext id
-            if (scheduleTask(task, id)) return@withContext null
-            return@withContext id
+    suspend fun saveTask(task: Task): Long? =
+        withContext(Dispatchers.IO) {
+            if (task.parentId != null && isChildAncestorOfParent(
+                    task.parentId,
+                    task.id
+                )
+            ){
+                println("Save Task Failed")
+                return@withContext null
+            }
+            if (task.id == 0L) {
+                db.taskQueries.saveTask(
+                    title = task.title,
+                    done = task.done,
+                    repeatType = task.repeatType,
+                    repeatDays = task.repeatDays,
+                    description = task.description,
+                    hide = task.hide,
+                    createdAt = task.createdAt,
+                    parentId = task.parentId,
+                    blockStatus = task.blockStatus,
+                    priority = task.priority,
+                    dueDateAndTime = task.dueDateAndTime,
+                    frequencyNumber = task.frequencyNumber,
+                    endDate = task.endDate,
+                    repeatAfterDone = task.repeatAfterDone,
+                )
+                val id: Long =
+                    db.taskQueries.getLastId().executeAsOneOrNull() ?: return@withContext null
+                if (task.repeatType == RepeatTypes.NONE && task.dueDateAndTime == null) return@withContext id
+                if (scheduleTask(task, id)) return@withContext null
+                return@withContext id
 
-        } else {
-            db.taskQueries.updateTask(
-                id = task.id,
-                title = task.title,
-                done = task.done,
-                repeatType = task.repeatType,
-                repeatDays = task.repeatDays,
-                description = task.description,
-                hide = task.hide,
-                parentId = task.parentId,
-                blockStatus = task.blockStatus,
-                priority = task.priority,
-                dueDateAndTime = task.dueDateAndTime,
-                frequencyNumber = task.frequencyNumber,
-                endDate = task.endDate,
-            )
-            if (scheduleTask(task, task.id)) return@withContext null
-            return@withContext task.id
+            } else {
+                db.taskQueries.updateTask(
+                    id = task.id,
+                    title = task.title,
+                    done = task.done,
+                    repeatType = task.repeatType,
+                    repeatDays = task.repeatDays,
+                    description = task.description,
+                    hide = task.hide,
+                    parentId = task.parentId,
+                    blockStatus = task.blockStatus,
+                    priority = task.priority,
+                    dueDateAndTime = task.dueDateAndTime,
+                    frequencyNumber = task.frequencyNumber,
+                    endDate = task.endDate,
+                    repeatAfterDone = task.repeatAfterDone,
+                )
+                Utils.cancelAllWork(context, task.id)
+                if (task.repeatAfterDone == 1L && task.done == 0L ) return@withContext task.id
+                scheduleTask(task, task.id)
+                return@withContext task.id
+            }
         }
-    }
 
     private fun scheduleTask(task: Task, id: Long): Boolean {
         val scheduleDate: Long? = if (task.repeatType != RepeatTypes.NONE) {
@@ -139,7 +148,8 @@ class DbOperation(
                 repeatType = task.repeatType,
                 repeatDays = task.repeatDays.split(",")
             )
-            Utils.combineDateAndTimeMillis(t, task.dueDateAndTime)
+            if (task.repeatType == RepeatTypes.MINUTE || task.repeatType == RepeatTypes.HOUR) t else
+                Utils.combineDateAndTimeMillis(t, task.dueDateAndTime)
         } else {
             task.dueDateAndTime
         }
@@ -246,6 +256,7 @@ private fun getScheduleDate(
     repeatDays: List<String>,
 ): Long? {
     val c = Calendar.getInstance()
+    c.set(Calendar.SECOND, 0)
     val scheduleTime = when (repeatType) {
         RepeatTypes.MINUTE -> {
             c.add(Calendar.MINUTE, frequencyNumber)

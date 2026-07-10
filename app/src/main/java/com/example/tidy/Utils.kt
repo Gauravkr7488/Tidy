@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2026  Gaurav Kumar
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package com.example.tidy
 
 import android.content.Context
@@ -136,6 +153,7 @@ object Utils {
             dueDateAndTime = null,
             frequencyNumber = null,
             endDate = null,
+            repeatAfterDone = 0,
         )
     }
 
@@ -143,19 +161,20 @@ object Utils {
         return TaskBackupDto(
             id = id,
             title = title,
-            done = done != 0L,
+            done = done == 1L,
             repeatType = repeatType,
             repeatOn = repeatDays,
             description = description,
-            hide = hide != 0L,
+            hide = hide == 1L,
             createdAt = createdAt,
             parentId = parentId,
             blockedBy = taskBlockString,
-            blockedStatus = blockStatus != 0L,
+            blockedStatus = blockStatus == 1L,
             priority = priority,
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
             endDate = endDate,
+            repeatAfterDone = repeatAfterDone == 1L
         )
     }
 
@@ -175,6 +194,7 @@ object Utils {
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
             endDate = endDate,
+            repeatAfterDone = if (repeatAfterDone) 1L else 0L,
         )
     }
 

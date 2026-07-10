@@ -46,6 +46,8 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
@@ -131,6 +133,8 @@ fun AddTaskScreen(
     var parentId: Long? by remember { mutableStateOf(null) }
     var hide: Long by remember { mutableLongStateOf(0) }
     var done: Long by remember { mutableLongStateOf(0) }
+    var startNow by remember { mutableStateOf(false) }
+    var repeatAfterDone by remember { mutableStateOf(false) }
     var priority: Long? by remember { mutableStateOf(null) }
     var dueDate: Long? by remember { mutableStateOf(null) }
     var dueTime: Long? by remember { mutableStateOf(null) }
@@ -155,6 +159,7 @@ fun AddTaskScreen(
             dueTime = task.dueDateAndTime
             frequencyNumber = task.frequencyNumber
             endDate = task.endDate
+            repeatAfterDone = task.repeatAfterDone == 1L
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -194,7 +199,7 @@ fun AddTaskScreen(
                                         repeatDays = repeatDays,
                                         description = description,
                                         done = done,
-                                        hide = hide,
+                                        hide = if (startNow) 0 else hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
                                         blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
@@ -205,6 +210,7 @@ fun AddTaskScreen(
                                         ),
                                         frequencyNumber = frequencyNumber,
                                         endDate = endDate,
+                                        repeatAfterDone = if (repeatAfterDone) 1L else 0L,
                                     )
                                 )
                                 if (savedTaskId == null) return@launch
@@ -297,7 +303,11 @@ fun AddTaskScreen(
                 dueDate = dueDate,
                 dueTime = dueTime,
                 onDueDateChange = { dueDate = it },
-                onDueTimeChange = { dueTime = it }
+                onDueTimeChange = { dueTime = it },
+                startNow = startNow,
+                repeatAfterDone = repeatAfterDone,
+                onStartNowChange = { startNow = !startNow },
+                onRepeatAfterDoneChange = { repeatAfterDone = !repeatAfterDone }
             )
             PriorityMenu(
                 priorityValue = priority,
@@ -429,12 +439,16 @@ private fun ScheduleMenu(
     endDate: Long?,
     dueDate: Long?,
     dueTime: Long?,
+    startNow: Boolean,
+    repeatAfterDone: Boolean,
     onRepeatTypeChange: (String) -> Unit,
     onRepeatDaysChange: (List<String>) -> Unit,
     onFrequencyNumberChange: (String?) -> Unit,
     onEndDateChange: (Long?) -> Unit,
     onDueDateChange: (Long?) -> Unit,
     onDueTimeChange: (Long?) -> Unit,
+    onStartNowChange: () -> Unit,
+    onRepeatAfterDoneChange: () -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
@@ -454,7 +468,7 @@ private fun ScheduleMenu(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                var showCustomMenu by remember { mutableStateOf(false) }
+                var showCustomMenu by remember { mutableStateOf(frequencyNumber != null) }
                 val repeatTypeDisplayList = listOf(
                     "None" to RepeatTypes.NONE,
                     "Daily" to RepeatTypes.DAY,
@@ -476,7 +490,7 @@ private fun ScheduleMenu(
                     Box {
                         var showDropDownMenu by remember { mutableStateOf(false) }
                         OutlinedDropDownButton(
-                            label = if (showCustomMenu || frequencyNumber != null) "Custom" else repeatTypeDisplayList.first { it.second == repeatType }.first,
+                            label = if (frequencyNumber != null) "Custom" else repeatTypeDisplayList.first { it.second == repeatType }.first,
                             onClick = { showDropDownMenu = true },
                         )
                         DropdownMenu(
@@ -524,7 +538,6 @@ private fun ScheduleMenu(
                         onFrequencyNumberChange = onFrequencyNumberChange,
                         onFrequencyTypeChange = onRepeatTypeChange
                     )
-
                 }
 
                 if (repeatType == RepeatTypes.WEEK) {
@@ -539,10 +552,42 @@ private fun ScheduleMenu(
                 }
 
                 if (showCustomMenu) {
+                    OutlinedMenuItem("Starts Now", onClick = {
+                        onStartNowChange()
+                    }) {
+                        if (startNow) {
+                            Icon(
+                                imageVector = Icons.Default.CheckBox,
+                                contentDescription = null
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.CheckBoxOutlineBlank,
+                                contentDescription = null
+                            )
+                        }
+                    }
                     DateRow(
                         "Ends On",
                         date = endDate
                     ) { onEndDateChange(it) }
+                    OutlinedMenuItem(
+                        "Repeats after Completion",
+                        onClick = { onRepeatAfterDoneChange() }
+                    ) {
+                        if (repeatAfterDone) {
+                            Icon(
+                                imageVector = Icons.Default.CheckBox,
+                                contentDescription = null
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.CheckBoxOutlineBlank,
+                                contentDescription = null
+                            )
+                        }
+                    }
+
                 }
                 if (repeatType == RepeatTypes.NONE) {
                     DateRow(
