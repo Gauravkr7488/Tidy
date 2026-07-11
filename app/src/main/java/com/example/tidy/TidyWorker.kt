@@ -19,8 +19,8 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
                     dbOperation.saveTask(task.copy(done = 0, hide = 0, priority = 1))
                     Utils.sendNotification(
                         applicationContext,
-                        title = "${task.title} Unarchived",
-                        message = "mic check"
+                        title = "Schedule met",
+                        message = "${task.title} Unarchived"
                     )
                 }
                 Result.success()

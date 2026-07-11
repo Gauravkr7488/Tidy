@@ -266,31 +266,36 @@ object Utils {
     }
 
     fun sendNotification(context: Context, title: String, message: String) {
+        val notificationId = NotificationIdProvider.nextId()
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
+
         val pendingIntent = PendingIntent.getActivity(
-            context, 0, intent,
+            context, notificationId, intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val builder = NotificationCompat.Builder(context, "default_channel_id")
-            .setSmallIcon(R.drawable.icon)   // your icon
+            .setSmallIcon(R.mipmap.ic_launcher)   // your icon
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-
         with(NotificationManagerCompat.from(context)) {
             // Check permission on Android 13+ before notifying
             if (ActivityCompat.checkSelfPermission(
                     context, Manifest.permission.POST_NOTIFICATIONS
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
-                notify(1001, builder.build())
+                notify(notificationId, builder.build())
             }
         }
     }
 
+    object NotificationIdProvider {
+        private var lastId = 0
+        fun nextId(): Int = ++lastId
+    }
 }
