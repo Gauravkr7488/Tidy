@@ -134,7 +134,7 @@ class DbOperation(
                     endDate = task.endDate,
                     repeatAfterDone = task.repeatAfterDone,
                 )
-                Utils.cancelAllWork(context, task.id)
+                Utils.cancelAllWorkById(context, task.id)
                 if (task.repeatAfterDone == 1L && task.done == 0L ) return@withContext task.id
                 scheduleTask(task, task.id)
                 return@withContext task.id
@@ -205,7 +205,7 @@ class DbOperation(
 
     suspend fun deleteTask(id: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.deleteTask(id)
-        Utils.cancelAllWork(
+        Utils.cancelAllWorkById(
             context = context, taskId = id
         )
     }

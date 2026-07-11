@@ -43,7 +43,6 @@ class MainActivity : ComponentActivity() {
             TidyTheme {
                 MainScreen(
                     dbOperation,
-                    exportManager = app.exportManager
                 )
             }
         }

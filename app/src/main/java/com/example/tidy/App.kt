@@ -18,30 +18,16 @@
 package com.example.tidy
 
 import android.app.Application
-import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.yourapp.db.AppDatabase
 
 class App : Application() {
 
-    lateinit var exportManager: ExportManager
-        private set
-
     lateinit var database: AppDatabase
     override fun onCreate() {
         super.onCreate()
         database = createDatabase(this)
-
-
-        exportManager = ExportManager(
-            context = this,
-            database = database
-        )
-
-        ProcessLifecycleOwner.get().lifecycle.addObserver(
-            AppLifecycleObserver(exportManager)
-        )
 
         val dbOperation = DbOperation(database, this)
         val config = Configuration.Builder()

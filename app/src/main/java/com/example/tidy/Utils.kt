@@ -18,6 +18,8 @@
 package com.example.tidy
 
 import android.content.Context
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -25,6 +27,9 @@ import com.example.tidy.constants.RepeatTypes
 import com.google.gson.Gson
 import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Collections.emptyList
@@ -37,12 +42,6 @@ object Utils {
     fun getCurrentDate(): String {
         return SimpleDateFormat("dd", Locale.getDefault())
             .format(Calendar.getInstance().time) // gives "01", "02"
-    }
-
-    fun getCurrentDay(): String {
-        return SimpleDateFormat("EEE", Locale.getDefault())
-            .format(Calendar.getInstance().time)
-            .uppercase() // gives "MON", "TUE" etc.
     }
 
     fun changeDateFormat(date: Long, pattern: String): String {
@@ -97,7 +96,7 @@ object Utils {
         }.timeInMillis
     }
 
-    fun scheduleWork(context: Context, taskId: Long, scheduleTime: Long, action: String) {
+    fun scheduleWork(context: Context, taskId: Long?, scheduleTime: Long, action: String) {
         val delay = scheduleTime - System.currentTimeMillis()
 
         if (delay <= 0) return // Due date already passed
@@ -107,18 +106,18 @@ object Utils {
         val request = OneTimeWorkRequestBuilder<TidyWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setInputData(data)
-            .addTag("tidy-$taskId,$action") // Tag for cancellation
+            .addTag("tidy-$action") // Tag for cancellation
             .addTag("tidy-$taskId")
             .build()
         WorkManager.getInstance(context).enqueue(request)
     }
 
-    fun cancelDueDateWork(context: Context, taskId: Long, action: String) {
-        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId,$action")
+    fun cancelAllWorkById(context: Context, taskId: Long) {
+        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
     }
 
-    fun cancelAllWork(context: Context, taskId: Long) {
-        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
+    fun cancelAllWorkByAction(context: Context, action: String) {
+        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$action")
     }
 
     fun createBackupJson(
@@ -209,5 +208,52 @@ object Utils {
             )
         }
         return blockers
+    }
+
+    suspend fun exportSilently(dbOperation: DbOperation, context: Context): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            val prefs = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
+
+            return@withContext try {
+                // TODO FIX
+                val tasks = dbOperation.taskGetAll()
+                var lastResetDate = dbOperation.getLastResetDate()
+                if (lastResetDate == null) lastResetDate = getCurrentDate()
+                val taskBlockers = dbOperation.getAllBlockers()
+                val json = createBackupJson(tasks, lastResetDate, taskBlockers)
+
+                val timestamp =
+                    SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                val fileName = "backup_$timestamp.json"
+
+                val savedUri = prefs.getString("backup_uri", null)
+
+                if (savedUri != null) {
+                    // Write to user-picked folder
+                    val treeUri = savedUri.toUri()
+                    val docTree = DocumentFile.fromTreeUri(context, treeUri)
+                    val file = docTree?.createFile("application/json", fileName)
+                    file?.uri?.let { fileUri ->
+                        context.contentResolver.openOutputStream(fileUri)?.use { stream ->
+                            stream.write(json.toByteArray())
+                        }
+                    }
+                } else {
+                    // Fallback to internal storage if no folder picked yet
+                    val backupDir = File(context.filesDir, "backups").also { it.mkdirs() }
+                    File(backupDir, fileName).writeText(json)
+                }
+
+                Result.success(Unit)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Result.failure(e)
+            }
+        }
+
+    fun getAutoBackupTime(): Long {
+        val c = Calendar.getInstance()
+        c.add(Calendar.HOUR, 1)
+        return c.timeInMillis
     }
 }
