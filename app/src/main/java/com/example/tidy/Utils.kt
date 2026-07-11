@@ -102,7 +102,7 @@ object Utils {
         }.timeInMillis
     }
 
-    fun scheduleWork(context: Context, taskId: Long, scheduleTime: Long, action: String) {
+    fun scheduleWork(context: Context, taskId: Long?, scheduleTime: Long, action: String) {
         val delay = scheduleTime - System.currentTimeMillis()
 
         if (delay <= 0) return // Due date already passed
@@ -256,4 +256,10 @@ object Utils {
                 Result.failure(e)
             }
         }
+
+    fun getAutoBackupTime(): Long {
+        val c = Calendar.getInstance()
+        c.add(Calendar.HOUR, 1)
+        return c.timeInMillis
+    }
 }

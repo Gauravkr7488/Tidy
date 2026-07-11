@@ -51,8 +51,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tidy.ui.component.SimpleCard
 import com.example.tidy.BackupOperations
+import com.example.tidy.Utils
+import com.example.tidy.constants.TaskActions
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 @Composable
 fun BackupScreen(
@@ -204,7 +207,15 @@ fun BackupScreen(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .size(48.dp),
-                                onClick = { folderPickerLauncher.launch(null) }
+                                onClick = {
+                                    folderPickerLauncher.launch(null)
+                                    if (autoBackupPath != null) Utils.scheduleWork(
+                                        context = context,
+                                        scheduleTime = Utils.getAutoBackupTime(),
+                                        action = TaskActions.BACKUP,
+                                        taskId = null
+                                    )
+                                }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Folder,
