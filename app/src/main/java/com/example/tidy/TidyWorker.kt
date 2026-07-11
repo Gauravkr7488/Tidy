@@ -15,7 +15,14 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
                 val task = dbOperation.getTask(taskId) ?: return Result.failure()
-                dbOperation.saveTask(task.copy(done = 0, hide = 0, priority = 1))
+                if (task.done == 1L || task.hide == 1L) {
+                    dbOperation.saveTask(task.copy(done = 0, hide = 0, priority = 1))
+                    Utils.sendNotification(
+                        applicationContext,
+                        title = "${task.title} Unarchived",
+                        message = "mic check"
+                    )
+                }
                 Result.success()
             }
 
