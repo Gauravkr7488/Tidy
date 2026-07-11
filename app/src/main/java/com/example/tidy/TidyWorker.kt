@@ -10,9 +10,7 @@ import com.example.tidy.constants.TaskActions
 class TidyWorker(context: Context, params: WorkerParameters, private val dbOperation: DbOperation) :
     CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val action = inputData.getString("action")
-
-        return when (action) {
+        return when (val action = inputData.getString("action")) {
             TaskActions.UNARCHIVE -> {
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
@@ -26,7 +24,7 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
                 Utils.scheduleWork(
                     context = applicationContext,
                     scheduleTime = Utils.getAutoBackupTime(),
-                    action = TaskActions.BACKUP,
+                    action = action,
                     taskId = null
                 )
                 Result.success()

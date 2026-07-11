@@ -49,13 +49,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.tidy.ui.component.SimpleCard
 import com.example.tidy.BackupOperations
 import com.example.tidy.Utils
 import com.example.tidy.constants.TaskActions
+import com.example.tidy.ui.component.SimpleCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 @Composable
 fun BackupScreen(

@@ -44,12 +44,6 @@ object Utils {
             .format(Calendar.getInstance().time) // gives "01", "02"
     }
 
-    fun getCurrentDay(): String {
-        return SimpleDateFormat("EEE", Locale.getDefault())
-            .format(Calendar.getInstance().time)
-            .uppercase() // gives "MON", "TUE" etc.
-    }
-
     fun changeDateFormat(date: Long, pattern: String): String {
         return SimpleDateFormat(pattern, Locale.getDefault()).apply {
             timeZone = TimeZone.getDefault()
@@ -116,10 +110,6 @@ object Utils {
             .addTag("tidy-$taskId")
             .build()
         WorkManager.getInstance(context).enqueue(request)
-    }
-
-    fun cancelDueDateWork(context: Context, taskId: Long, action: String) {
-        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId,$action")
     }
 
     fun cancelAllWork(context: Context, taskId: Long) {

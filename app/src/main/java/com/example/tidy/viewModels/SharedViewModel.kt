@@ -21,11 +21,8 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
-import com.example.tidy.ExportManager
 import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +34,6 @@ import kotlinx.coroutines.launch
 
 class SharedViewModel(
     private val dbOperation: DbOperation,
-    private val exportManager: ExportManager,
 ) : ViewModel() {
 
     val tasks = dbOperation.observeTasks()
@@ -160,15 +156,6 @@ class SharedViewModel(
             dbOperation.updateParentDoneStatus(parentId)
         }
     }
-
-    @OptIn(DelicateCoroutinesApi::class)
-    override fun onCleared() {
-        super.onCleared()
-        GlobalScope.launch {
-            exportManager.exportSilently()
-        }
-    }
-
     suspend fun getTask(taskId: Long): Task? {
         if (taskId == 0L) return null
         return dbOperation.getTask(taskId)
