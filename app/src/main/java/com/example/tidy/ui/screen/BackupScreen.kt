@@ -208,12 +208,18 @@ fun BackupScreen(
                                     .size(48.dp),
                                 onClick = {
                                     folderPickerLauncher.launch(null)
-                                    if (autoBackupPath != null) Utils.scheduleWork(
-                                        context = context,
-                                        scheduleTime = Utils.getAutoBackupTime(),
-                                        action = TaskActions.BACKUP,
-                                        taskId = null
-                                    )
+                                    if (autoBackupPath != null) {
+                                        Utils.cancelAllWorkByAction(
+                                            context = context,
+                                            action = TaskActions.BACKUP
+                                        )
+                                        Utils.scheduleWork(
+                                            context = context,
+                                            scheduleTime = Utils.getAutoBackupTime(),
+                                            action = TaskActions.BACKUP,
+                                            taskId = null
+                                        )
+                                    }
                                 }
                             ) {
                                 Icon(

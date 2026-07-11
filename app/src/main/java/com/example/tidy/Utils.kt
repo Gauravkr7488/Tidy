@@ -106,14 +106,18 @@ object Utils {
         val request = OneTimeWorkRequestBuilder<TidyWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setInputData(data)
-            .addTag("tidy-$taskId,$action") // Tag for cancellation
+            .addTag("tidy-$action") // Tag for cancellation
             .addTag("tidy-$taskId")
             .build()
         WorkManager.getInstance(context).enqueue(request)
     }
 
-    fun cancelAllWork(context: Context, taskId: Long) {
+    fun cancelAllWorkById(context: Context, taskId: Long) {
         WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
+    }
+
+    fun cancelAllWorkByAction(context: Context, action: String) {
+        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$action")
     }
 
     fun createBackupJson(
