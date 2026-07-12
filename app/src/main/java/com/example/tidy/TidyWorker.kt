@@ -5,6 +5,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.TaskActions
 
 class TidyWorker(context: Context, params: WorkerParameters, private val dbOperation: DbOperation) :
@@ -34,6 +35,15 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
                     action = action,
                     taskId = null
                 )
+                Result.success()
+            }
+
+            TaskActions.RESET_ALARMS -> {
+                val tasks = dbOperation.taskGetAll()
+                tasks.forEach { task ->
+                    if (task.repeatType == RepeatTypes.NONE && task.dueDateAndTime == null) return@forEach
+                    dbOperation.saveTask(task)
+                }
                 Result.success()
             }
 
