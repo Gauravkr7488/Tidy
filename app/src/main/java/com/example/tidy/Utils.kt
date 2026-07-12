@@ -18,19 +18,23 @@
 package com.example.tidy
 
 import android.Manifest
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.Ace777.tidy.R
+import com.example.tidy.constants.Options
 import com.example.tidy.constants.RepeatTypes
 import com.google.gson.Gson
 import com.tidy.sqldelight.BlockedTask
@@ -119,10 +123,21 @@ object Utils {
             .build()
         WorkManager.getInstance(context).enqueue(request)
     }
+    fun scheduleImmediateWork(context: Context, taskId: Long?, action: String) {
+        val data = workDataOf("task_id" to taskId, "action" to action)
 
-    fun cancelAllWorkById(context: Context, taskId: Long) {
-        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
+        val request = OneTimeWorkRequestBuilder<TidyWorker>()
+            .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+            .setInputData(data)
+            .addTag("tidy-$action") // Tag for cancellation
+            .addTag("tidy-$taskId")
+            .build()
+        WorkManager.getInstance(context).enqueue(request)
     }
+
+//    fun cancelAllWorkById(context: Context, taskId: Long) {
+//        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
+//    }
 
     fun cancelAllWorkByAction(context: Context, action: String) {
         WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$action")
@@ -297,5 +312,43 @@ object Utils {
     object NotificationIdProvider {
         private var lastId = 0
         fun nextId(): Int = ++lastId
+    }
+
+    fun scheduleAlarm(context: Context, scheduleTime: Long, action: String, taskId: Long) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
+            putExtra(Options.ACTION, action)
+            putExtra(Options.TASK_ID, taskId)
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            taskId.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            // Need to request permission — see step 4
+            return
+        }
+
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            scheduleTime,
+            pendingIntent
+        )
+    }
+
+    fun cancelAlarm(context: Context, taskId: Long) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            taskId.toInt(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pendingIntent)
     }
 }

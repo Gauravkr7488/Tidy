@@ -134,7 +134,7 @@ class DbOperation(
                     endDate = task.endDate,
                     repeatAfterDone = task.repeatAfterDone,
                 )
-                Utils.cancelAllWorkById(context, task.id)
+                Utils.cancelAlarm(context, task.id)
                 if (task.repeatAfterDone == 1L && task.done == 0L ) return@withContext task.id
                 scheduleTask(task, task.id)
                 return@withContext task.id
@@ -155,7 +155,7 @@ class DbOperation(
         }
         if (scheduleDate == null) return true
         if (task.endDate == null || task.endDate > scheduleDate) {
-            Utils.scheduleWork(
+            Utils.scheduleAlarm(
                 context = context,
                 taskId = id,
                 scheduleTime = scheduleDate,
@@ -205,7 +205,7 @@ class DbOperation(
 
     suspend fun deleteTask(id: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.deleteTask(id)
-        Utils.cancelAllWorkById(
+        Utils.cancelAlarm(
             context = context, taskId = id
         )
     }
