@@ -18,6 +18,9 @@
 
 package com.example.tidy.ui.screen
 
+import android.app.AlarmManager
+import android.content.Context.ALARM_SERVICE
+import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -80,6 +83,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -451,11 +455,20 @@ private fun ScheduleMenu(
     onStartNowChange: () -> Unit,
     onRepeatAfterDoneChange: () -> Unit,
 ) {
+    val c = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem("Schedule") {
         RoundedOutlineButtonTidy(
             text = if (repeatType == RepeatTypes.NONE && dueDate == null) "Add" else "View",
-            onClick = { showDialog = true },
+            onClick = {
+                Utils.requestExactAlarmPermission(c)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val alarmManager = c.getSystemService(ALARM_SERVICE) as AlarmManager
+                    if (alarmManager.canScheduleExactAlarms()) {
+                        showDialog = true
+                    }
+                }
+            },
         )
     }
     if (showDialog) {
