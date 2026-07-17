@@ -229,7 +229,8 @@ fun AddTaskScreen(
                                             parentId = savedTaskId,
                                             repeatType = repeatType,
                                             repeatDays = repeatDays,
-                                        )
+
+                                            ), startNow
                                     )
                                 }
 
