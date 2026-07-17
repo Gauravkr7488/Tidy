@@ -21,9 +21,11 @@ import android.Manifest
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Context.ALARM_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -36,6 +38,7 @@ import androidx.work.workDataOf
 import com.Ace777.tidy.R
 import com.example.tidy.constants.Options
 import com.example.tidy.constants.RepeatTypes
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
@@ -123,6 +126,7 @@ object Utils {
             .build()
         WorkManager.getInstance(context).enqueue(request)
     }
+
     fun scheduleImmediateWork(context: Context, taskId: Long?, action: String) {
         val data = workDataOf("task_id" to taskId, "action" to action)
 
@@ -315,7 +319,7 @@ object Utils {
     }
 
     fun scheduleAlarm(context: Context, scheduleTime: Long, action: String, taskId: Long) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra(Options.ACTION, action)
             putExtra(Options.TASK_ID, taskId)
@@ -329,7 +333,7 @@ object Utils {
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-            // Need to request permission — see step 4
+            println("permission not given")
             return
         }
 
@@ -341,7 +345,7 @@ object Utils {
     }
 
     fun cancelAlarm(context: Context, taskId: Long) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -350,5 +354,24 @@ object Utils {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.cancel(pendingIntent)
+    }
+
+    fun requestExactAlarmPermission(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                MaterialAlertDialogBuilder(context)
+                    .setTitle("Allow precise reminders")
+                    .setMessage("To make sure your alarms go off exactly on time, please allow this app to schedule exact alarms.")
+                    .setPositiveButton("Continue") { _, _ ->
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                            data = "package:${context.packageName}".toUri()
+                        }
+                        context.startActivity(intent)
+                    }
+                    .setNegativeButton("Not now", null)
+                    .show()
+            }
+        }
     }
 }
