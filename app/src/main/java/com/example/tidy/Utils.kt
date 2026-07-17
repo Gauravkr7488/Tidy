@@ -19,7 +19,6 @@ package com.example.tidy
 
 import android.Manifest
 import android.app.AlarmManager
-import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.ALARM_SERVICE
@@ -39,6 +38,7 @@ import androidx.work.workDataOf
 import com.Ace777.tidy.R
 import com.example.tidy.constants.Options
 import com.example.tidy.constants.RepeatTypes
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.gson.Gson
 import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
@@ -360,7 +360,7 @@ object Utils {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(context)
                     .setTitle("Allow precise reminders")
                     .setMessage("To make sure your alarms go off exactly on time, please allow this app to schedule exact alarms.")
                     .setPositiveButton("Continue") { _, _ ->
