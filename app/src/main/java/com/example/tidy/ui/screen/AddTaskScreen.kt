@@ -892,32 +892,34 @@ fun SubTaskMenu(
             onClick = { showAddDialog = true }
         )
     }
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 300.dp)
-            .padding(bottom = 5.dp),
-    ) {
-        items(
-            items = taskChildren
-        ) { task ->
-            TaskCard(
-                task = task,
-                trailingIconButtons = buildList {
-                    add(
-                        TaskIconAction(
-                            icon = Icons.Default.Close,
-                            description = "Remove Task",
-                            onClick = {
-                                showDeleteDialog = true
-                                subTaskForRemove = task
-                            },
+    if (taskChildren.isNotEmpty()){
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp)
+                .padding(bottom = 5.dp),
+        ) {
+            items(
+                items = taskChildren
+            ) { task ->
+                TaskCard(
+                    task = task,
+                    trailingIconButtons = buildList {
+                        add(
+                            TaskIconAction(
+                                icon = Icons.Default.Close,
+                                description = "Remove Task",
+                                onClick = {
+                                    showDeleteDialog = true
+                                    subTaskForRemove = task
+                                },
+                            )
                         )
-                    )
-                },
-                children = getChild(task.id),
-            )
+                    },
+                    children = getChild(task.id),
+                )
+            }
         }
     }
     if (showAddDialog) {
@@ -1026,32 +1028,34 @@ fun BlockedByMenu(
             onClick = { showAddDialog = true }
         )
     }
-    LazyColumn(
-        state = listState,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 300.dp)
-            .padding(bottom = 5.dp),
-    ) {
-        items(
-            items = blockedByTasks
-        ) { task ->
-            TaskCard(
-                task = task,
-                trailingIconButtons = buildList {
-                    add(
-                        TaskIconAction(
-                            icon = Icons.Default.Close,
-                            description = "Remove Task",
-                            onClick = {
-                                showDeleteDialog = true
-                                taskToRemove = task
-                            },
+    if (blockedByTasks.isNotEmpty()){
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 300.dp)
+                .padding(bottom = 5.dp),
+        ) {
+            items(
+                items = blockedByTasks
+            ) { task ->
+                TaskCard(
+                    task = task,
+                    trailingIconButtons = buildList {
+                        add(
+                            TaskIconAction(
+                                icon = Icons.Default.Close,
+                                description = "Remove Task",
+                                onClick = {
+                                    showDeleteDialog = true
+                                    taskToRemove = task
+                                },
+                            )
                         )
-                    )
-                },
-                children = getChild(task.id),
-            )
+                    },
+                    children = getChild(task.id),
+                )
+            }
         }
     }
     if (showAddDialog) {
