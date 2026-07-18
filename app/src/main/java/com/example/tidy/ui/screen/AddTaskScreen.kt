@@ -274,7 +274,7 @@ fun AddTaskScreen(
                 },
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            TextField(
+            OutlinedTextField(
                 value = taskTitle,
                 onValueChange = { taskTitle = it },
                 label = { Text("Title") },
@@ -282,11 +282,12 @@ fun AddTaskScreen(
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
                 ),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
-            TextField(
+            OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
@@ -294,6 +295,7 @@ fun AddTaskScreen(
                     imeAction = ImeAction.Done
                 ),
                 singleLine = false,
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             )
             ScheduleMenu(
