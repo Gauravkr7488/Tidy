@@ -459,7 +459,7 @@ private fun ScheduleMenu(
 ) {
     val c = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
-    OutlinedMenuItem("Schedule") {
+    OutlinedMenuItem("Schedule", containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
         RoundedOutlineButtonTidy(
             text = if (repeatType == RepeatTypes.NONE && dueDate == null) "Add" else "View",
             onClick = {
