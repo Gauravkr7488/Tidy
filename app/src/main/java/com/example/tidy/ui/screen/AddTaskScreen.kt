@@ -50,7 +50,6 @@ import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -329,7 +328,6 @@ fun AddTaskScreen(
                         deleteTask,
                         deleteChildren
                     )
-
                 }
             )
             BlockedByMenu(
@@ -1013,45 +1011,47 @@ fun BlockedByMenu(
     getChild: (Long) -> List<Task>,
     availableTaskList: List<Task>,
     onAdd: (List<Task>) -> Unit,
-    onTaskRemove: (Task) -> Unit,
-    modifier: Modifier = Modifier
+    onTaskRemove: (Task) -> Unit
 ) {
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var taskToRemove by remember { mutableStateOf(Utils.getEmptyTask()) }
     var showAddDialog by remember { mutableStateOf(false) }
-    Column(modifier = modifier) {
-        Text("Blocked By")
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 300.dp)
-                .padding(bottom = 5.dp),
-        ) {
-            items(
-                items = blockedByTasks
-            ) { task ->
-                TaskCard(
-                    task = task,
-                    trailingIconButtons = buildList {
-                        add(
-                            TaskIconAction(
-                                icon = Icons.Default.Close,
-                                description = "Remove Task",
-                                onClick = {
-                                    showDeleteDialog = true
-                                    taskToRemove = task
-                                },
-                            )
+    OutlinedMenuItem(
+        menuName = "Blocked By",
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        RoundedOutlineButtonTidy(
+            text = if (blockedByTasks.isNotEmpty()) blockedByTasks.size.toString() else "Add",
+            onClick = { showAddDialog = true }
+        )
+    }
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(max = 300.dp)
+            .padding(bottom = 5.dp),
+    ) {
+        items(
+            items = blockedByTasks
+        ) { task ->
+            TaskCard(
+                task = task,
+                trailingIconButtons = buildList {
+                    add(
+                        TaskIconAction(
+                            icon = Icons.Default.Close,
+                            description = "Remove Task",
+                            onClick = {
+                                showDeleteDialog = true
+                                taskToRemove = task
+                            },
                         )
-                    },
-                    children = getChild(task.id),
-                )
-            }
-        }
-        Button(onClick = { showAddDialog = true }) {
-            Text("Add Blocked By")
+                    )
+                },
+                children = getChild(task.id),
+            )
         }
     }
     if (showAddDialog) {
