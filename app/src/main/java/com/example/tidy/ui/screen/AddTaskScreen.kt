@@ -22,7 +22,6 @@ import android.app.AlarmManager
 import android.content.Context.ALARM_SERVICE
 import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +36,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -47,7 +45,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
@@ -67,7 +64,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -377,35 +373,31 @@ fun PriorityMenu(
             modifier = Modifier.fillMaxWidth()
         ) {
             var expanded by remember { mutableStateOf(false) }
-            Text("Priority")
-            Spacer(modifier = Modifier.weight(1f))
-            Box {
-                TextButton(
-                    onClick = { expanded = !expanded },
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        priorityValue?.toString() ?: "None",
-                        modifier = Modifier.widthIn(min = 60.dp)
+            OutlinedMenuItem(
+                "Priority",
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ) {
+                Box {
+                    OutlinedDropDownButton(
+                        onClick = { expanded = !expanded },
+                        label = priorityValue?.toString() ?: "None",
                     )
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    listOf(
-                        "None" to null,
-                        "1" to 1L,
-                        "2" to 2L,
-                        "3" to 3L,
-                        "4" to 4L
-                    ).forEach { (label, value) ->
-                        DropdownMenuItem(
-                            text = { Text(label) },
-                            onClick = {
-                                onPriorityValueChange(value)
-                                expanded = false
-                            },
-                        )
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        listOf(
+                            "None" to null,
+                            "1" to 1L,
+                            "2" to 2L,
+                            "3" to 3L,
+                            "4" to 4L
+                        ).forEach { (label, value) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    onPriorityValueChange(value)
+                                    expanded = false
+                                },
+                            )
+                        }
                     }
                 }
             }
