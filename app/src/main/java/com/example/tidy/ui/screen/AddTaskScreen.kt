@@ -22,7 +22,6 @@ import android.app.AlarmManager
 import android.content.Context.ALARM_SERVICE
 import android.os.Build
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -37,24 +36,20 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -67,7 +62,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -274,7 +268,7 @@ fun AddTaskScreen(
                 },
             verticalArrangement = Arrangement.spacedBy(5.dp)
         ) {
-            TextField(
+            OutlinedTextField(
                 value = taskTitle,
                 onValueChange = { taskTitle = it },
                 label = { Text("Title") },
@@ -282,11 +276,12 @@ fun AddTaskScreen(
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Done
                 ),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
             )
-            TextField(
+            OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
@@ -294,6 +289,7 @@ fun AddTaskScreen(
                     imeAction = ImeAction.Done
                 ),
                 singleLine = false,
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             )
             ScheduleMenu(
@@ -319,7 +315,12 @@ fun AddTaskScreen(
                 onPriorityValueChange = { priority = it },
             )
             SubTaskMenu(
-                taskChildren,
+                taskChildren = taskChildren,
+                getChild = { id ->
+                    sharedViewModel.tasks.value.filter { it.parentId == id }
+                },
+                availableTaskList = sharedViewModel.tasks.collectAsState().value,
+                onAdd = { taskChildren = taskChildren + it },
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
                     taskChildren = sharedViewModel.removeSubTask(
                         subTask,
@@ -327,15 +328,7 @@ fun AddTaskScreen(
                         deleteTask,
                         deleteChildren
                     )
-                },
-                addChildrenWithTitle = {
-                    val childTask = Utils.getEmptyTask().copy(title = it)
-                    taskChildren = taskChildren + childTask
-                },
-                getChild =
-                    { id ->
-                        sharedViewModel.tasks.value.filter { it.parentId == id }
-                    }
+                }
             )
             BlockedByMenu(
                 blockedByTasks = blockedByTasks,
@@ -375,35 +368,31 @@ fun PriorityMenu(
             modifier = Modifier.fillMaxWidth()
         ) {
             var expanded by remember { mutableStateOf(false) }
-            Text("Priority")
-            Spacer(modifier = Modifier.weight(1f))
-            Box {
-                TextButton(
-                    onClick = { expanded = !expanded },
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        priorityValue?.toString() ?: "None",
-                        modifier = Modifier.widthIn(min = 60.dp)
+            OutlinedMenuItem(
+                "Priority",
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ) {
+                Box {
+                    OutlinedDropDownButton(
+                        onClick = { expanded = !expanded },
+                        label = priorityValue?.toString() ?: "None",
                     )
-                    Icon(Icons.Default.ArrowDropDown, contentDescription = null)
-                }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    listOf(
-                        "None" to null,
-                        "1" to 1L,
-                        "2" to 2L,
-                        "3" to 3L,
-                        "4" to 4L
-                    ).forEach { (label, value) ->
-                        DropdownMenuItem(
-                            text = { Text(label) },
-                            onClick = {
-                                onPriorityValueChange(value)
-                                expanded = false
-                            },
-                        )
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        listOf(
+                            "None" to null,
+                            "1" to 1L,
+                            "2" to 2L,
+                            "3" to 3L,
+                            "4" to 4L
+                        ).forEach { (label, value) ->
+                            DropdownMenuItem(
+                                text = { Text(label) },
+                                onClick = {
+                                    onPriorityValueChange(value)
+                                    expanded = false
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -457,7 +446,7 @@ private fun ScheduleMenu(
 ) {
     val c = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
-    OutlinedMenuItem("Schedule") {
+    OutlinedMenuItem("Schedule", containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
         RoundedOutlineButtonTidy(
             text = if (repeatType == RepeatTypes.NONE && dueDate == null) "Add" else "View",
             onClick = {
@@ -880,28 +869,30 @@ private fun WeekDayRow(
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubTaskMenu(
     taskChildren: List<Task>,
-    addChildrenWithTitle: (String) -> Unit,
+    getChild: (Long) -> List<Task>,
+    availableTaskList: List<Task>,
+    onAdd: (List<Task>) -> Unit,
     onRemoveSubTask: (Task, Boolean, Boolean) -> Unit,
-    getChild: (Long) -> List<Task>
 ) {
     val listState = rememberLazyListState()
-    var subTaskTitle by remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
-    var showDialog by remember { mutableStateOf(false) }
-    var subTaskForRemove by remember {
-        mutableStateOf(
-            Utils.getEmptyTask()
-        )
-    }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var subTaskForRemove by remember { mutableStateOf(Utils.getEmptyTask()) }
+    var showAddDialog by remember { mutableStateOf(false) }
     var deleteTask by remember { mutableStateOf(false) }
     var deleteChildren by remember { mutableStateOf(false) }
-    Column {
-        Text("SubTasks")
+    OutlinedMenuItem(
+        menuName = "Sub Tasks",
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        RoundedOutlineButtonTidy(
+            text = if (taskChildren.isNotEmpty()) taskChildren.size.toString() else "Add",
+            onClick = { showAddDialog = true }
+        )
+    }
+    if (taskChildren.isNotEmpty()){
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -910,113 +901,109 @@ fun SubTaskMenu(
                 .padding(bottom = 5.dp),
         ) {
             items(
-                items = taskChildren,
-            ) { item ->
+                items = taskChildren
+            ) { task ->
                 TaskCard(
-                    task = item,
+                    task = task,
                     trailingIconButtons = buildList {
                         add(
                             TaskIconAction(
                                 icon = Icons.Default.Close,
                                 description = "Remove Task",
                                 onClick = {
-                                    showDialog = true
-                                    subTaskForRemove = item
+                                    showDeleteDialog = true
+                                    subTaskForRemove = task
                                 },
                             )
                         )
                     },
-                    children = getChild(item.id),
+                    children = getChild(task.id),
                 )
             }
         }
-        OutlinedTextField(
-            value = subTaskTitle,
-            onValueChange = { subTaskTitle = it },
-            placeholder = { Text("Add Subtask") },
-            keyboardOptions = KeyboardOptions(
-                imeAction = if (subTaskTitle != "") ImeAction.Next else ImeAction.Done
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = {
-                    coroutineScope.launch {
-                        addChildrenWithTitle(subTaskTitle)
-                        subTaskTitle = ""
-                        listState.animateScrollToItem(taskChildren.size)
-                    }
+    }
+    if (showAddDialog) {
+        TaskSelectionDialog(
+            tasks = availableTaskList,
+            onConfirm = { selectedTasks ->
+                var tasksToAdd: List<Task> = emptyList()
+                selectedTasks.forEach {
+                    if (!taskChildren.contains(it)) tasksToAdd = tasksToAdd + it
                 }
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
+                onAdd(tasksToAdd)
+                showAddDialog = false
+            },
+            onDismiss = { showAddDialog = false }
         )
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(text = "Remove SubTask") },
-                text = {
-                    Column {
-                        Text(
-                            text = buildAnnotatedString {
-                                append("Are you sure you want to remove '")
-                                withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
-                                    append(subTaskForRemove.title)
-                                }
-                                append("'?")
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(text = "Remove SubTask") },
+            text = {
+                Column {
+                    Text(
+                        text = buildAnnotatedString {
+                            append("Are you sure you want to remove '")
+                            withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
+                                append(subTaskForRemove.title)
                             }
-                        )
-                        if (subTaskForRemove.id != 0L) {
-                            val subTaskChildren = getChild(subTaskForRemove.id)
-                            Spacer(modifier = Modifier.height(12.dp))
+                            append("'?")
+                        }
+                    )
+                    if (subTaskForRemove.id != 0L) {
+                        val subTaskChildren = getChild(subTaskForRemove.id)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.small)
+                                .clickable { deleteTask = !deleteTask }
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Checkbox(
+                                checked = deleteTask,
+                                onCheckedChange = { deleteTask = it }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Also delete subtask")
+                        }
+                        if (subTaskChildren.isNotEmpty()) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(MaterialTheme.shapes.small)
-                                    .clickable { deleteTask = !deleteTask }
+                                    .clickable { deleteChildren = !deleteChildren }
                                     .padding(vertical = 4.dp)
                             ) {
                                 Checkbox(
-                                    checked = deleteTask,
-                                    onCheckedChange = { deleteTask = it }
+                                    checked = deleteChildren,
+                                    onCheckedChange = { deleteChildren = it }
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Also delete subtask")
-                            }
-                            if (subTaskChildren.isNotEmpty()) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(MaterialTheme.shapes.small)
-                                        .clickable { deleteChildren = !deleteChildren }
-                                        .padding(vertical = 4.dp)
-                                ) {
-                                    Checkbox(
-                                        checked = deleteChildren,
-                                        onCheckedChange = { deleteChildren = it }
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Also delete children")
-                                }
+                                Text("Also delete children")
                             }
                         }
                     }
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        onRemoveSubTask(subTaskForRemove, deleteTask, deleteChildren)
-                        showDialog = false
-                    }) {
-                        Text("Remove", color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text("Cancel")
-                    }
                 }
-            )
-        }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onRemoveSubTask(subTaskForRemove, deleteTask, deleteChildren)
+                    showDeleteDialog = false
+                }) {
+                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -1026,15 +1013,22 @@ fun BlockedByMenu(
     getChild: (Long) -> List<Task>,
     availableTaskList: List<Task>,
     onAdd: (List<Task>) -> Unit,
-    onTaskRemove: (Task) -> Unit,
-    modifier: Modifier = Modifier
+    onTaskRemove: (Task) -> Unit
 ) {
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var taskToRemove by remember { mutableStateOf(Utils.getEmptyTask()) }
     var showAddDialog by remember { mutableStateOf(false) }
-    Column(modifier = modifier) {
-        Text("Blocked By")
+    OutlinedMenuItem(
+        menuName = "Blocked By",
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        RoundedOutlineButtonTidy(
+            text = if (blockedByTasks.isNotEmpty()) blockedByTasks.size.toString() else "Add",
+            onClick = { showAddDialog = true }
+        )
+    }
+    if (blockedByTasks.isNotEmpty()){
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -1062,9 +1056,6 @@ fun BlockedByMenu(
                     children = getChild(task.id),
                 )
             }
-        }
-        Button(onClick = { showAddDialog = true }) {
-            Text("Add Blocked By")
         }
     }
     if (showAddDialog) {

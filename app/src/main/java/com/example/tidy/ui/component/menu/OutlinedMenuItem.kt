@@ -41,13 +41,14 @@ fun OutlinedMenuItem(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     removeSpacer: Boolean = false,
+    containerColor: Color = Color.Transparent,
     content: @Composable () -> Unit
 ) {
     val cardShape = RoundedCornerShape(25)
     Card(
         shape = cardShape,
         colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
+            containerColor = containerColor
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = modifier
