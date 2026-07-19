@@ -94,27 +94,29 @@ fun TaskSelectionDialog(
                     }
                 )
             }
-            item {
-                val t = Utils.getEmptyTask().copy(title = query)
-                TaskCard(
-                    task = t,
-                    onClick = {
-                        selectedTasks = selectedTasks + t
-                    },
-                    children = emptyList(),
-                    trailingIcons =
-                        buildList {
-                            add(
-                                TaskIconAction(
-                                    icon = Icons.Default.Create,
-                                    description = "create new",
-                                    onClick = {},
-                                )
-                            )
+            if (query != "") {
+                item {
+                    val t = Utils.getEmptyTask().copy(title = query)
+                    TaskCard(
+                        task = t,
+                        onClick = {
+                            selectedTasks = selectedTasks + t
+                            query = ""
                         },
-                )
+                        children = emptyList(),
+                        trailingIcons =
+                            buildList {
+                                add(
+                                    TaskIconAction(
+                                        icon = Icons.Default.Create,
+                                        description = "create new",
+                                        onClick = {},
+                                    )
+                                )
+                            },
+                    )
+                }
             }
-
         }
     }
 }
