@@ -137,11 +137,12 @@ fun AddTaskScreen(
     var dueDate: Long? by remember { mutableStateOf(null) }
     var dueTime: Long? by remember { mutableStateOf(null) }
     var endDate: Long? by remember { mutableStateOf(null) }
-
+    var currentTask: Task? by remember { mutableStateOf(null) }
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
         val task = sharedViewModel.getTask(taskId = taskId)
         if (task != null) {
+            currentTask = task
             taskId = task.id
             taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
             blockedByTasks = sharedViewModel.getBlockedByTasks(taskId)
@@ -319,7 +320,9 @@ fun AddTaskScreen(
                 getChild = { id ->
                     sharedViewModel.tasks.value.filter { it.parentId == id }
                 },
-                availableTaskList = sharedViewModel.tasks.collectAsState().value,
+                availableTaskList = if (currentTask == null) sharedViewModel.tasks.collectAsState().value else sharedViewModel.getAvailableSubTaskList(
+                    currentTask!!
+                ),
                 onAdd = { taskChildren = taskChildren + it },
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
                     taskChildren = sharedViewModel.removeSubTask(
@@ -892,7 +895,7 @@ fun SubTaskMenu(
             onClick = { showAddDialog = true }
         )
     }
-    if (taskChildren.isNotEmpty()){
+    if (taskChildren.isNotEmpty()) {
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -1028,7 +1031,7 @@ fun BlockedByMenu(
             onClick = { showAddDialog = true }
         )
     }
-    if (blockedByTasks.isNotEmpty()){
+    if (blockedByTasks.isNotEmpty()) {
         LazyColumn(
             state = listState,
             modifier = Modifier

@@ -156,6 +156,7 @@ class SharedViewModel(
             dbOperation.updateParentDoneStatus(parentId)
         }
     }
+
     suspend fun getTask(taskId: Long): Task? {
         if (taskId == 0L) return null
         return dbOperation.getTask(taskId)
@@ -210,4 +211,38 @@ class SharedViewModel(
     }
 
     var listState: LazyListState? = null
+
+    fun getAvailableSubTaskList(task: Task): List<Task> {
+        val tasks = tasks.value.filter { it != task }
+        if (task.parentId == null) return tasks
+        val parents = getParentList(task)
+        val children = getChildrenList(task)
+        return tasks.filter { it !in parents && it !in children }
+    }
+
+    fun getParentList(task: Task): List<Task> {
+        val tasks = tasks.value
+        if (task.parentId == null) return emptyList()
+        val parents: MutableList<Task> = mutableListOf()
+        tasks.forEach {
+            if (task.parentId == it.id) {
+                parents.add(it)
+                parents.addAll(getParentList(it))
+            }
+        }
+        return parents
+    }
+
+    fun getChildrenList(task: Task): List<Task> {
+        val tasks = tasks.value
+        if (task.parentId == null) return emptyList()
+        val children: MutableList<Task> = mutableListOf()
+        tasks.forEach {
+            if (it.parentId == task.id) {
+                children.add(it)
+                children.addAll(getChildrenList(it))
+            }
+        }
+        return children
+    }
 }
