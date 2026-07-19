@@ -173,6 +173,7 @@ fun SearchScreen(
                 EmptySearchState(query = query)
             } else {
                 LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
                     contentPadding = PaddingValues(
                         start = 5.dp,
                         end = 5.dp,
