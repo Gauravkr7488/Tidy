@@ -898,6 +898,7 @@ fun SubTaskMenu(
     if (taskChildren.isNotEmpty()) {
         LazyColumn(
             state = listState,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 300.dp)
@@ -1035,6 +1036,7 @@ fun BlockedByMenu(
     if (blockedByTasks.isNotEmpty()) {
         LazyColumn(
             state = listState,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 300.dp)
