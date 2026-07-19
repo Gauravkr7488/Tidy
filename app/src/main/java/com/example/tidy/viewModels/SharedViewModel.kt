@@ -213,7 +213,7 @@ class SharedViewModel(
     var listState: LazyListState? = null
 
     fun getAvailableSubTaskList(task: Task): List<Task> {
-        val tasks = tasks.value.filter { it != task }
+        val tasks = tasks.value.filter { it != task  && it.parentId == null}
         if (task.parentId == null) return tasks
         val parents = getParentList(task)
         val children = getChildrenList(task)
