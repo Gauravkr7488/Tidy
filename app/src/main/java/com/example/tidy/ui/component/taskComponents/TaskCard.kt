@@ -78,7 +78,6 @@ fun TaskCard(
             ),
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = { onClick(task) },

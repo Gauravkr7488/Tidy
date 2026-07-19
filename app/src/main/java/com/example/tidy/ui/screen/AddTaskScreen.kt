@@ -335,7 +335,7 @@ fun AddTaskScreen(
             )
             BlockedByMenu(
                 blockedByTasks = blockedByTasks,
-                getChild = { id ->
+                getChildren = { id ->
                     sharedViewModel.tasks.value.filter { it.parentId == id }
                 },
                 availableTaskList = sharedViewModel.tasks.collectAsState().value.filter { it.id != taskId },
@@ -936,7 +936,8 @@ fun SubTaskMenu(
                 onAdd(tasksToAdd)
                 showAddDialog = false
             },
-            onDismiss = { showAddDialog = false }
+            onDismiss = { showAddDialog = false },
+            getChildren = { getChild(it) }
         )
     }
 
@@ -1013,7 +1014,7 @@ fun SubTaskMenu(
 @Composable
 fun BlockedByMenu(
     blockedByTasks: List<Task>,
-    getChild: (Long) -> List<Task>,
+    getChildren: (Long) -> List<Task>,
     availableTaskList: List<Task>,
     onAdd: (List<Task>) -> Unit,
     onTaskRemove: (Task) -> Unit
@@ -1056,7 +1057,7 @@ fun BlockedByMenu(
                             )
                         )
                     },
-                    children = getChild(task.id),
+                    children = getChildren(task.id),
                 )
             }
         }
@@ -1072,7 +1073,8 @@ fun BlockedByMenu(
                 onAdd(tasksToAdd)
                 showAddDialog = false
             },
-            onDismiss = { showAddDialog = false }
+            onDismiss = { showAddDialog = false },
+            getChildren = { getChildren(it) }
         )
     }
     if (showDeleteDialog) {
