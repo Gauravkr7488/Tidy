@@ -114,10 +114,10 @@ fun SearchScreen(
                 .padding(top = innerPadding.calculateTopPadding())
         ) {
             // Search Field
-            OutlinedTextField(
+            OutlinedTextField( // todo replace with composable in addTask
                 value = query,
                 onValueChange = { query = it },
-                placeholder = { Text("Search tasks and notes...") },
+                placeholder = { Text("Search tasks") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -173,6 +173,7 @@ fun SearchScreen(
                 EmptySearchState(query = query)
             } else {
                 LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(2.dp),
                     contentPadding = PaddingValues(
                         start = 5.dp,
                         end = 5.dp,

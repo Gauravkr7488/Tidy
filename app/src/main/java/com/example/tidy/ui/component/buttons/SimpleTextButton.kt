@@ -14,26 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+package com.example.tidy.ui.component.buttons
 
-package com.example.tidy
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 
-import android.app.Application
-import androidx.work.Configuration
-import androidx.work.WorkManager
-import com.yourapp.db.AppDatabase
 
-class App : Application() {
-
-    lateinit var database: AppDatabase
-    override fun onCreate() {
-        super.onCreate()
-        database = createDatabase(this)
-
-        val dbOperation = DbOperation(database, this)
-        val config = Configuration.Builder()
-            .setWorkerFactory(TidyWorkerFactory(dbOperation))
-            .build()
-        WorkManager.initialize(this, config)
+@Composable
+fun SimpleTextButton(
+    text: String,
+    onClick: () -> Unit,
+) {
+    TextButton(
+        onClick = onClick,
+    ) {
+        Text(text)
     }
 }
-

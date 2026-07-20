@@ -14,26 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+package com.example.tidy.ui.component.buttons
 
-package com.example.tidy
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.example.tidy.ui.component.menu.OutlinedMenuItem
 
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 
-class AppLifecycleObserver(
-    private val exportManager: ExportManager
-) : DefaultLifecycleObserver {
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    override fun onStop(owner: LifecycleOwner) {
-        // Triggered when app goes to background
-        scope.launch {
-            exportManager.exportSilently()
-        }
+@Composable
+fun OutlinedDropDownButton(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedMenuItem(menuName = label, onClick = onClick, removeSpacer = true, modifier = modifier) {
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null)
     }
 }

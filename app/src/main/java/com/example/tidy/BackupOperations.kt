@@ -26,6 +26,8 @@ import androidx.documentfile.provider.DocumentFile
 import com.example.tidy.Utils.createBackupJson
 import com.example.tidy.Utils.toTask
 import com.google.gson.Gson
+import com.tidy.sqldelight.BlockedTask
+import com.tidy.sqldelight.Task
 
 class BackupOperations(
     private val dbOperation: DbOperation
@@ -36,7 +38,8 @@ class BackupOperations(
     ) {
         try {
             val lastResetDate = dbOperation.getLastResetDate() ?: Utils.getCurrentDate()
-            val json = createBackupJson(dbOperation.taskGetAll(), lastResetDate)
+            val taskBlockers = dbOperation.getAllBlockers()
+            val json = createBackupJson(dbOperation.taskGetAll(), lastResetDate, taskBlockers)
 
             context.contentResolver
                 .openOutputStream(uri)
@@ -75,9 +78,19 @@ class BackupOperations(
 
                 dbOperation.setLastResetToday(lastResetDate)
 
-                val newTasks = taskDtos.map { dto ->
-                    val task = dto.toTask()
-                    return@map task.copy(parentId = null)
+                val newTasks: MutableList<Task> = mutableListOf()
+                val blockList: MutableList<BlockedTask> = mutableListOf()
+                taskDtos.forEach { taskBackupDto ->
+                    val task = taskBackupDto.toTask()
+                    val t = task.copy(parentId = null)
+                    newTasks.add(t)
+                    val blockString = taskBackupDto.blockedBy
+                    if (blockString != null) {
+                        val blockers = Utils.getBlockerFromString(blockString, taskBackupDto.id)
+                        if (blockers.isNotEmpty()){
+                            blockList.addAll(blockers)
+                        }
+                    }
                 }
                 dbOperation.taskDeleteALl()
                 dbOperation.saveNewTaskList(newTasks)
@@ -88,7 +101,12 @@ class BackupOperations(
                 }
 
                 dbOperation.taskSaveList(tasksWithParentId)
-                dbOperation.taskGetAll()
+                blockList.forEach {
+                    val blockedTask = dbOperation.getTask(it.task_id) ?: return@forEach
+                    dbOperation.saveTask(blockedTask.copy(blockStatus = 1L))
+                    dbOperation.addBlocker(it.task_id, it.blockedBy_id)
+                }
+                dbOperation.taskGetAll() // todo why is this here?
 
 
                 Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
@@ -96,7 +114,7 @@ class BackupOperations(
 
         } catch (e: Exception) {
             dbOperation.taskDeleteALl()
-            dbOperation.taskSaveList(preImportTasks)
+            dbOperation.saveNewTaskList(preImportTasks)
             dbOperation.setLastResetToday(preImportResetDate)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()

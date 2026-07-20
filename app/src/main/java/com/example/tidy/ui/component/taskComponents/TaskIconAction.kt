@@ -26,6 +26,6 @@ data class TaskIconAction(
     val icon: ImageVector,
     val description: String,
     val onClick: (Task) -> Unit,
-    val tint: Color = Color.White, //TODO change this
+    val tint: Color = Color.White, //TODO change this based on the theme when working on the theme
     val modifier: Modifier = Modifier,
 )

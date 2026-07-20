@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.outlined.Archive
@@ -77,7 +78,6 @@ fun TaskCard(
             ),
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = { onClick(task) },
@@ -143,16 +143,24 @@ fun TaskCard(
                 }
                 if (task.repeatType != RepeatTypes.NONE) {
                     Badge(
-                        text = task.repeatType.lowercase().replaceFirstChar { it.uppercase() } ,
+                        text = if (task.frequencyNumber == null) task.repeatType.lowercase()
+                            .replaceFirstChar { it.uppercase() } else "Custom",
                         imageVector = Icons.Default.Repeat,
                         contentDescription = "Repeats ${task.repeatType}"
                     )
                 }
-                if (task.hide == 1L){
+                if (task.hide == 1L) {
                     Badge(
                         text = "Archived",
                         imageVector = Icons.Outlined.Archive,
                         contentDescription = "Archived"
+                    )
+                }
+                if (task.blockStatus == 1L) {
+                    Badge(
+                        text = "Blocked",
+                        imageVector = Icons.Default.Block,
+                        contentDescription = "Blocked"
                     )
                 }
             }
