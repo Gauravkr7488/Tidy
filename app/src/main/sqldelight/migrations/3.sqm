@@ -20,3 +20,10 @@ ALTER TABLE Task ADD COLUMN startNow INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE Task ADD COLUMN repeatAfterDone INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE Task ADD COLUMN frequencyNumber TEXT;
 
+CREATE TABLE BlockedTask (
+    task_id    INTEGER NOT NULL,
+    blockedBy_id INTEGER NOT NULL,
+    PRIMARY KEY (task_id, blockedBy_id),
+    FOREIGN KEY (task_id)    REFERENCES Task(id) ON DELETE CASCADE,
+    FOREIGN KEY (blockedBy_id) REFERENCES Task(id) ON DELETE CASCADE
+);
