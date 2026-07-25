@@ -149,7 +149,7 @@ class DbOperation(
                 repeatDays = task.repeatDays.split(",")
             )
             var k = ""
-            if (t != null) k = Utils.changeDateFormat(t, "ddMMyy hh mm")
+            if (t != null) k = Utils.changeDateFormat(t, "dd-MM-yy hh mm a")
             println("schedule = $k")
             if (task.repeatType == RepeatTypes.MINUTE || task.repeatType == RepeatTypes.HOUR) t else
                 Utils.combineDateAndTimeMillis(t, task.dueDateAndTime)
@@ -268,20 +268,20 @@ private fun getScheduleDate(
 
         RepeatTypes.HOUR -> {
             c.set(Calendar.MINUTE, 0)
-            c.add(Calendar.HOUR, frequencyNumber)
+            c.add(Calendar.HOUR_OF_DAY, frequencyNumber)
             c.timeInMillis
         }
 
         RepeatTypes.DAY -> {
             c.set(Calendar.MINUTE, 0)
-            c.set(Calendar.HOUR, 0)
+            c.set(Calendar.HOUR_OF_DAY, 0)
             c.add(Calendar.DAY_OF_YEAR, frequencyNumber)
             c.timeInMillis
         }
 
         RepeatTypes.WEEK -> {
             c.set(Calendar.MINUTE, 0)
-            c.set(Calendar.HOUR, 0)
+            c.set(Calendar.HOUR_OF_DAY, 0)
             val today = c.get(Calendar.DAY_OF_WEEK)
             val listScheduleDays: List<Int> = repeatDays.mapNotNull {
                 getWeekDayNum(it)
@@ -297,7 +297,7 @@ private fun getScheduleDate(
 
         RepeatTypes.MONTH -> {
             c.set(Calendar.MINUTE, 0)
-            c.set(Calendar.HOUR, 0)
+            c.set(Calendar.HOUR_OF_DAY, 0)
             val today = c.get(Calendar.DAY_OF_MONTH)
             val listScheduleDays = repeatDays.map { it.toInt() }
             if (listScheduleDays.any { it > today }) {
@@ -311,7 +311,7 @@ private fun getScheduleDate(
 
         RepeatTypes.YEAR -> {
             c.set(Calendar.MINUTE, 0)
-            c.set(Calendar.HOUR, 0)
+            c.set(Calendar.HOUR_OF_DAY, 0)
             val today = c.timeInMillis
             val listScheduleDays = repeatDays.map { it.toLong() }
             if (listScheduleDays.any { it > today }) {
