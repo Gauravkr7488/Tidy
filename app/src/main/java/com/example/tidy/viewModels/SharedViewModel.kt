@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.DbOperation
+import com.example.tidy.Utils
 import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +32,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class SharedViewModel(
     private val dbOperation: DbOperation,
@@ -122,7 +124,17 @@ class SharedViewModel(
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
-            dbOperation.saveTask(task.copy(hide = 1L))
+            val dueDateAndTime = task.dueDateAndTime
+            val c = Calendar.getInstance()
+            c.add(Calendar.DAY_OF_YEAR, 1)
+            if (dueDateAndTime == null) {
+                c.set(Calendar.HOUR_OF_DAY, 0)
+                c.set(Calendar.MINUTE, 0)
+                dbOperation.saveTask(task.copy(hide = 1L, dueDateAndTime = c.timeInMillis))
+            } else {
+                val d = Utils.combineDateAndTimeMillis(c.timeInMillis, dueDateAndTime)
+                dbOperation.saveTask(task.copy(hide = 1L, dueDateAndTime = d))
+            }
             dbOperation.updateChildrenRepeatAndHideStatus(task.id)
         }
     }
@@ -213,7 +225,7 @@ class SharedViewModel(
     var listState: LazyListState? = null
 
     fun getAvailableSubTaskList(task: Task): List<Task> {
-        val tasks = tasks.value.filter { it != task  && it.parentId == null}
+        val tasks = tasks.value.filter { it != task && it.parentId == null }
         if (task.parentId == null) return tasks
         val parents = getParentList(task)
         val children = getChildrenList(task)
