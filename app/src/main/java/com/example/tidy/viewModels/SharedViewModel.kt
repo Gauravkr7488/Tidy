@@ -48,7 +48,7 @@ class SharedViewModel(
         val lastResetDate = dbOperation.getLastResetDate()
         if (today == lastResetDate) return
         dbOperation.setLastResetToday(today)
-        val skippedTasks = tasks.value.filter { it.hide == 1L && it.done != 1L }
+        val skippedTasks = tasks.value.filter { it.hide == 1L && it.done != 0L }
         skippedTasks.forEach { dbOperation.saveTask(it.copy(hide = 0L)) }
     }
 
