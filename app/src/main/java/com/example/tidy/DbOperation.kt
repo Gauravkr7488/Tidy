@@ -177,7 +177,7 @@ class DbOperation(
     }
 
 
-    suspend fun updateChildrenRepeatAndHideStatus(parentId: Long): Unit =
+    private suspend fun updateChildrenRepeatAndHideStatus(parentId: Long): Unit =
         withContext( // update the status of children to match the parent
             Dispatchers.IO
         ) {

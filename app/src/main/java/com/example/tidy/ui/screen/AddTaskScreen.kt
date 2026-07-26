@@ -129,7 +129,7 @@ fun AddTaskScreen(
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
-    var hide: Long by remember { mutableLongStateOf(0) }
+    var hide: Long by remember { mutableLongStateOf(1) }
     var done: Long by remember { mutableLongStateOf(0) }
     var startNow by remember { mutableStateOf(false) }
     var repeatAfterDone by remember { mutableStateOf(false) }
@@ -190,29 +190,28 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                val savedTaskId = sharedViewModel.saveTask(
-                                    Task(
-                                        id = taskId,
-                                        title = taskTitle,
-                                        repeatType = repeatType,
-                                        repeatDays = repeatDays,
-                                        description = description,
-                                        done = done,
-                                        hide = hide,
-                                        createdAt = System.currentTimeMillis(),
-                                        parentId = parentId,
-                                        blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
-                                        priority = priority,
-                                        dueDateAndTime = Utils.combineDateAndTimeMillis(
-                                            dueDate,
-                                            dueTime
-                                        ),
-                                        frequencyNumber = frequencyNumber,
-                                        endDate = endDate,
-                                        repeatAfterDone = if (repeatAfterDone) 1L else 0L,
-                                    ), startNow
+                                val dueTimeAndDate = Utils.combineDateAndTimeMillis(
+                                    dueDate,
+                                    dueTime
                                 )
-                                if (savedTaskId == null) return@launch
+                                val task = Task(
+                                    id = taskId,
+                                    title = taskTitle,
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
+                                    done = done,
+                                    hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null) 0L else hide,
+                                    createdAt = System.currentTimeMillis(),
+                                    parentId = parentId,
+                                    blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
+                                    priority = priority,
+                                    dueDateAndTime = dueTimeAndDate,
+                                    frequencyNumber = frequencyNumber,
+                                    endDate = endDate,
+                                    repeatAfterDone = if (repeatAfterDone) 1L else 0L,
+                                )
+                                val savedTaskId = sharedViewModel.saveTask(task) ?: return@launch
                                 blockedByTasks.forEach {
                                     val blockerId =
                                         if (it.id == 0L) sharedViewModel.saveTask(it) else it.id
@@ -226,12 +225,10 @@ fun AddTaskScreen(
                                     sharedViewModel.saveTask(
                                         it.copy(
                                             parentId = savedTaskId,
-                                            repeatType = repeatType,
-                                            repeatDays = repeatDays,
-
-                                            ), startNow
+                                        )
                                     )
                                 }
+                                sharedViewModel.syncChildrenWithParent(task)
 
                                 showBottomButtons = createMoreStaus.value
                                 if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")

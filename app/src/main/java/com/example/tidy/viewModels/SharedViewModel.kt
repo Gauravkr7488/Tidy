@@ -32,11 +32,25 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 class SharedViewModel(
     private val dbOperation: DbOperation,
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            resetTasks()
+        }
+    }
+
+    private suspend fun resetTasks() {
+        val today = Utils.getCurrentDate()
+        val lastResetDate = dbOperation.getLastResetDate()
+        if (today == lastResetDate) return
+        dbOperation.setLastResetToday(today)
+        val skippedTasks = tasks.value.filter { it.hide == 1L && it.done != 0L }
+        skippedTasks.forEach { dbOperation.saveTask(it.copy(hide = 0L)) }
+    }
 
     val tasks = dbOperation.observeTasks()
         .map { tasks -> sortByPriority(tasks) }
@@ -47,39 +61,24 @@ class SharedViewModel(
         )
 
     fun sortByPriority(tasks: List<Task>): List<Task> {
-
         val sorted = tasks.sortedWith(compareBy {
             it.priority ?: Long.MAX_VALUE  // null sorts last
         })
-
         return sorted
     }
 
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            val doneTasks = tasks.value.filter { it.done == 1L }
+            val doneTasks =
+                tasks.value.filter { it.done == 1L && it.parentId == null && it.hide != 1L }
             doneTasks.forEach { task ->
-                if (isRootTaskDoneOrArchived(task)) {
-                    if (task.repeatType != RepeatTypes.NONE) {
-                        val updatedTask = task.copy(
-                            done = 0L,
-                            hide = 1L
-                        )
-                        dbOperation.saveTask(updatedTask)
-                    } else {
-                        deleteTaskAndChildren(task.id)
-                    }
+                if (task.repeatType != RepeatTypes.NONE) {
+                    dbOperation.saveTask(task.copy(hide = 1L))
+                } else {
+                    deleteTaskAndChildren(task.id)
                 }
             }
         }
-    }
-
-    private suspend fun isRootTaskDoneOrArchived(task: Task): Boolean {
-        if (task.parentId == null) return true
-        val parent = dbOperation.getTask(task.parentId) ?: return true
-        if (parent.hide == 1L) return true
-        if (parent.done == 0L) isRootTaskDoneOrArchived(parent)
-        return false
     }
 
     private suspend fun deleteTaskAndChildren(id: Long) {
@@ -124,18 +123,8 @@ class SharedViewModel(
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
-            val dueDateAndTime = task.dueDateAndTime
-            val c = Calendar.getInstance()
-            c.add(Calendar.DAY_OF_YEAR, 1)
-            if (dueDateAndTime == null) {
-                c.set(Calendar.HOUR_OF_DAY, 0)
-                c.set(Calendar.MINUTE, 0)
-                dbOperation.saveTask(task.copy(hide = 1L, dueDateAndTime = c.timeInMillis))
-            } else {
-                val d = Utils.combineDateAndTimeMillis(c.timeInMillis, dueDateAndTime)
-                dbOperation.saveTask(task.copy(hide = 1L, dueDateAndTime = d))
-            }
-            dbOperation.updateChildrenRepeatAndHideStatus(task.id)
+            saveTask(task.copy(hide = 1L))
+            syncChildrenWithParent(task.copy(hide = 1L))
         }
     }
 
@@ -174,14 +163,21 @@ class SharedViewModel(
         return dbOperation.getTask(taskId)
     }
 
-    suspend fun saveTask(task: Task, startNow: Boolean = false): Long? {
-        println("startNow = $startNow")
-        val hide: Long =
-            if (startNow || task.repeatType == RepeatTypes.NONE && task.dueDateAndTime == null) 0 else 1
-        println("hide = $hide")
-        val i = dbOperation.saveTask(task.copy(hide = hide)) ?: return null
-        dbOperation.updateChildrenRepeatAndHideStatus(i)
+    suspend fun saveTask(task: Task): Long? {
+        val i = dbOperation.saveTask(task) ?: return null
         return i
+    }
+
+     suspend fun syncChildrenWithParent(parentTask: Task) {
+        val children = tasks.value.filter { it.parentId == parentTask.id }
+        if (children.isNotEmpty()) children.forEach {
+            val updatedChild = it.copy(
+                repeatType = parentTask.repeatType,
+                repeatDays = parentTask.repeatDays,
+                hide = parentTask.hide
+            )
+            saveTask(updatedChild)
+        }
     }
 
     fun removeSubTask(
