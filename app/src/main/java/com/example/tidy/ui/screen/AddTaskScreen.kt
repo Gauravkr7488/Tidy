@@ -194,26 +194,24 @@ fun AddTaskScreen(
                                     dueDate,
                                     dueTime
                                 )
-                                val savedTaskId = sharedViewModel.saveTask(
-                                    Task(
-                                        id = taskId,
-                                        title = taskTitle,
-                                        repeatType = repeatType,
-                                        repeatDays = repeatDays,
-                                        description = description,
-                                        done = done,
-                                        hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null) 0L else hide,
-                                        createdAt = System.currentTimeMillis(),
-                                        parentId = parentId,
-                                        blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
-                                        priority = priority,
-                                        dueDateAndTime = dueTimeAndDate,
-                                        frequencyNumber = frequencyNumber,
-                                        endDate = endDate,
-                                        repeatAfterDone = if (repeatAfterDone) 1L else 0L,
-                                    )
+                                val task = Task(
+                                    id = taskId,
+                                    title = taskTitle,
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
+                                    done = done,
+                                    hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null) 0L else hide,
+                                    createdAt = System.currentTimeMillis(),
+                                    parentId = parentId,
+                                    blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
+                                    priority = priority,
+                                    dueDateAndTime = dueTimeAndDate,
+                                    frequencyNumber = frequencyNumber,
+                                    endDate = endDate,
+                                    repeatAfterDone = if (repeatAfterDone) 1L else 0L,
                                 )
-                                if (savedTaskId == null) return@launch
+                                val savedTaskId = sharedViewModel.saveTask(task) ?: return@launch
                                 blockedByTasks.forEach {
                                     val blockerId =
                                         if (it.id == 0L) sharedViewModel.saveTask(it) else it.id
@@ -227,12 +225,10 @@ fun AddTaskScreen(
                                     sharedViewModel.saveTask(
                                         it.copy(
                                             parentId = savedTaskId,
-                                            repeatType = repeatType,
-                                            repeatDays = repeatDays,
-
-                                            )
+                                        )
                                     )
                                 }
+                                sharedViewModel.syncChildrenWithParent(task)
 
                                 showBottomButtons = createMoreStaus.value
                                 if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")

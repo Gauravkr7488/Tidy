@@ -195,7 +195,11 @@ fun SearchScreen(
                                                 description = "Archive Task",
                                                 onClick = {
                                                     coroutineScope.launch {
-                                                        sharedViewModel.saveTask(task.copy(hide = 1L))
+                                                        val updatedTask = task.copy(hide = 1L)
+                                                        sharedViewModel.saveTask(updatedTask)
+                                                        sharedViewModel.syncChildrenWithParent(
+                                                            updatedTask
+                                                        )
                                                     }
                                                 },
                                                 color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -209,7 +213,11 @@ fun SearchScreen(
                                                 description = "Unarchive Task",
                                                 onClick = {
                                                     coroutineScope.launch {
-                                                        sharedViewModel.saveTask(task.copy(hide = 0L))
+                                                        val updatedTask = task.copy(hide = 0L)
+                                                        sharedViewModel.saveTask(updatedTask)
+                                                        sharedViewModel.syncChildrenWithParent(
+                                                            updatedTask
+                                                        )
                                                     }
                                                 },
                                                 color = MaterialTheme.colorScheme.onSecondaryContainer

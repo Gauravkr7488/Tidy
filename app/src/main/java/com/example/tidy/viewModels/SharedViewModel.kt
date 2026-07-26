@@ -123,8 +123,8 @@ class SharedViewModel(
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
-            dbOperation.saveTask(task.copy(hide = 1L))
-            dbOperation.updateChildrenRepeatAndHideStatus(task.id)
+            saveTask(task.copy(hide = 1L))
+            syncChildrenWithParent(task.copy(hide = 1L))
         }
     }
 
@@ -165,8 +165,19 @@ class SharedViewModel(
 
     suspend fun saveTask(task: Task): Long? {
         val i = dbOperation.saveTask(task) ?: return null
-        dbOperation.updateChildrenRepeatAndHideStatus(i)
         return i
+    }
+
+     suspend fun syncChildrenWithParent(parentTask: Task) {
+        val children = tasks.value.filter { it.parentId == parentTask.id }
+        if (children.isNotEmpty()) children.forEach {
+            val updatedChild = it.copy(
+                repeatType = parentTask.repeatType,
+                repeatDays = parentTask.repeatDays,
+                hide = parentTask.hide
+            )
+            saveTask(updatedChild)
+        }
     }
 
     fun removeSubTask(
