@@ -129,7 +129,7 @@ fun AddTaskScreen(
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
-    var hide: Long by remember { mutableLongStateOf(0) }
+    var hide: Long by remember { mutableLongStateOf(1) }
     var done: Long by remember { mutableLongStateOf(0) }
     var startNow by remember { mutableStateOf(false) }
     var repeatAfterDone by remember { mutableStateOf(false) }
@@ -190,6 +190,10 @@ fun AddTaskScreen(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
+                                val dueTimeAndDate = Utils.combineDateAndTimeMillis(
+                                    dueDate,
+                                    dueTime
+                                )
                                 val savedTaskId = sharedViewModel.saveTask(
                                     Task(
                                         id = taskId,
@@ -198,19 +202,16 @@ fun AddTaskScreen(
                                         repeatDays = repeatDays,
                                         description = description,
                                         done = done,
-                                        hide = hide,
+                                        hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null) 0L else hide,
                                         createdAt = System.currentTimeMillis(),
                                         parentId = parentId,
                                         blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
                                         priority = priority,
-                                        dueDateAndTime = Utils.combineDateAndTimeMillis(
-                                            dueDate,
-                                            dueTime
-                                        ),
+                                        dueDateAndTime = dueTimeAndDate,
                                         frequencyNumber = frequencyNumber,
                                         endDate = endDate,
                                         repeatAfterDone = if (repeatAfterDone) 1L else 0L,
-                                    ), startNow
+                                    )
                                 )
                                 if (savedTaskId == null) return@launch
                                 blockedByTasks.forEach {
@@ -229,7 +230,7 @@ fun AddTaskScreen(
                                             repeatType = repeatType,
                                             repeatDays = repeatDays,
 
-                                            ), startNow
+                                            )
                                     )
                                 }
 
