@@ -66,7 +66,7 @@ class DbOperation(
         return@withContext db.taskQueries.getBlockedByTasks(taskId).executeAsList()
     }
 
-    suspend fun getAllBlockers(): List<BlockedTask> = withContext(Dispatchers.IO) {
+    suspend fun getAllBlockers(): List<BlockedTask> = withContext(Dispatchers.IO) { // todo what is this
         return@withContext db.taskQueries.getAllBlockers().executeAsList()
     }
 
@@ -77,7 +77,7 @@ class DbOperation(
             return@withContext isChildAncestorOfParent(grandParentId, childId)
         }
 
-    suspend fun saveTask(task: Task): Long? =
+    suspend fun saveTask(task: Task): Long? = // todo chop
         withContext(Dispatchers.IO) {
             if (task.parentId != null && isChildAncestorOfParent(
                     task.parentId,
@@ -168,26 +168,6 @@ class DbOperation(
     suspend fun taskGetAll(): List<Task> = withContext(Dispatchers.IO) {
         db.taskQueries.getAll().executeAsList()
     }
-
-
-    private suspend fun updateChildrenRepeatAndHideStatus(parentId: Long): Unit =
-        withContext( // update the status of children to match the parent
-            Dispatchers.IO
-        ) {
-            val task = getTask(parentId) ?: return@withContext
-            val taskChildren = db.taskQueries.getChildren(task.id).executeAsList()
-            taskChildren.forEach { child ->
-                val freshChild = getTask(child.id) ?: return@withContext
-                val newTask =
-                    freshChild.copy(
-                        repeatType = task.repeatType,
-                        repeatDays = task.repeatDays,
-                        hide = task.hide
-                    )
-                saveTask(newTask)
-                updateChildrenRepeatAndHideStatus(freshChild.id)
-            }
-        }
 
     suspend fun updateDoneStatus(id: Long) = withContext(Dispatchers.IO) {
 
