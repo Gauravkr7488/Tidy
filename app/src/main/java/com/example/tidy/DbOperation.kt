@@ -32,30 +32,28 @@ import java.util.Calendar
 
 class DbOperation(
     private val db: AppDatabase, private val context: Context
-) { // todo: here only db queries should be executed all the logical stuff should go to the viewmodel
-    suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO) {
-        list.forEach { task ->
-            db.taskQueries.saveTaskWithId(
-                id = task.id,
-                title = task.title,
-                done = task.done,
-                repeatType = task.repeatType,
-                repeatDays = task.repeatDays,
-                description = task.description,
-                hide = task.hide,
-                createdAt = task.createdAt,
-                parentId = task.parentId,
-                blockStatus = task.blockStatus,
-                priority = task.priority,
-                dueDateAndTime = task.dueDateAndTime,
-                frequencyNumber = task.frequencyNumber,
-                endDate = task.endDate,
-                repeatAfterDone = task.repeatAfterDone,
-            )
-        }
+) {
+    suspend fun saveTaskWithId(task: Task) = withContext(Dispatchers.IO) {
+        db.taskQueries.saveTaskWithId(
+            id = task.id,
+            title = task.title,
+            done = task.done,
+            repeatType = task.repeatType,
+            repeatDays = task.repeatDays,
+            description = task.description,
+            hide = task.hide,
+            createdAt = task.createdAt,
+            parentId = task.parentId,
+            blockStatus = task.blockStatus,
+            priority = task.priority,
+            dueDateAndTime = task.dueDateAndTime,
+            frequencyNumber = task.frequencyNumber,
+            endDate = task.endDate,
+            repeatAfterDone = task.repeatAfterDone,
+        )
     }
 
-    suspend fun addBlocker(taskId: Long, blockerId: Long) = withContext(Dispatchers.IO) {
+    suspend fun blockTask(taskId: Long, blockerId: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.blockTask(taskId, blockerId)
     }
 
@@ -63,17 +61,11 @@ class DbOperation(
         return@withContext db.taskQueries.getBlockedTasks(taskId).executeAsList()
     }
 
-    suspend fun getBlockedTask(taskId: Long, blockerId: Long): BlockedTask? =
-        withContext(Dispatchers.IO) {
-            return@withContext db.taskQueries.getBlockTask(taskId, blockerId).executeAsOneOrNull()
-        }
-
-
     suspend fun getBlockedByTasks(taskId: Long) = withContext(Dispatchers.IO) {
         return@withContext db.taskQueries.getBlockedByTasks(taskId).executeAsList()
     }
 
-    suspend fun getAllBlockers(): List<BlockedTask> = withContext(Dispatchers.IO) {
+    suspend fun getAllBlockers(): List<BlockedTask> = withContext(Dispatchers.IO) { // todo what is this
         return@withContext db.taskQueries.getAllBlockers().executeAsList()
     }
 
@@ -84,7 +76,7 @@ class DbOperation(
             return@withContext isChildAncestorOfParent(grandParentId, childId)
         }
 
-    suspend fun saveTask(task: Task): Long? =
+    suspend fun saveTask(task: Task): Long? = // todo chop
         withContext(Dispatchers.IO) {
             if (task.parentId != null && isChildAncestorOfParent(
                     task.parentId,
@@ -176,59 +168,11 @@ class DbOperation(
         db.taskQueries.getAll().executeAsList()
     }
 
-
-    private suspend fun updateChildrenRepeatAndHideStatus(parentId: Long): Unit =
-        withContext( // update the status of children to match the parent
-            Dispatchers.IO
-        ) {
-            val task = getTask(parentId) ?: return@withContext
-            val taskChildren = db.taskQueries.getChildren(task.id).executeAsList()
-            taskChildren.forEach { child ->
-                val freshChild = getTask(child.id) ?: return@withContext
-                val newTask =
-                    freshChild.copy(
-                        repeatType = task.repeatType,
-                        repeatDays = task.repeatDays,
-                        hide = task.hide
-                    )
-                saveTask(newTask)
-                updateChildrenRepeatAndHideStatus(freshChild.id)
-            }
-        }
-
-    suspend fun updateDoneStatus(id: Long) = withContext(Dispatchers.IO) {
-
-        val task = getTask(id) ?: return@withContext
-        saveTask(
-            task.copy(
-                done = if (task.done == 1L) 0L else 1L
-            )
-        )
-    }
-
     suspend fun deleteTask(id: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.deleteTask(id)
         Utils.cancelAlarm(
             context = context, taskId = id
         )
-    }
-
-    suspend fun getChildren(id: Long) = withContext(Dispatchers.IO) {
-        db.taskQueries.getChildren(id).executeAsList()
-    }
-
-    suspend fun updateParentDoneStatus(parentId: Long): Unit = withContext(Dispatchers.IO) {
-        val freshParent = getTask(parentId) ?: return@withContext
-        val children = getChildren(freshParent.id)
-        val allChildrenDone = children.all { it.done == 1L }
-        saveTask(
-            freshParent.copy(
-                done = if (allChildrenDone) 1L else 0L
-            )
-        )
-        val grandParentId = freshParent.parentId ?: return@withContext
-        updateParentDoneStatus(grandParentId)
-
     }
 
     suspend fun taskDeleteALl() = withContext(Dispatchers.IO) {

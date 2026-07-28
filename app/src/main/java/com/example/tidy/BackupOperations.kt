@@ -93,7 +93,7 @@ class BackupOperations(
                     }
                 }
                 dbOperation.taskDeleteALl()
-                dbOperation.saveNewTaskList(newTasks)
+                newTasks.forEach { dbOperation.saveTaskWithId(it) }
                 dbOperation.taskGetAll()
                 val tasksWithParentId = taskDtos.map { dto ->
                     val task = dto.toTask()
@@ -104,7 +104,7 @@ class BackupOperations(
                 blockList.forEach {
                     val blockedTask = dbOperation.getTask(it.task_id) ?: return@forEach
                     dbOperation.saveTask(blockedTask.copy(blockStatus = 1L))
-                    dbOperation.addBlocker(it.task_id, it.blockedBy_id)
+                    dbOperation.blockTask(it.task_id, it.blockedBy_id)
                 }
                 dbOperation.taskGetAll() // todo why is this here?
 
@@ -114,7 +114,7 @@ class BackupOperations(
 
         } catch (e: Exception) {
             dbOperation.taskDeleteALl()
-            dbOperation.saveNewTaskList(preImportTasks)
+            preImportTasks.forEach { dbOperation.saveTaskWithId(it) }
             dbOperation.setLastResetToday(preImportResetDate)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()

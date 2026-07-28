@@ -62,9 +62,6 @@ VALUES (
 ?
 );
 
-getBlockTask:
-SELECT * FROM BlockedTask WHERE task_id = ? AND blockedBy_id = ?;
-
 updateTask:
 UPDATE Task
 SET
@@ -129,10 +126,6 @@ SELECT * FROM Task;
 
 getAllBlockers:
 SELECT * FROM BlockedTask;
-
-getChildren:
-SELECT * FROM Task
-WHERE parentId = ?;
 
 deleteTask:
 DELETE FROM Task

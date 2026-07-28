@@ -96,22 +96,37 @@ class SharedViewModel(
         return dbOperation.getBlockedByTasks(taskId)
     }
 
-    fun addBlockedByTasks(taskId: Long, blockerId: Long) {
+    fun blockTask(taskId: Long, blockerId: Long) {
         viewModelScope.launch {
-            val x = dbOperation.getBlockedTask(taskId = taskId, blockerId = blockerId)
-            if (x == null) dbOperation.addBlocker(taskId, blockerId)
+            dbOperation.blockTask(taskId, blockerId)
         }
     }
 
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
-            dbOperation.updateDoneStatus(task.id)
-            if (task.parentId != null) dbOperation.updateParentDoneStatus(task.parentId)
+            val done = if (task.done == 1L) 0L else 1L
+            dbOperation.saveTask((task.copy(done = done)))
+            if (task.parentId != null) {
+                updateParentDoneStatus(task)
+            }
             updateBlockedTasksStatus(
                 task.id,
                 task.done
             ) // task.done since the block is opposite of done
         }
+    }
+
+    private suspend fun updateParentDoneStatus(task: Task) {
+        if (task.parentId == null) return
+        val parent = tasks.value.find { it.id == task.parentId } ?: return
+        val children = tasks.value.filter { it.parentId == task.parentId }
+        val allChildrenDone = children.all { it.done == 1L }
+        dbOperation.saveTask(
+            parent.copy(
+                done = if (allChildrenDone) 1L else 0L
+            )
+        )
+        updateParentDoneStatus(parent)
     }
 
     suspend fun updateBlockedTasksStatus(taskId: Long, updatedBlockStatus: Long) {
@@ -148,13 +163,13 @@ class SharedViewModel(
         updateParentStatus(parentId)
     }
 
-    private suspend fun updateParentStatus(parentId: Long?) {
+    private suspend fun updateParentStatus(parentId: Long?) { // todo wtf
         if (parentId != null) { // update parent status
             val parent = dbOperation.getTask(parentId) ?: return
             val parentChildren = tasks.value.filter { it.parentId == parentId }
             val parentStatus = parentChildren.all { it.done == 0L }
             dbOperation.saveTask(parent.copy(done = if (!parentStatus) 0L else 1L))
-            dbOperation.updateParentDoneStatus(parentId)
+            updateParentDoneStatus(parent)
         }
     }
 
@@ -168,7 +183,7 @@ class SharedViewModel(
         return i
     }
 
-     suspend fun syncChildrenWithParent(parentTask: Task) {
+    suspend fun syncChildrenWithParent(parentTask: Task) {
         val children = tasks.value.filter { it.parentId == parentTask.id }
         if (children.isNotEmpty()) children.forEach {
             val updatedChild = it.copy(
