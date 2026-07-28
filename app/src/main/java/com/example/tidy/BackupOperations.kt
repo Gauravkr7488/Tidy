@@ -104,7 +104,7 @@ class BackupOperations(
                 blockList.forEach {
                     val blockedTask = dbOperation.getTask(it.task_id) ?: return@forEach
                     dbOperation.saveTask(blockedTask.copy(blockStatus = 1L))
-                    dbOperation.addBlocker(it.task_id, it.blockedBy_id)
+                    dbOperation.blockTask(it.task_id, it.blockedBy_id)
                 }
                 dbOperation.taskGetAll() // todo why is this here?
 

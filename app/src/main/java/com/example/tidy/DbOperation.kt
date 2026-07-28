@@ -54,7 +54,7 @@ class DbOperation(
         )
     }
 
-    suspend fun addBlocker(taskId: Long, blockerId: Long) = withContext(Dispatchers.IO) {
+    suspend fun blockTask(taskId: Long, blockerId: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.blockTask(taskId, blockerId)
     }
 

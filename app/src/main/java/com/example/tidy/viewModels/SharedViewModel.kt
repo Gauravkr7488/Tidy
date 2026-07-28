@@ -99,7 +99,7 @@ class SharedViewModel(
     fun addBlockedByTasks(taskId: Long, blockerId: Long) {
         viewModelScope.launch {
             val x = dbOperation.getBlockedTask(taskId = taskId, blockerId = blockerId)
-            if (x == null) dbOperation.addBlocker(taskId, blockerId)
+            if (x == null) dbOperation.blockTask(taskId, blockerId)
         }
     }
 
