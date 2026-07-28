@@ -169,16 +169,6 @@ class DbOperation(
         db.taskQueries.getAll().executeAsList()
     }
 
-    suspend fun updateDoneStatus(id: Long) = withContext(Dispatchers.IO) {
-
-        val task = getTask(id) ?: return@withContext
-        saveTask(
-            task.copy(
-                done = if (task.done == 1L) 0L else 1L
-            )
-        )
-    }
-
     suspend fun deleteTask(id: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.deleteTask(id)
         Utils.cancelAlarm(

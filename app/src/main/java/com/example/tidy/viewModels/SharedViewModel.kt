@@ -104,7 +104,8 @@ class SharedViewModel(
 
     fun toggleDoneStatus(task: Task) {
         viewModelScope.launch {
-            dbOperation.updateDoneStatus(task.id)
+            val done = if (task.done == 1L) 0L else 1L
+            dbOperation.saveTask((task.copy(done = done)))
             if (task.parentId != null) dbOperation.updateParentDoneStatus(task.parentId)
             updateBlockedTasksStatus(
                 task.id,
