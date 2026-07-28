@@ -96,10 +96,9 @@ class SharedViewModel(
         return dbOperation.getBlockedByTasks(taskId)
     }
 
-    fun addBlockedByTasks(taskId: Long, blockerId: Long) {
+    fun blockTask(taskId: Long, blockerId: Long) {
         viewModelScope.launch {
-            val x = dbOperation.getBlockedTask(taskId = taskId, blockerId = blockerId)
-            if (x == null) dbOperation.blockTask(taskId, blockerId)
+            dbOperation.blockTask(taskId, blockerId)
         }
     }
 
@@ -168,7 +167,7 @@ class SharedViewModel(
         return i
     }
 
-     suspend fun syncChildrenWithParent(parentTask: Task) {
+    suspend fun syncChildrenWithParent(parentTask: Task) {
         val children = tasks.value.filter { it.parentId == parentTask.id }
         if (children.isNotEmpty()) children.forEach {
             val updatedChild = it.copy(

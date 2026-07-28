@@ -62,9 +62,6 @@ VALUES (
 ?
 );
 
-getBlockTask:
-SELECT * FROM BlockedTask WHERE task_id = ? AND blockedBy_id = ?;
-
 updateTask:
 UPDATE Task
 SET
