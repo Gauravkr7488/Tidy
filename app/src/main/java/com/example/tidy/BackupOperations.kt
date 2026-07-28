@@ -93,7 +93,7 @@ class BackupOperations(
                     }
                 }
                 dbOperation.taskDeleteALl()
-                dbOperation.saveNewTaskList(newTasks)
+                newTasks.forEach { dbOperation.saveTaskWithId(it) }
                 dbOperation.taskGetAll()
                 val tasksWithParentId = taskDtos.map { dto ->
                     val task = dto.toTask()
@@ -114,7 +114,7 @@ class BackupOperations(
 
         } catch (e: Exception) {
             dbOperation.taskDeleteALl()
-            dbOperation.saveNewTaskList(preImportTasks)
+            preImportTasks.forEach { dbOperation.saveTaskWithId(it) }
             dbOperation.setLastResetToday(preImportResetDate)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()

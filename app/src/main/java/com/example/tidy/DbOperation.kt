@@ -33,26 +33,25 @@ import java.util.Calendar
 class DbOperation(
     private val db: AppDatabase, private val context: Context
 ) { // todo: here only db queries should be executed all the logical stuff should go to the viewmodel
-    suspend fun saveNewTaskList(list: List<Task>) = withContext(Dispatchers.IO) {
-        list.forEach { task ->
-            db.taskQueries.saveTaskWithId(
-                id = task.id,
-                title = task.title,
-                done = task.done,
-                repeatType = task.repeatType,
-                repeatDays = task.repeatDays,
-                description = task.description,
-                hide = task.hide,
-                createdAt = task.createdAt,
-                parentId = task.parentId,
-                blockStatus = task.blockStatus,
-                priority = task.priority,
-                dueDateAndTime = task.dueDateAndTime,
-                frequencyNumber = task.frequencyNumber,
-                endDate = task.endDate,
-                repeatAfterDone = task.repeatAfterDone,
-            )
-        }
+
+    suspend fun saveTaskWithId(task: Task) = withContext(Dispatchers.IO) {
+        db.taskQueries.saveTaskWithId(
+            id = task.id,
+            title = task.title,
+            done = task.done,
+            repeatType = task.repeatType,
+            repeatDays = task.repeatDays,
+            description = task.description,
+            hide = task.hide,
+            createdAt = task.createdAt,
+            parentId = task.parentId,
+            blockStatus = task.blockStatus,
+            priority = task.priority,
+            dueDateAndTime = task.dueDateAndTime,
+            frequencyNumber = task.frequencyNumber,
+            endDate = task.endDate,
+            repeatAfterDone = task.repeatAfterDone,
+        )
     }
 
     suspend fun addBlocker(taskId: Long, blockerId: Long) = withContext(Dispatchers.IO) {
