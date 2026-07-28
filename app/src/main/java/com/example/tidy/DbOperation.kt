@@ -32,8 +32,7 @@ import java.util.Calendar
 
 class DbOperation(
     private val db: AppDatabase, private val context: Context
-) { // todo: here only db queries should be executed all the logical stuff should go to the viewmodel
-
+) {
     suspend fun saveTaskWithId(task: Task) = withContext(Dispatchers.IO) {
         db.taskQueries.saveTaskWithId(
             id = task.id,
@@ -174,24 +173,6 @@ class DbOperation(
         Utils.cancelAlarm(
             context = context, taskId = id
         )
-    }
-
-    suspend fun getChildren(id: Long) = withContext(Dispatchers.IO) {
-        db.taskQueries.getChildren(id).executeAsList()
-    }
-
-    suspend fun updateParentDoneStatus(parentId: Long): Unit = withContext(Dispatchers.IO) {
-        val freshParent = getTask(parentId) ?: return@withContext
-        val children = getChildren(freshParent.id)
-        val allChildrenDone = children.all { it.done == 1L }
-        saveTask(
-            freshParent.copy(
-                done = if (allChildrenDone) 1L else 0L
-            )
-        )
-        val grandParentId = freshParent.parentId ?: return@withContext
-        updateParentDoneStatus(grandParentId)
-
     }
 
     suspend fun taskDeleteALl() = withContext(Dispatchers.IO) {
