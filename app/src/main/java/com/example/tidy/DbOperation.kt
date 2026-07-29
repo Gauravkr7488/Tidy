@@ -69,23 +69,8 @@ class DbOperation(
         return@withContext db.taskQueries.getAllBlockers().executeAsList()
     }
 
-    suspend fun isChildAncestorOfParent(parentId: Long, childId: Long): Boolean =
-        withContext(Dispatchers.IO) { // Guard against loops
-            if (parentId == childId) return@withContext true
-            val grandParentId = getTask(parentId)?.parentId ?: return@withContext false
-            return@withContext isChildAncestorOfParent(grandParentId, childId)
-        }
-
     suspend fun saveTask(task: Task): Long? = // todo chop
         withContext(Dispatchers.IO) {
-            if (task.parentId != null && isChildAncestorOfParent(
-                    task.parentId,
-                    task.id
-                )
-            ) {
-                println("Save Task Failed")
-                return@withContext null
-            }
             if (task.id == 0L) {
                 db.taskQueries.saveTask(
                     title = task.title,
