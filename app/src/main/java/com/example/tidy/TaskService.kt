@@ -2,7 +2,6 @@ package com.example.tidy
 
 import com.tidy.sqldelight.Task
 import com.yourapp.db.AppDatabase
-import kotlinx.coroutines.flow.first
 
 class TaskService(
     db: AppDatabase,
@@ -27,18 +26,17 @@ class TaskService(
         scheduleService.cancelSchedule(taskId = id)
     }
 
-    suspend fun updateParentsDoneStatus(task: Task) {
-        if (task.parentId == null) return
-        val tasks = observeTasks().first()
-        val freshParent = getTask(task.parentId)
-        val children = tasks.filter { it.parentId == freshParent.id }
+    suspend fun updateParentsDoneStatus(parentId: Long?) {
+        if (parentId == null) return
+        val freshParent = getTask(parentId)
+        val children = getAllChildren(parentId)
         val allChildrenDone = children.all { it.done == 1L }
         updateTask(
             freshParent.copy(
                 done = if (allChildrenDone) 1L else 0L
             )
         )
-        updateParentsDoneStatus(freshParent)
+        updateParentsDoneStatus(freshParent.parentId)
     }
 
     override suspend fun getTask(id: Long): Task {

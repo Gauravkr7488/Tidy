@@ -127,6 +127,9 @@ SELECT * FROM Task;
 getAllBlockers:
 SELECT * FROM BlockedTask;
 
+getAllChildren:
+SELECT * FROM Task WHERE parentId = ?;
+
 deleteTask:
 DELETE FROM Task
 WHERE id = ?;

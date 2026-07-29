@@ -106,7 +106,7 @@ class SharedViewModel(
         viewModelScope.launch {
             val done = if (task.done == 1L) 0L else 1L
             taskService.saveTask((task.copy(done = done)))
-            taskService.updateParentsDoneStatus(task)
+            taskService.updateParentsDoneStatus(task.parentId)
             updateBlockedTasksStatus(
                 task.id,
                 task.done
@@ -145,17 +145,7 @@ class SharedViewModel(
         val parentId = task.parentId
         updateBlockedTasksStatus(task.id, 0)
         taskService.deleteTask(task.id)
-        updateParentStatus(parentId)
-    }
-
-    private suspend fun updateParentStatus(parentId: Long?) { // todo wtf
-        if (parentId != null) { // update parent status
-            val parent = taskService.getTask(parentId)
-            val parentChildren = tasks.value.filter { it.parentId == parentId }
-            val parentStatus = parentChildren.all { it.done == 0L }
-            taskService.saveTask(parent.copy(done = if (!parentStatus) 0L else 1L))
-            taskService.updateParentsDoneStatus(parent)
-        }
+        taskService.updateParentsDoneStatus(parentId)
     }
 
     suspend fun getTask(taskId: Long): Task? {
