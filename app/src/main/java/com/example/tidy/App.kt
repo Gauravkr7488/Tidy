@@ -30,6 +30,7 @@ class App : Application() {
         database = createDatabase(this)
 
         val dbOperation = DbOperation(database)
+        val taskService = TaskService()
         val config = Configuration.Builder()
             .setWorkerFactory(TidyWorkerFactory(dbOperation))
             .build()

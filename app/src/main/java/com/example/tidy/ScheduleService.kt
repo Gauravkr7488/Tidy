@@ -7,7 +7,15 @@ import com.example.tidy.constants.WeekDays
 import com.tidy.sqldelight.Task
 import java.util.Calendar
 
-class ScheduleService(private val context: Context) {
+class ScheduleService(context: Context) : AlarmService(context = context) {
+    fun cancelSchedule(taskId: Long) {
+        cancelAlarm(taskId)
+    }
+
+    fun rescheduleTask(task: Task) {
+        cancelAlarm(task.id)
+        scheduleTask(task)
+    }
 
     fun scheduleTask(task: Task): Boolean {
         val scheduleDate: Long? = if (task.repeatType != RepeatTypes.NONE) {
@@ -26,8 +34,7 @@ class ScheduleService(private val context: Context) {
         }
         if (scheduleDate == null) return true
         if (task.endDate == null || task.endDate > scheduleDate) {
-            Utils.scheduleAlarm(
-                context = context,
+            scheduleAlarm(
                 taskId = task.id,
                 scheduleTime = scheduleDate,
                 action = TaskActions.UNARCHIVE
