@@ -135,12 +135,4 @@ open class DbOperation(
         db.taskQueries.getAll()
             .asFlow()
             .mapToList(Dispatchers.IO)
-
-//    suspend fun getAllChildren(parentId: Long): List<Task> = withContext(Dispatchers.IO){
-//        return@withContext db.taskQueries.getAllChildren(parentId).executeAsList()
-//    }
-
-    suspend fun areAllChildrenDone(parentId: Long): Boolean = withContext(Dispatchers.IO){
-        return@withContext db.taskQueries.areAllChildrenDone(parentId).executeAsOne()
-    }
 }
