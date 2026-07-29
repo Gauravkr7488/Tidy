@@ -29,10 +29,10 @@ class App : Application() {
         super.onCreate()
         database = createDatabase(this)
 
-        val dbOperation = DbOperation(database)
-        val taskService = TaskService()
+        val scheduleService = ScheduleService(this)
+        val taskService = TaskService(database, scheduleService)
         val config = Configuration.Builder()
-            .setWorkerFactory(TidyWorkerFactory(dbOperation))
+            .setWorkerFactory(TidyWorkerFactory(taskService))
             .build()
         WorkManager.initialize(this, config)
     }
