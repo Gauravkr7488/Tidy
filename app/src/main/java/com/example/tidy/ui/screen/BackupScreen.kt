@@ -138,7 +138,7 @@ fun BackupScreen(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .size(48.dp),
-                                onClick = { exportLauncher.launch("backup.json") }
+                                onClick = { exportLauncher.launch("tidy_backup.json") }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Upload,
