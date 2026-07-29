@@ -38,14 +38,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.tidy.BackupOperations
-import com.example.tidy.DbOperation
+import com.example.tidy.TaskService
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 import com.example.tidy.viewModels.SharedViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainScreen(dbOperation: DbOperation) {
+fun MainScreen(taskService: TaskService) {
     val navController = rememberNavController()
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
@@ -53,14 +53,12 @@ fun MainScreen(dbOperation: DbOperation) {
     val sharedViewModel = viewModel<SharedViewModel>(
         factory = viewModelFactory {
             initializer {
-                SharedViewModel(
-                    dbOperation,
-                )
+                SharedViewModel(taskService)
             }
         }
     )
 
-    val backupOperations = remember { BackupOperations(dbOperation) }
+    val backupOperations = remember { BackupOperations(taskService) }
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
