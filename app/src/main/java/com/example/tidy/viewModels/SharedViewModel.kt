@@ -102,8 +102,9 @@ class SharedViewModel(
         }
     }
 
-    fun toggleDoneStatus(task: Task) {
+    fun toggleDoneStatus(taskId: Long) {
         viewModelScope.launch {
+            val task = getTask(taskId) ?: return@launch
             val done = if (task.done == 1L) 0L else 1L
             taskService.saveTask((task.copy(done = done)))
             taskService.updateParentsDoneStatus(task.parentId)

@@ -135,4 +135,18 @@ open class DbOperation(
         db.taskQueries.getAll()
             .asFlow()
             .mapToList(Dispatchers.IO)
+
+    suspend fun updateParentsDoneStatus(parentId: Long?) = withContext(Dispatchers.IO) {
+        db.transaction {
+            var currentId = parentId
+            while (currentId != null) {
+                val allChildrenDone = db.taskQueries.areAllChildrenDone(currentId).executeAsOne()
+                db.taskQueries.updateDoneStatus(
+                    id = currentId,
+                    done = if (allChildrenDone) 1L else 0L
+                )
+                currentId = db.taskQueries.getParentId(currentId).executeAsOne().parentId
+            }
+        }
+    }
 }

@@ -51,7 +51,7 @@ import com.tidy.sqldelight.Task
 fun SubTaskCard(
     task: Task,
     children: List<Task>,
-    toggleDoneStatus: (Task) -> Unit,
+    toggleDoneStatus: (Long) -> Unit,
     toggleExpandStatus: (Long) -> Unit,
     deleteTask: (Long, Boolean) -> Unit,
     onEdit: (Task) -> Unit,
@@ -79,7 +79,7 @@ fun SubTaskCard(
                 onClick = {
                     if (children.isNotEmpty()) {
                         toggleExpandStatus(task.id)
-                    } else toggleDoneStatus(task)
+                    } else toggleDoneStatus(task.id)
                 },
                 contextMenuOptions =
                     buildList {
@@ -131,7 +131,7 @@ fun SubTaskCard(
                                 TaskIconAction(
                                     icon = if (task.done == 0L) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
                                     description = "",
-                                    onClick = { toggleDoneStatus(task) },
+                                    onClick = { toggleDoneStatus(task.id) },
                                 )
                             )
                         }
