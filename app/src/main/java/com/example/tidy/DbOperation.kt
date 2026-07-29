@@ -135,5 +135,4 @@ open class DbOperation(
         db.taskQueries.getAll()
             .asFlow()
             .mapToList(Dispatchers.IO)
-
 }

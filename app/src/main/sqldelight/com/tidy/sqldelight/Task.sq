@@ -127,6 +127,9 @@ SELECT * FROM Task;
 getAllBlockers:
 SELECT * FROM BlockedTask;
 
+-- getAllChildren:
+-- SELECT * FROM Task WHERE parentId = ?;
+
 deleteTask:
 DELETE FROM Task
 WHERE id = ?;
@@ -169,3 +172,14 @@ VALUES (
     ?,
     ?
 );
+
+areAllChildrenDone:
+SELECT NOT EXISTS (
+    SELECT 1 FROM Task WHERE parentId = ? AND done != 1
+);
+
+updateDoneStatus:
+UPDATE Task SET done = ? WHERE id = ?;
+
+getParentId:
+SELECT parentId FROM Task WHERE id = ?;
