@@ -29,8 +29,7 @@ class TaskService(
     suspend fun updateParentsDoneStatus(parentId: Long?) {
         if (parentId == null) return
         val freshParent = getTask(parentId)
-        val children = getAllChildren(parentId)
-        val allChildrenDone = children.all { it.done == 1L }
+        val allChildrenDone = areAllChildrenDone(parentId)
         updateTask(
             freshParent.copy(
                 done = if (allChildrenDone) 1L else 0L
