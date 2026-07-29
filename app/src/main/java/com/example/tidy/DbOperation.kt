@@ -136,7 +136,4 @@ open class DbOperation(
             .asFlow()
             .mapToList(Dispatchers.IO)
 
-    suspend fun getTasksByParentId(parentId: Long):List<Task> = withContext(Dispatchers.IO){
-        return@withContext db.taskQueries.getTasksByParentId(parentId).executeAsList()
-    }
 }

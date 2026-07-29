@@ -1,15 +1,8 @@
 package com.example.tidy
 
-import androidx.compose.runtime.collectAsState
 import com.tidy.sqldelight.Task
 import com.yourapp.db.AppDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.stateIn
 
 class TaskService(
     db: AppDatabase,

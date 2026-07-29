@@ -84,10 +84,6 @@ getTaskById:
 SELECT * FROM Task
 WHERE id = ?;
 
-getTasksByParentId:
-SELECT * FROM Task
-WHERE parentId = ?;
-
 getLastRowInsertId:
 SELECT last_insert_rowid();
 
