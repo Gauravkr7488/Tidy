@@ -84,7 +84,7 @@ getTaskById:
 SELECT * FROM Task
 WHERE id = ?;
 
-getLastId:
+getLastRowInsertId:
 SELECT last_insert_rowid();
 
 saveTask:

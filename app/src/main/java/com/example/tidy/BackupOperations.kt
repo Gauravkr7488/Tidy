@@ -30,16 +30,16 @@ import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
 
 class BackupOperations(
-    private val dbOperation: DbOperation
+    private val taskService: TaskService
 ) {
     suspend fun createBackup(
         context: Context,
         uri: Uri
     ) {
         try {
-            val lastResetDate = dbOperation.getLastResetDate() ?: Utils.getCurrentDate()
-            val taskBlockers = dbOperation.getAllBlockers()
-            val json = createBackupJson(dbOperation.taskGetAll(), lastResetDate, taskBlockers)
+            val lastResetDate = taskService.getLastResetDate() ?: Utils.getCurrentDate()
+            val taskBlockers = taskService.getAllBlockers()
+            val json = createBackupJson(taskService.taskGetAll(), lastResetDate, taskBlockers)
 
             context.contentResolver
                 .openOutputStream(uri)
@@ -59,8 +59,8 @@ class BackupOperations(
         context: Context,
         uri: Uri
     ) {
-        val preImportTasks = dbOperation.taskGetAll()
-        val preImportResetDate = dbOperation.getLastResetDate() ?: Utils.getCurrentDate()
+        val preImportTasks = taskService.taskGetAll()
+        val preImportResetDate = taskService.getLastResetDate() ?: Utils.getCurrentDate()
 
         try {
             val json = context.contentResolver
@@ -76,7 +76,7 @@ class BackupOperations(
                 val taskDtos = backupDto.tasks
                 val lastResetDate = backupDto.lastResetDate
 
-                dbOperation.setLastResetToday(lastResetDate)
+                taskService.setLastResetToday(lastResetDate)
 
                 val newTasks: MutableList<Task> = mutableListOf()
                 val blockList: MutableList<BlockedTask> = mutableListOf()
@@ -87,35 +87,35 @@ class BackupOperations(
                     val blockString = taskBackupDto.blockedBy
                     if (blockString != null) {
                         val blockers = Utils.getBlockerFromString(blockString, taskBackupDto.id)
-                        if (blockers.isNotEmpty()){
+                        if (blockers.isNotEmpty()) {
                             blockList.addAll(blockers)
                         }
                     }
                 }
-                dbOperation.taskDeleteALl()
-                newTasks.forEach { dbOperation.saveTaskWithId(it) }
-                dbOperation.taskGetAll()
+                taskService.taskDeleteALl()
+                newTasks.forEach { taskService.saveTaskWithId(it) }
+                taskService.taskGetAll()
                 val tasksWithParentId = taskDtos.map { dto ->
                     val task = dto.toTask()
                     return@map task
                 }
 
-                dbOperation.taskSaveList(tasksWithParentId)
+                tasksWithParentId.forEach { taskService.saveTask(it) } //todo is this the right one?
                 blockList.forEach {
-                    val blockedTask = dbOperation.getTask(it.task_id) ?: return@forEach
-                    dbOperation.saveTask(blockedTask.copy(blockStatus = 1L))
-                    dbOperation.blockTask(it.task_id, it.blockedBy_id)
+                    val blockedTask = taskService.getTask(it.task_id) ?: return@forEach
+                    taskService.saveTask(blockedTask.copy(blockStatus = 1L))
+                    taskService.blockTask(it.task_id, it.blockedBy_id)
                 }
-                dbOperation.taskGetAll() // todo why is this here?
+                taskService.taskGetAll() // todo why is this here?
 
 
                 Toast.makeText(context, "Import successful", Toast.LENGTH_SHORT).show()
             }
 
         } catch (e: Exception) {
-            dbOperation.taskDeleteALl()
-            preImportTasks.forEach { dbOperation.saveTaskWithId(it) }
-            dbOperation.setLastResetToday(preImportResetDate)
+            taskService.taskDeleteALl()
+            preImportTasks.forEach { taskService.saveTaskWithId(it) }
+            taskService.setLastResetToday(preImportResetDate)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
         }
