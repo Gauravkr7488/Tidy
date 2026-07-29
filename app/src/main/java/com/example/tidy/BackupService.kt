@@ -123,7 +123,7 @@ class BackupService(
         return blockers
     }
 
-    fun getAutoBackupPath(context: Context): String? {
+    fun getAutoBackupPath(): String? {
         val uriString = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
             .getString("backup_uri", null) ?: return null
 
@@ -133,7 +133,7 @@ class BackupService(
     }
 
 
-    fun setAutoBackupUri(context: Context, uri: Uri) {
+    fun setAutoBackupUri(uri: Uri) {
         context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
             .edit {
                 putString("backup_uri", uri.toString())

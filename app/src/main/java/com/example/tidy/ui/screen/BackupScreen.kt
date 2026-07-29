@@ -58,9 +58,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun BackupScreen(
-    backupOperations: BackupService,
-
-    modifier: Modifier = Modifier
+    backupService: BackupService
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
@@ -73,7 +71,7 @@ fun BackupScreen(
         ) { uri ->
             uri?.let {
                 coroutineScope.launch {
-                    backupOperations.createBackup( it)
+                    backupService.createBackup(it)
                 }
             }
         }
@@ -84,14 +82,14 @@ fun BackupScreen(
         ) { uri ->
             uri?.let {
                 coroutineScope.launch {
-                    backupOperations.importBackup( it)
+                    backupService.importBackup(it)
                 }
             }
         }
 
     // --- new: auto backup folder picker ---
     var autoBackupPath by remember {
-        mutableStateOf(backupOperations.getAutoBackupPath(context))
+        mutableStateOf(backupService.getAutoBackupPath())
     }
 
     val folderPickerLauncher =
@@ -105,12 +103,12 @@ fun BackupScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                backupOperations.setAutoBackupUri(context, it)
-                autoBackupPath = backupOperations.getAutoBackupPath(context)
+                backupService.setAutoBackupUri(it)
+                autoBackupPath = backupService.getAutoBackupPath()
             }
         }
 
-    Scaffold(topBar = { TopAppBar("Backup") }, modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(topBar = { TopAppBar("Backup") }, modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
