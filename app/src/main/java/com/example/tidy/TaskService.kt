@@ -8,7 +8,7 @@ class TaskService(
     db: AppDatabase,
     private val context: Context,
     private val scheduleService: ScheduleService
-) : DbOperation(db = db, context = context) {
+) : DbOperation(db = db) {
     override suspend fun saveTask(task: Task): Long {
         if (task.id == 0L) {
             super.saveTask(task)
@@ -22,5 +22,12 @@ class TaskService(
             scheduleService.scheduleTask(task)
             return task.id
         }
+    }
+
+    override suspend fun deleteTask(id: Long) {
+        super.deleteTask(id)
+        Utils.cancelAlarm(
+            context = context, taskId = id
+        )
     }
 }

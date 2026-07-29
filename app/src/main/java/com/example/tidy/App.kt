@@ -29,7 +29,7 @@ class App : Application() {
         super.onCreate()
         database = createDatabase(this)
 
-        val dbOperation = DbOperation(database, this)
+        val dbOperation = DbOperation(database)
         val config = Configuration.Builder()
             .setWorkerFactory(TidyWorkerFactory(dbOperation))
             .build()

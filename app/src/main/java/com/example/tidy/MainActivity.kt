@@ -45,8 +45,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val dbOperation = DbOperation(
-                db = database,
-                context = app.applicationContext
+                db = database
             )
             TidyTheme {
                 MainScreen(

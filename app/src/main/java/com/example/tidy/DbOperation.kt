@@ -16,7 +16,6 @@
  */
 package com.example.tidy
 
-import android.content.Context
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.tidy.sqldelight.BlockedTask
@@ -27,7 +26,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 open class DbOperation(
-    private val db: AppDatabase, private val context: Context
+    private val db: AppDatabase
 ) {
     suspend fun saveTaskWithId(task: Task) = withContext(Dispatchers.IO) {
         db.taskQueries.saveTaskWithId(
@@ -116,11 +115,8 @@ open class DbOperation(
         db.taskQueries.getAll().executeAsList()
     }
 
-    suspend fun deleteTask(id: Long) = withContext(Dispatchers.IO) {
+    open suspend fun deleteTask(id: Long): Unit = withContext(Dispatchers.IO) {
         db.taskQueries.deleteTask(id)
-        Utils.cancelAlarm(
-            context = context, taskId = id
-        )
     }
 
     suspend fun taskDeleteALl() = withContext(Dispatchers.IO) {
