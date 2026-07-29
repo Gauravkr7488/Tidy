@@ -82,7 +82,7 @@ class SharedViewModel(
     }
 
     private suspend fun deleteTaskAndChildren(id: Long) {
-        taskService.getTask(id) ?: return
+        taskService.getTask(id)
         val children = tasks.value.filter { it.parentId == id }
         if (children.isNotEmpty()) children.forEach { deleteTaskAndChildren(it.id) }
         taskService.deleteTask(id)
@@ -106,27 +106,12 @@ class SharedViewModel(
         viewModelScope.launch {
             val done = if (task.done == 1L) 0L else 1L
             taskService.saveTask((task.copy(done = done)))
-            if (task.parentId != null) {
-                updateParentDoneStatus(task)
-            }
+            taskService.updateParentsDoneStatus(task)
             updateBlockedTasksStatus(
                 task.id,
                 task.done
             ) // task.done since the block is opposite of done
         }
-    }
-
-    private suspend fun updateParentDoneStatus(task: Task) {
-        if (task.parentId == null) return
-        val parent = tasks.value.find { it.id == task.parentId } ?: return
-        val children = tasks.value.filter { it.parentId == task.parentId }
-        val allChildrenDone = children.all { it.done == 1L }
-        taskService.saveTask(
-            parent.copy(
-                done = if (allChildrenDone) 1L else 0L
-            )
-        )
-        updateParentDoneStatus(parent)
     }
 
     suspend fun updateBlockedTasksStatus(taskId: Long, updatedBlockStatus: Long) {
@@ -150,7 +135,7 @@ class SharedViewModel(
     }
 
     private suspend fun deleteTaskAsync(id: Long, deleteSubtasks: Boolean) {
-        val task = taskService.getTask(id) ?: return
+        val task = taskService.getTask(id)
         val children = tasks.value.filter { it.parentId == id }
         if (deleteSubtasks) {
             children.forEach { task ->
@@ -165,11 +150,11 @@ class SharedViewModel(
 
     private suspend fun updateParentStatus(parentId: Long?) { // todo wtf
         if (parentId != null) { // update parent status
-            val parent = taskService.getTask(parentId) ?: return
+            val parent = taskService.getTask(parentId)
             val parentChildren = tasks.value.filter { it.parentId == parentId }
             val parentStatus = parentChildren.all { it.done == 0L }
             taskService.saveTask(parent.copy(done = if (!parentStatus) 0L else 1L))
-            updateParentDoneStatus(parent)
+            taskService.updateParentsDoneStatus(parent)
         }
     }
 

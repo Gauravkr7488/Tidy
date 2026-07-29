@@ -107,7 +107,7 @@ open class DbOperation(
         )
     }
 
-    suspend fun getTask(id: Long): Task? = withContext(Dispatchers.IO) {
+    open suspend fun getTask(id: Long): Task? = withContext(Dispatchers.IO) {
         db.taskQueries.getTaskById(id).executeAsOneOrNull()
     }
 
@@ -135,4 +135,8 @@ open class DbOperation(
         db.taskQueries.getAll()
             .asFlow()
             .mapToList(Dispatchers.IO)
+
+    suspend fun getTasksByParentId(parentId: Long):List<Task> = withContext(Dispatchers.IO){
+        return@withContext db.taskQueries.getTasksByParentId(parentId).executeAsList()
+    }
 }
