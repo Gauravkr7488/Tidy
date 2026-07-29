@@ -2,11 +2,9 @@ package com.example.tidy
 
 import com.tidy.sqldelight.Task
 import com.yourapp.db.AppDatabase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class TaskService(
-    private val db: AppDatabase,
+    db: AppDatabase,
     private val scheduleService: ScheduleService
 ) : DbOperation(db = db) {
     override suspend fun saveTask(task: Task): Long {
@@ -27,19 +25,7 @@ class TaskService(
         super.deleteTask(id)
         scheduleService.cancelSchedule(taskId = id)
     }
-    suspend fun updateParentsDoneStatus(parentId: Long?) = withContext(Dispatchers.IO) {
-        db.transaction {
-            var currentId = parentId
-            while (currentId != null) {
-                val allChildrenDone = db.taskQueries.areAllChildrenDone(currentId).executeAsOne()
-                db.taskQueries.updateDoneStatus(
-                    id = currentId,
-                    done = if (allChildrenDone) 1L else 0L
-                )
-                currentId = db.taskQueries.getParentId(currentId).executeAsOne().parentId
-            }
-        }
-    }
+
     override suspend fun getTask(id: Long): Task {
         return super.getTask(id) ?: throw Exception("Failed to fetch task")
     }
