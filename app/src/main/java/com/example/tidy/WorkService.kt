@@ -67,7 +67,7 @@ class WorkService(private val context: Context) {
             .build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             label,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             request
         )
     }
