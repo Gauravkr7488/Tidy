@@ -37,7 +37,7 @@ class TidyWorker(
                 if (taskId == -1L) return Result.failure()
                 val task = taskService.getTask(taskId)
                 if (task.done == 1L || task.hide == 1L) {
-                    taskService.saveTask(task.copy(done = 0, hide = 0, priority = 1))
+                    taskService.saveTask(task.copy(done = 0, hide = 0))
                     Utils.sendNotification(
                         applicationContext,
                         title = "Schedule met",
