@@ -43,7 +43,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 
 object Utils {
     fun getCurrentDate(): String {
@@ -103,22 +102,6 @@ object Utils {
         }.timeInMillis
     }
 
-    fun scheduleWork(context: Context, taskId: Long?, scheduleTime: Long, action: String) {
-        val delay = scheduleTime - System.currentTimeMillis()
-
-        if (delay <= 0) return // Due date already passed
-
-        val data = workDataOf("task_id" to taskId, "action" to action)
-
-        val request = OneTimeWorkRequestBuilder<TidyWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .setInputData(data)
-            .addTag("tidy-$action") // Tag for cancellation
-            .addTag("tidy-$taskId")
-            .build()
-        WorkManager.getInstance(context).enqueue(request)
-    }
-
     fun scheduleImmediateWork(context: Context, taskId: Long?, action: String) {
         val data = workDataOf("task_id" to taskId, "action" to action)
 
@@ -129,14 +112,6 @@ object Utils {
             .addTag("tidy-$taskId")
             .build()
         WorkManager.getInstance(context).enqueue(request)
-    }
-
-//    fun cancelAllWorkById(context: Context, taskId: Long) {
-//        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
-//    }
-
-    fun cancelAllWorkByAction(context: Context, action: String) {
-        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$action")
     }
 
     fun getEmptyTask(): Task {
@@ -202,7 +177,7 @@ object Utils {
 
     fun getAutoBackupTime(): Long {
         val c = Calendar.getInstance()
-        c.add(Calendar.MINUTE, 1)
+        c.add(Calendar.HOUR_OF_DAY, 1)
         return c.timeInMillis
     }
 
