@@ -70,11 +70,13 @@ class TidyWorker(
 
             TaskActions.RESET_SKIPPED -> {
                 val count = taskService.resetSkippedTasks()
-                Utils.sendNotification(
-                    context = applicationContext,
-                    title = "Skipped tasks Unarchived",
-                    message = "$count tasks unarchived"
-                )
+                if (count > 0){
+                    Utils.sendNotification(
+                        context = applicationContext,
+                        title = "Skipped tasks Unarchived",
+                        message = "$count tasks unarchived"
+                    )
+                }
                 Result.success()
             }
 
