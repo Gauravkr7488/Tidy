@@ -10,7 +10,7 @@ class TaskService(
     override suspend fun saveTask(task: Task): Long {
         if (task.id == 0L) {
             super.saveTask(task)
-            val id = getLastRowInsertId() ?: throw Exception("Failed to save new task")
+            val id = getLastRowInsertId()
             scheduleService.scheduleTask(task.copy(id = id))
             return id
         } else {
@@ -27,6 +27,6 @@ class TaskService(
     }
 
     override suspend fun getTask(id: Long): Task {
-        return super.getTask(id) ?: throw Exception("Failed to fetch task")
+        return super.getTask(id)
     }
 }

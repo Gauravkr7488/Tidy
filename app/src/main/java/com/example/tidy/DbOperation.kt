@@ -85,7 +85,7 @@ open class DbOperation(
     }
 
     suspend fun getLastRowInsertId() = withContext(Dispatchers.IO) {
-        return@withContext db.taskQueries.getLastRowInsertId().executeAsOneOrNull()
+        return@withContext db.taskQueries.getLastRowInsertId().executeAsOne()
     }
 
     suspend fun updateTask(task: Task) = withContext(Dispatchers.IO) {
@@ -107,8 +107,8 @@ open class DbOperation(
         )
     }
 
-    open suspend fun getTask(id: Long): Task? = withContext(Dispatchers.IO) {
-        db.taskQueries.getTaskById(id).executeAsOneOrNull()
+    open suspend fun getTask(id: Long): Task = withContext(Dispatchers.IO) {
+        db.taskQueries.getTaskById(id).executeAsOne()
     }
 
     suspend fun taskGetAll(): List<Task> = withContext(Dispatchers.IO) {
