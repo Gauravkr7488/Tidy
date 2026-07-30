@@ -148,6 +148,6 @@ open class DbOperation(
         }
 
     suspend fun resetSkippedTasks()= withContext(Dispatchers.IO){
-        db.taskQueries.resetSkippedTasks()
+        db.taskQueries.resetSkippedTasks().value
     }
 }
