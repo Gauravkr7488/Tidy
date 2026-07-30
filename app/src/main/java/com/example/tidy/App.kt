@@ -20,7 +20,9 @@ package com.example.tidy
 import android.app.Application
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import com.example.tidy.constants.TaskActions
 import com.yourapp.db.AppDatabase
+import java.util.Calendar
 
 class App : Application() {
 
@@ -29,12 +31,32 @@ class App : Application() {
         super.onCreate()
         database = createDatabase(this)
 
-        val scheduleService = ScheduleService(this)
+        val alarmService = AlarmService(this)
+        val workService = WorkService(this)
+        val scheduleService = ScheduleService(alarmService, workService)
         val taskService = TaskService(database, scheduleService)
         val config = Configuration.Builder()
             .setWorkerFactory(TidyWorkerFactory(taskService))
             .build()
         WorkManager.initialize(this, config)
+
+        scheduleService.schedulePeriodicWork(
+            action = TaskActions.RESET_SKIPPED,
+            intervalInMilli = Utils.convertTimeToMillis(24, 0),
+            label = "dailyReset",
+            initialDelayInMilli = calculateInitialDelay()
+        )
+    }
+    private fun calculateInitialDelay(): Long {
+        val now = Calendar.getInstance()
+        val nextMidnight = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return nextMidnight.timeInMillis - now.timeInMillis
     }
 }
 

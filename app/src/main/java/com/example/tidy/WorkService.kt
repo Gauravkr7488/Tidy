@@ -17,8 +17,10 @@
 package com.example.tidy
 
 import android.content.Context
+import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
+import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import java.util.concurrent.TimeUnit
@@ -55,4 +57,22 @@ class WorkService(private val context: Context) {
     fun cancelAllWorkByAction(action: String) {
         WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$action")
     }
+
+    fun schedulePeriodicWork(action: String, intervalInMilli: Long, label: String, initialDelayInMilli: Long) {
+        val data = workDataOf("action" to action)
+        val request = PeriodicWorkRequestBuilder<TidyWorker>(intervalInMilli, TimeUnit.MILLISECONDS)
+            .setInputData(data)
+            .addTag("tidy-$action")
+            .setInitialDelay(initialDelayInMilli, TimeUnit.MILLISECONDS)
+            .build()
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            label,
+            ExistingPeriodicWorkPolicy.UPDATE,
+            request
+        )
+    }
+
+//    fun cancelPeriodicWork(label: String) {
+//        WorkManager.getInstance(context).cancelUniqueWork(label)
+//    }
 }

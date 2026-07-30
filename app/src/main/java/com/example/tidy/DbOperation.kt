@@ -123,14 +123,6 @@ open class DbOperation(
         db.taskQueries.deleteAllTasks()
     }
 
-    suspend fun getLastResetDate(): String? = withContext(Dispatchers.IO) {
-        db.lastResetQueries.getLastReset().executeAsOneOrNull()
-    }
-
-    suspend fun setLastResetToday(todayDate: String): Unit = withContext(Dispatchers.IO) {
-        db.lastResetQueries.setLastReset(todayDate)
-    }
-
     fun observeTasks(): Flow<List<Task>> =
         db.taskQueries.getAll()
             .asFlow()
@@ -148,5 +140,14 @@ open class DbOperation(
                 currentId = db.taskQueries.getParentId(currentId).executeAsOne().parentId
             }
         }
+    }
+
+    suspend fun updateTaskAndDescendantsHideStatus(taskId: Long, hide: Long) =
+        withContext(Dispatchers.IO) {
+            db.taskQueries.updateTaskAndDescendantsHideStatus(taskId = taskId, hide = hide)
+        }
+
+    suspend fun resetSkippedTasks()= withContext(Dispatchers.IO){
+        db.taskQueries.resetSkippedTasks()
     }
 }

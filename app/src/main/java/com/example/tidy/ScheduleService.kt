@@ -1,19 +1,31 @@
 package com.example.tidy
 
-import android.content.Context
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.TaskActions
 import com.example.tidy.constants.WeekDays
 import com.tidy.sqldelight.Task
 import java.util.Calendar
 
-class ScheduleService(context: Context) : AlarmService(context = context) {
+class ScheduleService(
+    private val alarmService: AlarmService,
+    private val workService: WorkService
+) {
+
+    fun schedulePeriodicWork(action: String, intervalInMilli: Long, label: String, initialDelayInMilli: Long) {
+        workService.schedulePeriodicWork(
+            action = action,
+            intervalInMilli = intervalInMilli,
+            label = label,
+            initialDelayInMilli = initialDelayInMilli
+        )
+    }
+
     fun cancelSchedule(taskId: Long) {
-        cancelAlarm(taskId)
+        alarmService.cancelAlarm(taskId)
     }
 
     fun rescheduleTask(task: Task) {
-        cancelAlarm(task.id)
+        alarmService.cancelAlarm(task.id)
         scheduleTask(task)
     }
 
@@ -34,7 +46,7 @@ class ScheduleService(context: Context) : AlarmService(context = context) {
         }
         if (scheduleDate == null) return true
         if (task.endDate == null || task.endDate > scheduleDate) {
-            scheduleAlarm(
+            alarmService.scheduleAlarm(
                 taskId = task.id,
                 scheduleTime = scheduleDate,
                 action = TaskActions.UNARCHIVE

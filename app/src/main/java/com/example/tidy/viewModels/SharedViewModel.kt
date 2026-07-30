@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.TaskService
-import com.example.tidy.Utils
 import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,21 +35,6 @@ import kotlinx.coroutines.launch
 class SharedViewModel(
     private val taskService: TaskService,
 ) : ViewModel() {
-
-    init {
-        viewModelScope.launch {
-            resetTasks()
-        }
-    }
-
-    private suspend fun resetTasks() {
-        val today = Utils.getCurrentDate()
-        val lastResetDate = taskService.getLastResetDate()
-        if (today == lastResetDate) return
-        taskService.setLastResetToday(today)
-        val skippedTasks = tasks.value.filter { it.hide == 1L && it.done != 0L }
-        skippedTasks.forEach { taskService.saveTask(it.copy(hide = 0L)) }
-    }
 
     val tasks = taskService.observeTasks()
         .map { tasks -> sortByPriority(tasks) }
@@ -124,8 +108,7 @@ class SharedViewModel(
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
-            saveTask(task.copy(hide = 1L))
-            syncChildrenWithParent(task.copy(hide = 1L))
+            taskService.updateTaskAndDescendantsHideStatus(task.id, 1L)
         }
     }
 

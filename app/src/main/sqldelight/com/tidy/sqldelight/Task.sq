@@ -183,3 +183,15 @@ UPDATE Task SET done = ? WHERE id = ?;
 
 getParentId:
 SELECT parentId FROM Task WHERE id = ?;
+
+updateTaskAndDescendantsHideStatus:
+WITH RECURSIVE descendants(id) AS (
+    SELECT id FROM Task WHERE id = :taskId
+    UNION ALL
+    SELECT t.id FROM Task t
+    INNER JOIN descendants d ON t.parentId = d.id
+)
+UPDATE Task SET hide = :hide WHERE id IN (SELECT id FROM descendants);
+
+resetSkippedTasks:
+UPDATE Task SET hide = 0 WHERE hide = 1 AND done = 0;

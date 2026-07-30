@@ -44,7 +44,9 @@ class MainActivity : ComponentActivity() {
         database = app.database
         enableEdgeToEdge()
         setContent {
-            val scheduleService = ScheduleService(this)
+            val alarmService = AlarmService(this)
+            val workService = WorkService(this)
+            val scheduleService = ScheduleService(alarmService, workService)
             val taskService = TaskService(db = database, scheduleService)
             TidyTheme {
                 MainScreen(taskService)
