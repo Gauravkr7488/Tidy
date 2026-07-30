@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -37,7 +38,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.tidy.BackupOperations
+import com.example.tidy.BackupService
 import com.example.tidy.TaskService
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
@@ -58,7 +59,8 @@ fun MainScreen(taskService: TaskService) {
         }
     )
 
-    val backupOperations = remember { BackupOperations(taskService) }
+    val context = LocalContext.current
+    val backupService = remember { BackupService(taskService, context) }
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -121,7 +123,7 @@ fun MainScreen(taskService: TaskService) {
             }
 
             composable(Routes.BACKUP) {
-                BackupScreen(backupOperations)
+                BackupScreen(backupService)
             }
         }
     }

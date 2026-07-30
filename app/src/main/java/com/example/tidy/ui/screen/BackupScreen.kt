@@ -49,7 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.tidy.BackupOperations
+import com.example.tidy.BackupService
 import com.example.tidy.Utils
 import com.example.tidy.constants.TaskActions
 import com.example.tidy.ui.component.SimpleCard
@@ -58,9 +58,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun BackupScreen(
-    backupOperations: BackupOperations,
-
-    modifier: Modifier = Modifier
+    backupService: BackupService
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
@@ -73,7 +71,7 @@ fun BackupScreen(
         ) { uri ->
             uri?.let {
                 coroutineScope.launch {
-                    backupOperations.createBackup(context, it)
+                    backupService.createBackup(it)
                 }
             }
         }
@@ -84,14 +82,14 @@ fun BackupScreen(
         ) { uri ->
             uri?.let {
                 coroutineScope.launch {
-                    backupOperations.importBackup(context, it)
+                    backupService.importBackup(it)
                 }
             }
         }
 
     // --- new: auto backup folder picker ---
     var autoBackupPath by remember {
-        mutableStateOf(backupOperations.getAutoBackupPath(context))
+        mutableStateOf(backupService.getAutoBackupPath())
     }
 
     val folderPickerLauncher =
@@ -105,12 +103,12 @@ fun BackupScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                backupOperations.setAutoBackupUri(context, it)
-                autoBackupPath = backupOperations.getAutoBackupPath(context)
+                backupService.setAutoBackupUri(it)
+                autoBackupPath = backupService.getAutoBackupPath()
             }
         }
 
-    Scaffold(topBar = { TopAppBar("Backup") }, modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(topBar = { TopAppBar("Backup") }, modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -140,7 +138,7 @@ fun BackupScreen(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .size(48.dp),
-                                onClick = { exportLauncher.launch("backup.json") }
+                                onClick = { exportLauncher.launch("tidy_backup.json") }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Upload,

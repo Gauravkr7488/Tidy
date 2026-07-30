@@ -61,7 +61,7 @@ open class DbOperation(
     }
 
     suspend fun getAllBlockers(): List<BlockedTask> =
-        withContext(Dispatchers.IO) { // todo what is this
+        withContext(Dispatchers.IO) {
             return@withContext db.taskQueries.getAllBlockers().executeAsList()
         }
 
