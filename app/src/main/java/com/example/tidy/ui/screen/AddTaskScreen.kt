@@ -66,7 +66,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -129,8 +128,8 @@ fun AddTaskScreen(
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
-    var hide: Long by remember { mutableLongStateOf(1) }
-    var done: Long by remember { mutableLongStateOf(0) }
+    var hide: Boolean by remember { mutableStateOf(true) }
+    var done: Boolean by remember { mutableStateOf(false) }
     var startNow by remember { mutableStateOf(false) }
     var repeatAfterDone by remember { mutableStateOf(false) }
     var priority: Long? by remember { mutableStateOf(null) }
@@ -158,7 +157,7 @@ fun AddTaskScreen(
             dueTime = task.dueDateAndTime
             frequencyNumber = task.frequencyNumber
             endDate = task.endDate
-            repeatAfterDone = task.repeatAfterDone == 1L
+            repeatAfterDone = task.repeatAfterDone
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -201,24 +200,20 @@ fun AddTaskScreen(
                                     repeatDays = repeatDays,
                                     description = description,
                                     done = done,
-                                    hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null) 0L else hide,
+                                    hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null) false else hide,
                                     createdAt = System.currentTimeMillis(),
                                     parentId = parentId,
-                                    blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
+                                    blockStatus = !blockedByTasks.all { it.done },
                                     priority = priority,
                                     dueDateAndTime = dueTimeAndDate,
                                     frequencyNumber = frequencyNumber,
                                     endDate = endDate,
-                                    repeatAfterDone = if (repeatAfterDone) 1L else 0L,
+                                    repeatAfterDone = repeatAfterDone,
                                 )
-                                val savedTaskId = vm.saveTask(task) ?: return@launch
+                                val savedTaskId = vm.saveTask(task)
                                 blockedByTasks.forEach {
                                     val blockerId =
                                         if (it.id == 0L) vm.saveTask(it) else it.id
-                                    if (blockerId == null) {
-                                        println("issue while saving new blocker")
-                                        return@forEach
-                                    }
                                     vm.blockTask(savedTaskId, blockerId)
                                 }
                                 taskChildren.forEach {

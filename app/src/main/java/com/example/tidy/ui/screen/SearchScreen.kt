@@ -93,7 +93,7 @@ fun SearchScreen(
         val matchesFilter = when (selectedFilter) {
             SearchFilter.REPEAT -> task.repeatType != RepeatTypes.NONE
             SearchFilter.PARENTS -> tasks.find { it.parentId == task.id } != null
-            SearchFilter.ARCHIVED -> task.hide == 1L
+            SearchFilter.ARCHIVED -> task.hide
             else -> true
         }
 
@@ -187,7 +187,7 @@ fun SearchScreen(
                             children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             contextMenuOptions =
                                 buildList {
-                                    if (task.hide == 0L) {
+                                    if (!task.hide) {
                                         add(
                                             TaskContextAction(
                                                 label = "Archive",
@@ -195,7 +195,7 @@ fun SearchScreen(
                                                 description = "Archive Task",
                                                 onClick = {
                                                     coroutineScope.launch {
-                                                        val updatedTask = task.copy(hide = 1L)
+                                                        val updatedTask = task.copy(hide = true)
                                                         sharedViewModel.saveTask(updatedTask)
                                                         sharedViewModel.syncChildrenWithParent(
                                                             updatedTask
@@ -213,7 +213,7 @@ fun SearchScreen(
                                                 description = "Unarchive Task",
                                                 onClick = {
                                                     coroutineScope.launch {
-                                                        val updatedTask = task.copy(hide = 0L)
+                                                        val updatedTask = task.copy(hide = false)
                                                         sharedViewModel.saveTask(updatedTask)
                                                         sharedViewModel.syncChildrenWithParent(
                                                             updatedTask

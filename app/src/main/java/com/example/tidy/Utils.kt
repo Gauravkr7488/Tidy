@@ -45,11 +45,6 @@ import java.util.Locale
 import java.util.TimeZone
 
 object Utils {
-    fun getCurrentDate(): String {
-        return SimpleDateFormat("dd", Locale.getDefault())
-            .format(Calendar.getInstance().time) // gives "01", "02"
-    }
-
     fun changeDateFormat(date: Long, pattern: String): String {
         return SimpleDateFormat(pattern, Locale.getDefault()).apply {
             timeZone = TimeZone.getDefault()
@@ -121,16 +116,16 @@ object Utils {
             repeatType = RepeatTypes.NONE,
             repeatDays = "",
             description = "",
-            done = 0,
-            hide = 0,
+            done = false,
+            hide = false,
             createdAt = System.currentTimeMillis(),
             parentId = null,
-            blockStatus = 0,
+            blockStatus = false,
             priority = null,
             dueDateAndTime = null,
             frequencyNumber = null,
             endDate = null,
-            repeatAfterDone = 0,
+            repeatAfterDone = false,
         )
     }
 
@@ -138,20 +133,20 @@ object Utils {
         return TaskBackupDto(
             id = id,
             title = title,
-            done = done == 1L,
+            done = done,
             repeatType = repeatType,
             repeatOn = repeatDays,
             description = description,
-            hide = hide == 1L,
+            hide = hide,
             createdAt = createdAt,
             parentId = parentId,
             blockedBy = taskBlockString,
-            blockedStatus = blockStatus == 1L,
+            blockedStatus = blockStatus,
             priority = priority,
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
             endDate = endDate,
-            repeatAfterDone = repeatAfterDone == 1L
+            repeatAfterDone = repeatAfterDone
         )
     }
 
@@ -159,19 +154,19 @@ object Utils {
         return Task(
             id = id,
             title = title,
-            done = if (done) 1L else 0L,
+            done = done,
             repeatType = repeatType.uppercase(),
             repeatDays = repeatOn,
             description = description ?: "",
-            hide = if (hide) 1L else 0L,
+            hide = hide,
             parentId = parentId,
-            blockStatus = if (blockedStatus) 1L else 0L,
+            blockStatus = blockedStatus,
             createdAt = createdAt,
             priority = priority,
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
             endDate = endDate,
-            repeatAfterDone = if (repeatAfterDone) 1L else 0L,
+            repeatAfterDone = repeatAfterDone,
         )
     }
 
@@ -214,6 +209,7 @@ object Utils {
         private var lastId = 0
         fun nextId(): Int = ++lastId
     }
+
     fun requestExactAlarmPermission(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager

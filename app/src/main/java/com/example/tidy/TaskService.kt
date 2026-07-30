@@ -15,7 +15,7 @@ class TaskService(
             return id
         } else {
             super.updateTask(task)
-            if (task.repeatAfterDone == 1L && task.done == 0L) return task.id
+            if (task.repeatAfterDone && !task.done) return task.id
             scheduleService.rescheduleTask(task)
             return task.id
         }
