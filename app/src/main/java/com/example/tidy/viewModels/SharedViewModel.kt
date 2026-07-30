@@ -54,10 +54,10 @@ class SharedViewModel(
     fun cleanCompletedTasks() {
         viewModelScope.launch {
             val doneTasks =
-                tasks.value.filter { it.done == 1L && it.parentId == null && it.hide != 1L }
+                tasks.value.filter { it.done && it.parentId == null && !it.hide }
             doneTasks.forEach { task ->
                 if (task.repeatType != RepeatTypes.NONE) {
-                    taskService.saveTask(task.copy(hide = 1L))
+                    taskService.saveTask(task.copy(hide = true))
                 } else {
                     deleteTaskAndChildren(task.id)
                 }
@@ -89,7 +89,7 @@ class SharedViewModel(
     fun toggleDoneStatus(taskId: Long) {
         viewModelScope.launch {
             val task = getTask(taskId) ?: return@launch
-            val done = if (task.done == 1L) 0L else 1L
+            val done = !task.done
             taskService.saveTask((task.copy(done = done)))
             taskService.updateParentsDoneStatus(task.parentId)
             updateBlockedTasksStatus(
@@ -99,7 +99,7 @@ class SharedViewModel(
         }
     }
 
-    suspend fun updateBlockedTasksStatus(taskId: Long, updatedBlockStatus: Long) {
+    suspend fun updateBlockedTasksStatus(taskId: Long, updatedBlockStatus: Boolean) {
         val blockedTasks = getBlockedTasks(taskId)
         blockedTasks.forEach {
             saveTask(it.copy(blockStatus = updatedBlockStatus))
@@ -108,7 +108,7 @@ class SharedViewModel(
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
-            taskService.updateTaskAndDescendantsHideStatus(task.id, 1L)
+            taskService.updateTaskAndDescendantsHideStatus(task.id, true)
         }
     }
 
@@ -127,7 +127,7 @@ class SharedViewModel(
             }
         }
         val parentId = task.parentId
-        updateBlockedTasksStatus(task.id, 0)
+        updateBlockedTasksStatus(task.id, false)
         taskService.deleteTask(task.id)
         taskService.updateParentsDoneStatus(parentId)
     }

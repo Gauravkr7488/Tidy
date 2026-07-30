@@ -74,7 +74,7 @@ fun TaskCard(
     Card(
         colors =
             CardDefaults.cardColors(
-                containerColor = if (task.done == 0L) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                containerColor = if (!task.done) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant
             ),
         modifier = modifier
             .fillMaxWidth()
@@ -116,7 +116,7 @@ fun TaskCard(
                     text = task.title,
                     style = MaterialTheme.typography.bodyLarge,
                     overflow = TextOverflow.Ellipsis,
-                    textDecoration = if (task.done == 1L) TextDecoration.LineThrough else TextDecoration.None,
+                    textDecoration = if (task.done) TextDecoration.LineThrough else TextDecoration.None,
                 )
                 if (task.description.isNotBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
@@ -133,7 +133,7 @@ fun TaskCard(
                 if (children.isNotEmpty()) {
                     var doneChildrenCount = 0
                     children.forEach { child ->
-                        if (child.done == 1L) doneChildrenCount++
+                        if (child.done) doneChildrenCount++
                     }
                     Badge(
                         text = "${doneChildrenCount}/${children.size}",
@@ -149,14 +149,14 @@ fun TaskCard(
                         contentDescription = "Repeats ${task.repeatType}"
                     )
                 }
-                if (task.hide == 1L) {
+                if (task.hide) {
                     Badge(
                         text = "Archived",
                         imageVector = Icons.Outlined.Archive,
                         contentDescription = "Archived"
                     )
                 }
-                if (task.blockStatus == 1L) {
+                if (task.blockStatus) {
                     Badge(
                         text = "Blocked",
                         imageVector = Icons.Default.Block,

@@ -129,7 +129,7 @@ fun SubTaskCard(
                         } else {
                             add(
                                 TaskIconAction(
-                                    icon = if (task.done == 0L) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
+                                    icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
                                     description = "",
                                     onClick = { toggleDoneStatus(task.id) },
                                 )

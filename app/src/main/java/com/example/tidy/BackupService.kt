@@ -97,7 +97,7 @@ class BackupService(
 
             blockList.forEach {
                 val blockedTask = taskService.getTask(it.task_id)
-                taskService.saveTask(blockedTask.copy(blockStatus = 1L))
+                taskService.saveTask(blockedTask.copy(blockStatus = true))
                 taskService.blockTask(it.task_id, it.blockedBy_id)
             }
 

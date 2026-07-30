@@ -135,14 +135,14 @@ open class DbOperation(
                 val allChildrenDone = db.taskQueries.areAllChildrenDone(currentId).executeAsOne()
                 db.taskQueries.updateDoneStatus(
                     id = currentId,
-                    done = if (allChildrenDone) 1L else 0L
+                    done = allChildrenDone
                 )
                 currentId = db.taskQueries.getParentId(currentId).executeAsOne().parentId
             }
         }
     }
 
-    suspend fun updateTaskAndDescendantsHideStatus(taskId: Long, hide: Long) =
+    suspend fun updateTaskAndDescendantsHideStatus(taskId: Long, hide: Boolean) =
         withContext(Dispatchers.IO) {
             db.taskQueries.updateTaskAndDescendantsHideStatus(taskId = taskId, hide = hide)
         }

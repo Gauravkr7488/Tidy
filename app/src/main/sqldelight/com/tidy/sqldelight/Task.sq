@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 -- /*
 --  * Copyright (C) 2026  Gaurav Kumar
 --  *
@@ -18,19 +20,19 @@
 CREATE TABLE Task (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    done INTEGER NOT NULL DEFAULT 0,
+    done INTEGER AS Boolean NOT NULL DEFAULT 0,
     repeatType TEXT NOT NULL DEFAULT 'NONE',
     repeatDays TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
-    hide INTEGER NOT NULL DEFAULT 0,
+    hide INTEGER AS Boolean NOT NULL DEFAULT 0,
     createdAt INTEGER NOT NULL,
     parentId INTEGER,                       -- NULL = root task
-    blockStatus INTEGER NOT NULL DEFAULT 0,
+    blockStatus INTEGER AS Boolean NOT NULL DEFAULT 0,
     priority INTEGER,
     dueDateAndTime INTEGER,
     frequencyNumber TEXT,
     endDate INTEGER,
-    repeatAfterDone INTEGER NOT NULL DEFAULT 0,
+    repeatAfterDone INTEGER AS Boolean NOT NULL DEFAULT 0,
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
 );
 
