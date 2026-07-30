@@ -12,7 +12,12 @@ import com.example.tidy.Utils.toTaskDto
 import com.google.gson.Gson
 import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.util.Collections
+import java.util.Date
+import java.util.Locale
 
 class BackupService(
     private val taskService: TaskService,
@@ -24,11 +29,7 @@ class BackupService(
             val taskBlockers = taskService.getAllBlockers()
             val json = createBackupJson(taskService.taskGetAll(), lastResetDate, taskBlockers)
 
-            context.contentResolver
-                .openOutputStream(uri)
-                ?.use { stream ->
-                    stream.write(json.toByteArray())
-                }
+            createFile(uri, json)
 
             Toast.makeText(context, "Backup successful", Toast.LENGTH_SHORT).show()
 
@@ -36,6 +37,14 @@ class BackupService(
             Toast.makeText(context, "Backup failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
         }
+    }
+
+    private suspend fun createFile(uri: Uri, json: String) = withContext(Dispatchers.IO) {
+        context.contentResolver
+            .openOutputStream(uri)
+            ?.use { stream ->
+                stream.write(json.toByteArray())
+            }
     }
 
     suspend fun importBackup(
@@ -138,5 +147,22 @@ class BackupService(
             .edit {
                 putString("backup_uri", uri.toString())
             }
+    }
+
+    suspend fun exportSilently() {
+        val prefs = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
+        try {
+            val savedUri = prefs.getString("backup_uri", null)?.toUri()
+                ?: throw Exception("Failed to get saved Uri")
+            val docTree = DocumentFile.fromTreeUri(context, savedUri)
+            val timestamp =
+                SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val fileName = "tidy_backup_$timestamp.json"
+            val file = docTree?.createFile("application/json", fileName)
+            val fileUri = file?.uri ?: throw Exception("failed to get file uri")
+            createBackup(fileUri)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

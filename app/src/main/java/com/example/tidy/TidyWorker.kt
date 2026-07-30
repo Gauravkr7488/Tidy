@@ -19,7 +19,7 @@ class TidyWorker(
             TaskActions.UNARCHIVE -> {
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
-                val task = taskService.getTask(taskId) ?: return Result.failure()
+                val task = taskService.getTask(taskId)
                 if (task.done == 1L || task.hide == 1L) {
                     taskService.saveTask(task.copy(done = 0, hide = 0, priority = 1))
                     Utils.sendNotification(
@@ -32,7 +32,8 @@ class TidyWorker(
             }
 
             TaskActions.BACKUP -> {
-                Utils.exportSilently(taskService, applicationContext)
+                val backupService = BackupService(taskService, applicationContext)
+                backupService.exportSilently()
                 Utils.scheduleWork(
                     context = applicationContext,
                     scheduleTime = Utils.getAutoBackupTime(),

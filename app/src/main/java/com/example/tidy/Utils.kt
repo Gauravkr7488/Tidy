@@ -30,7 +30,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
-import androidx.documentfile.provider.DocumentFile
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
@@ -38,15 +37,9 @@ import androidx.work.workDataOf
 import com.Ace777.tidy.R
 import com.example.tidy.constants.RepeatTypes
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.gson.Gson
-import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Collections.emptyList
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -146,22 +139,6 @@ object Utils {
         WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$action")
     }
 
-    fun createBackupJson(
-        tasks: List<Task>,
-        lastResetDate: String,
-        taskBlocks: List<BlockedTask>
-    ): String {
-        val blockerList = taskBlocks.groupBy { it.task_id }
-        val taskDtos = tasks.map { task ->
-            val string =
-                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(",") { it.blockedBy_id.toString() } else null
-            task.toTaskDto(string)
-        }
-        val backupDto = BackupDto(lastResetDate, taskDtos)
-        val json = Gson().toJson(backupDto)
-        return json
-    }
-
     fun getEmptyTask(): Task {
         return Task(
             id = 0,
@@ -223,63 +200,9 @@ object Utils {
         )
     }
 
-    fun getBlockerFromString(blockString: String, id: Long): List<BlockedTask> {
-        if (blockString.isEmpty()) return emptyList()
-        val blockIds = blockString.split(",")
-        if (blockIds.isEmpty()) return emptyList()
-        val blockers: List<BlockedTask> = blockIds.filter { it.isNotEmpty() }.map {
-            BlockedTask(
-                task_id = id,
-                blockedBy_id = it.trim().toLong()
-            )
-        }
-        return blockers
-    }
-
-    suspend fun exportSilently(dbOperation: DbOperation, context: Context): Result<Unit> =
-        withContext(Dispatchers.IO) {
-            val prefs = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
-
-            return@withContext try {
-                // TODO FIX
-                val tasks = dbOperation.taskGetAll()
-                var lastResetDate = dbOperation.getLastResetDate()
-                if (lastResetDate == null) lastResetDate = getCurrentDate()
-                val taskBlockers = dbOperation.getAllBlockers()
-                val json = createBackupJson(tasks, lastResetDate, taskBlockers)
-
-                val timestamp =
-                    SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-                val fileName = "backup_$timestamp.json"
-
-                val savedUri = prefs.getString("backup_uri", null)
-
-                if (savedUri != null) {
-                    // Write to user-picked folder
-                    val treeUri = savedUri.toUri()
-                    val docTree = DocumentFile.fromTreeUri(context, treeUri)
-                    val file = docTree?.createFile("application/json", fileName)
-                    file?.uri?.let { fileUri ->
-                        context.contentResolver.openOutputStream(fileUri)?.use { stream ->
-                            stream.write(json.toByteArray())
-                        }
-                    }
-                } else {
-                    // Fallback to internal storage if no folder picked yet
-                    val backupDir = File(context.filesDir, "backups").also { it.mkdirs() }
-                    File(backupDir, fileName).writeText(json)
-                }
-
-                Result.success(Unit)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Result.failure(e)
-            }
-        }
-
     fun getAutoBackupTime(): Long {
         val c = Calendar.getInstance()
-        c.add(Calendar.HOUR, 1)
+        c.add(Calendar.MINUTE, 1)
         return c.timeInMillis
     }
 
