@@ -124,8 +124,7 @@ class SharedViewModel(
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
-            saveTask(task.copy(hide = 1L))
-            syncChildrenWithParent(task.copy(hide = 1L))
+            taskService.updateTaskAndDescendantsHideStatus(task.id, 1L)
         }
     }
 

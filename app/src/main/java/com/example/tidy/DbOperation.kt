@@ -149,4 +149,10 @@ open class DbOperation(
             }
         }
     }
+
+    suspend fun updateTaskAndDescendantsHideStatus(taskId: Long, hide: Long) =
+        withContext(Dispatchers.IO) {
+            db.taskQueries.updateTaskAndDescendantsHideStatus(taskId = taskId, hide = hide)
+        }
+
 }
