@@ -8,7 +8,7 @@ import com.example.tidy.constants.TaskActions
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
-            Utils.scheduleImmediateWork(
+            Utils.scheduleImmediateWork( // todo replace
                 context = context,
                 taskId = null,
                 action = TaskActions.RESET_ALARMS

@@ -58,11 +58,12 @@ class WorkService(private val context: Context) {
         WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$action")
     }
 
-    fun schedulePeriodicWork(action: String, intervalInHrs: Long, label: String) {
+    fun schedulePeriodicWork(action: String, intervalInMilli: Long, label: String, initialDelayInMilli: Long) {
         val data = workDataOf("action" to action)
-        val request = PeriodicWorkRequestBuilder<TidyWorker>(intervalInHrs, TimeUnit.HOURS)
+        val request = PeriodicWorkRequestBuilder<TidyWorker>(intervalInMilli, TimeUnit.MILLISECONDS)
             .setInputData(data)
             .addTag("tidy-$action")
+            .setInitialDelay(initialDelayInMilli, TimeUnit.MILLISECONDS)
             .build()
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             label,

@@ -155,4 +155,7 @@ open class DbOperation(
             db.taskQueries.updateTaskAndDescendantsHideStatus(taskId = taskId, hide = hide)
         }
 
+    suspend fun resetSkippedTasks()= withContext(Dispatchers.IO){
+        db.taskQueries.resetSkippedTasks()
+    }
 }

@@ -192,3 +192,6 @@ WITH RECURSIVE descendants(id) AS (
     INNER JOIN descendants d ON t.parentId = d.id
 )
 UPDATE Task SET hide = :hide WHERE id IN (SELECT id FROM descendants);
+
+resetSkippedTasks:
+UPDATE Task SET hide = 0 WHERE hide = 1 AND done = 0;

@@ -8,7 +8,7 @@ import android.content.Intent
 import android.os.Build
 import com.example.tidy.constants.Options
 
-sealed class AlarmService(private val context: Context) {
+class AlarmService(private val context: Context) {
     fun scheduleAlarm(scheduleTime: Long, action: String, taskId: Long) {
         val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AlarmReceiver::class.java).apply {

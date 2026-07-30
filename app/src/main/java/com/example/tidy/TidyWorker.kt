@@ -68,6 +68,11 @@ class TidyWorker(
                 Result.success()
             }
 
+            TaskActions.RESET_SKIPPED -> {
+                taskService.resetSkippedTasks()
+                Result.success()
+            }
+
             else -> Result.failure()
         }
     }
