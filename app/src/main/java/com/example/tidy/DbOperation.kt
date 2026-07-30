@@ -123,14 +123,6 @@ open class DbOperation(
         db.taskQueries.deleteAllTasks()
     }
 
-    suspend fun getLastResetDate(): String? = withContext(Dispatchers.IO) {
-        db.lastResetQueries.getLastReset().executeAsOneOrNull()
-    }
-
-    suspend fun setLastResetToday(todayDate: String): Unit = withContext(Dispatchers.IO) {
-        db.lastResetQueries.setLastReset(todayDate)
-    }
-
     fun observeTasks(): Flow<List<Task>> =
         db.taskQueries.getAll()
             .asFlow()

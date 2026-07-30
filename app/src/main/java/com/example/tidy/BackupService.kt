@@ -21,7 +21,6 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import com.example.tidy.Utils.getCurrentDate
 import com.example.tidy.Utils.toTask
 import com.example.tidy.Utils.toTaskDto
 import com.google.gson.Gson
@@ -40,9 +39,8 @@ class BackupService(
 ) {
     suspend fun createBackup(uri: Uri) {
         try {
-            val lastResetDate = taskService.getLastResetDate() ?: getCurrentDate()
             val taskBlockers = taskService.getAllBlockers()
-            val json = createBackupJson(taskService.taskGetAll(), lastResetDate, taskBlockers)
+            val json = createBackupJson(taskService.taskGetAll(), taskBlockers)
 
             createFile(uri, json)
 
@@ -66,7 +64,6 @@ class BackupService(
         uri: Uri
     ) {
         val preImportTasks = taskService.taskGetAll()
-        val preImportResetDate = taskService.getLastResetDate() ?: getCurrentDate()
 
         try {
             val json = context.contentResolver
@@ -80,9 +77,7 @@ class BackupService(
                 BackupDto::class.java
             )
             val taskDtos = backupDto.tasks
-            val lastResetDate = backupDto.lastResetDate
 
-            taskService.setLastResetToday(lastResetDate)
 
             val newTasks: MutableList<Task> = mutableListOf()
             val blockList: MutableList<BlockedTask> = mutableListOf()
@@ -112,7 +107,6 @@ class BackupService(
         } catch (e: Exception) {
             taskService.taskDeleteALl()
             preImportTasks.forEach { taskService.saveTaskWithId(it) }
-            taskService.setLastResetToday(preImportResetDate)
             Toast.makeText(context, "Import failed", Toast.LENGTH_SHORT).show()
             e.printStackTrace()
         }
@@ -120,7 +114,6 @@ class BackupService(
 
     private fun createBackupJson(
         tasks: List<Task>,
-        lastResetDate: String,
         taskBlocks: List<BlockedTask>
     ): String {
         val blockerList = taskBlocks.groupBy { it.task_id }
@@ -129,7 +122,7 @@ class BackupService(
                 if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(",") { it.blockedBy_id.toString() } else null
             task.toTaskDto(string)
         }
-        val backupDto = BackupDto(lastResetDate, taskDtos)
+        val backupDto = BackupDto( taskDtos)
         val json = Gson().toJson(backupDto)
         return json
     }
