@@ -42,27 +42,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.tidy.BackupService
-import com.example.tidy.Utils
-import com.example.tidy.constants.TaskActions
 import com.example.tidy.ui.component.SimpleCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
-import kotlinx.coroutines.launch
+import com.example.tidy.viewModels.BackupViewModel
 
 @Composable
 fun BackupScreen(
-    backupService: BackupService
+    backupViewModel: BackupViewModel
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
 
     // --- existing launchers, unchanged ---
     val exportLauncher =
@@ -70,9 +65,7 @@ fun BackupScreen(
             ActivityResultContracts.CreateDocument("application/json")
         ) { uri ->
             uri?.let {
-                coroutineScope.launch {
-                    backupService.createBackup(it)
-                }
+                backupViewModel.createBackup(it)
             }
         }
 
@@ -81,15 +74,13 @@ fun BackupScreen(
             ActivityResultContracts.OpenDocument()
         ) { uri ->
             uri?.let {
-                coroutineScope.launch {
-                    backupService.importBackup(it)
-                }
+                backupViewModel.importBackup(it)
             }
         }
 
     // --- new: auto backup folder picker ---
-    var autoBackupPath by remember {
-        mutableStateOf(backupService.getAutoBackupPath())
+    var backupFolderName by remember {
+        mutableStateOf(backupViewModel.getBackupFolderName(context))
     }
 
     val folderPickerLauncher =
@@ -103,8 +94,8 @@ fun BackupScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                backupService.setAutoBackupUri(it)
-                autoBackupPath = backupService.getAutoBackupPath()
+                backupViewModel.setAutoBackupUri(it, context)
+                backupFolderName = backupViewModel.getBackupFolderName(context)
             }
         }
 
@@ -193,7 +184,7 @@ fun BackupScreen(
                                 )
                                 Text(
                                     // Shows the picked folder name, or a hint if not set
-                                    text = autoBackupPath ?: "Not set — using internal storage",
+                                    text = backupFolderName ?: "Not set — using internal storage",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
@@ -206,17 +197,8 @@ fun BackupScreen(
                                     .size(48.dp),
                                 onClick = {
                                     folderPickerLauncher.launch(null)
-                                    if (autoBackupPath != null) {
-                                        Utils.cancelAllWorkByAction(
-                                            context = context,
-                                            action = TaskActions.BACKUP
-                                        )
-                                        Utils.scheduleWork(
-                                            context = context,
-                                            scheduleTime = Utils.getAutoBackupTime(),
-                                            action = TaskActions.BACKUP,
-                                            taskId = null
-                                        )
+                                    if (backupFolderName != null) {
+                                        backupViewModel.setAutoBackup()
                                     }
                                 }
                             ) {
