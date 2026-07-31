@@ -216,6 +216,7 @@ fun AddTaskScreen(
                                         if (it.id == 0L) vm.saveTask(it) else it.id
                                     vm.blockTask(savedTaskId, blockerId)
                                 }
+
                                 taskChildren.forEach {
                                     vm.saveTask(
                                         it.copy(
@@ -876,6 +877,8 @@ fun SubTaskMenu(
     var showAddDialog by remember { mutableStateOf(false) }
     var deleteTask by remember { mutableStateOf(false) }
     var deleteChildren by remember { mutableStateOf(false) }
+    var showTaskPropertyWarningDialog by remember { mutableStateOf(false) }
+    var removeProperty by remember { mutableStateOf(false) }
     OutlinedMenuItem(
         menuName = "Sub Tasks",
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -922,16 +925,30 @@ fun SubTaskMenu(
             onConfirm = { selectedTasks ->
                 var tasksToAdd: List<Task> = emptyList()
                 selectedTasks.forEach {
+                    if (Utils.doesTaskContainProperty(it) && !removeProperty) showTaskPropertyWarningDialog =
+                        true
                     if (!taskChildren.contains(it)) tasksToAdd = tasksToAdd + it
                 }
-                onAdd(tasksToAdd)
-                showAddDialog = false
+                if (removeProperty){
+                    onAdd(tasksToAdd)
+                    showAddDialog = false
+                }
             },
             onDismiss = { showAddDialog = false },
             getChildren = { getChild(it) }
         )
     }
-
+    if (showTaskPropertyWarningDialog) {
+        SimpleDialog(
+            onDismissRequest = { showTaskPropertyWarningDialog = false },
+            onConfirm = {
+                removeProperty = true
+                showTaskPropertyWarningDialog = false
+            },
+            title = "Task property will be removed",
+            showCancelButtons = true
+        ) { Text("The selected task properties will be removed once added as a subtask") }
+    }
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
