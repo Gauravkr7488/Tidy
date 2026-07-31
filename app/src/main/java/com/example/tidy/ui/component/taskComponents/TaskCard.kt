@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.outlined.Archive
@@ -148,6 +149,14 @@ fun TaskCard(
                             .replaceFirstChar { it.uppercase() } else "Custom",
                         imageVector = Icons.Default.Repeat,
                         contentDescription = "Repeats ${task.repeatType}"
+                    )
+
+                }
+                if (task.repeatType == RepeatTypes.NONE && !hideScheduleBadge && task.dueDateAndTime != null) {
+                    Badge(
+                        text = "Schedule",
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "Scheduled"
                     )
                 }
                 if (task.hide) {
