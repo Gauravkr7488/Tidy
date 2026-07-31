@@ -23,6 +23,7 @@ import androidx.work.WorkManager
 import com.example.tidy.constants.TaskActions
 import com.yourapp.db.AppDatabase
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 class App : Application() {
 
@@ -42,7 +43,7 @@ class App : Application() {
 
         scheduleService.schedulePeriodicWork(
             action = TaskActions.RESET_SKIPPED,
-            intervalInMilli = Utils.convertTimeToMillis(24, 0),
+            intervalInMilli = TimeUnit.HOURS.toMillis(24),
             label = "dailyReset",
             initialDelayInMilli = calculateInitialDelay()
         )
