@@ -311,7 +311,7 @@ fun AddTaskScreen(
                 getChild = { id ->
                     vm.tasks.value.filter { it.parentId == id }
                 },
-                availableTaskList = if (currentTask == null) vm.tasks.collectAsState().value else vm.getAvailableSubTaskList(
+                availableTaskList = if (currentTask == null) vm.tasks.collectAsState().value.filter { it.parentId == null } else vm.getAvailableSubTaskList(
                     currentTask!!
                 ),
                 onAdd = { taskChildren = taskChildren + it },
@@ -921,16 +921,12 @@ fun SubTaskMenu(
     }
     if (showAddDialog) {
         TaskSelectionDialog(
-            tasks = availableTaskList,
+            tasks = availableTaskList - taskChildren.toSet(),
             onConfirm = { selectedTasks ->
-                var tasksToAdd: List<Task> = emptyList()
-                selectedTasks.forEach {
-                    if (Utils.doesTaskContainProperty(it) && !removeProperty) showTaskPropertyWarningDialog =
-                        true
-                    if (!taskChildren.contains(it)) tasksToAdd = tasksToAdd + it
-                }
-                if (removeProperty){
-                    onAdd(tasksToAdd)
+                if (!removeProperty) showTaskPropertyWarningDialog =
+                    selectedTasks.any { Utils.doesTaskContainProperty(it) }
+                if (!showTaskPropertyWarningDialog) {
+                    onAdd(selectedTasks)
                     showAddDialog = false
                 }
             },
