@@ -187,36 +187,38 @@ fun SearchScreen(
                             children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             contextMenuOptions =
                                 buildList {
-                                    if (!task.hide) {
-                                        add(
-                                            TaskContextAction(
-                                                label = "Archive",
-                                                icon = Icons.Default.Archive,
-                                                description = "Archive Task",
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        val updatedTask = task.copy(hide = true)
-                                                        sharedViewModel.saveTask(updatedTask)
-                                                    }
-                                                },
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    if (task.parentId == null){
+                                        if (!task.hide) {
+                                            add(
+                                                TaskContextAction(
+                                                    label = "Archive",
+                                                    icon = Icons.Default.Archive,
+                                                    description = "Archive Task",
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            val updatedTask = task.copy(hide = true)
+                                                            sharedViewModel.saveTask(updatedTask)
+                                                        }
+                                                    },
+                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                )
                                             )
-                                        )
-                                    } else {
-                                        add(
-                                            TaskContextAction(
-                                                label = "Unarchive",
-                                                icon = Icons.Default.Unarchive,
-                                                description = "Unarchive Task",
-                                                onClick = {
-                                                    coroutineScope.launch {
-                                                        val updatedTask = task.copy(hide = false)
-                                                        sharedViewModel.saveTask(updatedTask)
-                                                    }
-                                                },
-                                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        } else {
+                                            add(
+                                                TaskContextAction(
+                                                    label = "Unarchive",
+                                                    icon = Icons.Default.Unarchive,
+                                                    description = "Unarchive Task",
+                                                    onClick = {
+                                                        coroutineScope.launch {
+                                                            val updatedTask = task.copy(hide = false)
+                                                            sharedViewModel.saveTask(updatedTask)
+                                                        }
+                                                    },
+                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                                )
                                             )
-                                        )
+                                        }
                                     }
                                     add(
                                         TaskContextAction(
