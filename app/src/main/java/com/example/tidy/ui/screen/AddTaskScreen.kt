@@ -223,8 +223,6 @@ fun AddTaskScreen(
                                         )
                                     )
                                 }
-                                vm.syncChildrenWithParent(task)
-
                                 showBottomButtons = createMoreStaus.value
                                 if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")
                                 else navController.navigate(
