@@ -311,7 +311,7 @@ fun AddTaskScreen(
                 getChild = { id ->
                     vm.tasks.value.filter { it.parentId == id }
                 },
-                availableTaskList = if (currentTask == null) vm.tasks.collectAsState().value else vm.getAvailableSubTaskList(
+                availableTaskList = if (currentTask == null) vm.tasks.collectAsState().value.filter { it.parentId == null } else vm.getAvailableSubTaskList(
                     currentTask!!
                 ),
                 onAdd = { taskChildren = taskChildren + it },

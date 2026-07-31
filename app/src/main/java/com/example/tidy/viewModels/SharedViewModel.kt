@@ -158,6 +158,7 @@ class SharedViewModel(
             repeatAfterDone = emptyTask.repeatAfterDone
         )
     }
+
     fun removeSubTask(
         task: Task,
         childrenList: List<Task>,
