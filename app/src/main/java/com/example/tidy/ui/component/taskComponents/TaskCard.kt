@@ -67,6 +67,7 @@ fun TaskCard(
     trailingIcons: List<TaskIconAction> = emptyList(),
     trailingIconButtons: List<TaskIconAction> = emptyList(),
     contextMenuOptions: List<TaskContextAction> = emptyList(),
+    hideScheduleBadge: Boolean = false,
 ) {
     var tapOffset by remember { mutableStateOf(Offset.Zero) }
     var showMenu by remember { mutableStateOf(false) }
@@ -141,7 +142,7 @@ fun TaskCard(
                         contentDescription = "${doneChildrenCount}/${children.size} Done"
                     )
                 }
-                if (task.repeatType != RepeatTypes.NONE) {
+                if (task.repeatType != RepeatTypes.NONE && !hideScheduleBadge) {
                     Badge(
                         text = if (task.frequencyNumber == null) task.repeatType.lowercase()
                             .replaceFirstChar { it.uppercase() } else "Custom",

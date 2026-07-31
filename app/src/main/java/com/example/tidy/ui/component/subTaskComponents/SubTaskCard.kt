@@ -62,6 +62,7 @@ fun SubTaskCard(
     last: Boolean = false,
     list: List<Boolean> = listOf(),
     getChildren: (Long) -> List<Task>,
+    hideScheduleBadge: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -75,6 +76,7 @@ fun SubTaskCard(
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             if (depth != 0) AddIndentation(last, list)
             TaskCard(
+                hideScheduleBadge = hideScheduleBadge,
                 task = task,
                 onClick = {
                     if (children.isNotEmpty()) {
@@ -169,7 +171,8 @@ fun SubTaskCard(
                             getChildren = getChildren,
                             children = getChildren(child.id),
                             toggleExpandStatus = toggleExpandStatus,
-                            expandList = expandList
+                            expandList = expandList,
+                            hideScheduleBadge = true
                         )
                     }
                 }

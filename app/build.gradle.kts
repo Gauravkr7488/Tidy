@@ -18,8 +18,8 @@ android {
         minSdk = 24
         //noinspection OldTargetApi
         targetSdk = 36
-        versionCode = 64
-        versionName = "3.24.39"
+        versionCode = 65
+        versionName = "3.25.39"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -55,7 +55,7 @@ sqldelight {
     databases {
         create("AppDatabase") {
             packageName.set("com.yourapp.db")
-            version = 3
+            version = 4
         }
     }
 }
