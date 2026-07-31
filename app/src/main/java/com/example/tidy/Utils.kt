@@ -228,4 +228,10 @@ object Utils {
             }
         }
     }
+
+    fun doesTaskContainProperty(task: Task): Boolean {
+        val emptyTask = getEmptyTask()
+        return task.repeatType != emptyTask.repeatType || task.dueDateAndTime != emptyTask.dueDateAndTime || task.priority != emptyTask.priority
+    }
+
 }

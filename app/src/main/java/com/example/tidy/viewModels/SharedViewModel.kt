@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.TaskService
+import com.example.tidy.Utils
 import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -138,21 +139,25 @@ class SharedViewModel(
     }
 
     suspend fun saveTask(task: Task): Long {
-        return taskService.saveTask(task)
+        val updatedTask = syncTaskWithParent(task)
+        return taskService.saveTask(updatedTask)
     }
 
-    suspend fun syncChildrenWithParent(parentTask: Task) {
-        val children = tasks.value.filter { it.parentId == parentTask.id }
-        if (children.isNotEmpty()) children.forEach {
-            val updatedChild = it.copy(
-                repeatType = parentTask.repeatType,
-                repeatDays = parentTask.repeatDays,
-                hide = parentTask.hide
-            )
-            saveTask(updatedChild)
-        }
+    private suspend fun syncTaskWithParent(task: Task): Task {
+        if (task.parentId == null) return task
+        val emptyTask = Utils.getEmptyTask()
+        val parentTask = taskService.getTask(task.parentId)
+        return task.copy(
+            hide = parentTask.hide,
+            repeatType = emptyTask.repeatType,
+            repeatDays = emptyTask.repeatDays,
+            dueDateAndTime = emptyTask.dueDateAndTime,
+            frequencyNumber = emptyTask.frequencyNumber,
+            priority = emptyTask.priority,
+            endDate = emptyTask.endDate,
+            repeatAfterDone = emptyTask.repeatAfterDone
+        )
     }
-
     fun removeSubTask(
         task: Task,
         childrenList: List<Task>,
