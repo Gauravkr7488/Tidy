@@ -329,7 +329,7 @@ fun AddTaskScreen(
                 getChildren = { id ->
                     vm.tasks.value.filter { it.parentId == id }
                 },
-                availableTaskList = vm.tasks.collectAsState().value.filter { it.id != taskId },
+                availableTaskList = vm.tasks.collectAsState().value.filter { it.id != taskId } - taskChildren.toSet(),
                 onAdd = { blockedByTasks = blockedByTasks + it },
                 onTaskRemove = { blockedByTasks = blockedByTasks - it },
             )
