@@ -310,7 +310,7 @@ fun AddTaskScreen(
                 parent = vm.tasks.collectAsState().value.find { it.id == parentId },
                 availableParentsList = if (currentTask != null) vm.getAvailableParentList(
                     currentTask!!
-                ) else vm.tasks.collectAsState().value,
+                )  - taskChildren.toSet()else vm.tasks.collectAsState().value,
                 onParentAdd = { parentId = it.id },
                 onParentRemove = { parentId = null },
                 getChildren = { vm.getChildren(it) }
@@ -322,7 +322,7 @@ fun AddTaskScreen(
                 },
                 availableTaskList = if (currentTask == null) vm.tasks.collectAsState().value.filter { it.parentId == null } else vm.getAvailableSubTaskList(
                     currentTask!!
-                ),
+                ) - taskChildren.toSet(),
                 onAdd = { taskChildren = taskChildren + it },
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
                     taskChildren = vm.removeSubTask(
@@ -1006,7 +1006,7 @@ fun SubTaskMenu(
     }
     if (showAddDialog) {
         TaskSelectionDialog(
-            tasks = availableTaskList - taskChildren.toSet(),
+            tasks = availableTaskList,
             onConfirm = { selectedTasks ->
                 if (!removeProperty) showTaskPropertyWarningDialog =
                     selectedTasks.any { Utils.doesTaskContainProperty(it) }
