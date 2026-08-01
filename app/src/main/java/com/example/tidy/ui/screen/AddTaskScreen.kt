@@ -448,9 +448,13 @@ fun ParentDisplay(
     if (showAddDialog) {
         TaskSelectionDialog(
             tasks = availableParentsList,
-            onConfirm = { onParentAdd(it.first()) },
+            onConfirm = {
+                onParentAdd(it.first())
+                showAddDialog = false
+            },
             onDismiss = { showAddDialog = false },
-            getChildren = getChildren
+            getChildren = getChildren,
+            singleSelection = true
         )
     }
     if (showRemoveParentDialog) {
