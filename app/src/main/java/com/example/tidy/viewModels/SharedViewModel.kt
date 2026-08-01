@@ -202,34 +202,42 @@ class SharedViewModel(
     fun getAvailableSubTaskList(task: Task): List<Task> {
         val tasks = tasks.value.filter { it != task && it.parentId == null }
         if (task.parentId == null) return tasks
-        val parents = getParentList(task)
-        val children = getChildrenList(task)
-        return tasks.filter { it !in parents && it !in children }
+        val ancestors = getAncestorList(task)
+        val descendants = getDescendantList(task)
+        return tasks.filter { it !in ancestors && it !in descendants }
     }
 
-    fun getParentList(task: Task): List<Task> {
+    fun getAvailableParentList(task: Task):List<Task>{
+        val descendants = getDescendantList(task)
+        return tasks.value.filter { it != task && it !in descendants }
+    }
+
+    fun getAncestorList(task: Task): List<Task> {
         val tasks = tasks.value
         if (task.parentId == null) return emptyList()
         val parents: MutableList<Task> = mutableListOf()
         tasks.forEach {
             if (task.parentId == it.id) {
                 parents.add(it)
-                parents.addAll(getParentList(it))
+                parents.addAll(getAncestorList(it))
             }
         }
         return parents
     }
 
-    fun getChildrenList(task: Task): List<Task> {
+    fun getDescendantList(task: Task): List<Task> {
         val tasks = tasks.value
         if (task.parentId == null) return emptyList()
         val children: MutableList<Task> = mutableListOf()
         tasks.forEach {
             if (it.parentId == task.id) {
                 children.add(it)
-                children.addAll(getChildrenList(it))
+                children.addAll(getDescendantList(it))
             }
         }
         return children
+    }
+    fun getChildren(taskId: Long): List<Task> {
+        return tasks.value.filter { it.parentId == taskId }
     }
 }

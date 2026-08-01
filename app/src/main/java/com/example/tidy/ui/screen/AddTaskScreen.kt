@@ -306,6 +306,15 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
+            ParentDisplay(
+                parent = vm.tasks.collectAsState().value.find { it.id == parentId },
+                availableParentsList = if (currentTask != null) vm.getAvailableParentList(
+                    currentTask!!
+                )  - taskChildren.toSet()else vm.tasks.collectAsState().value,
+                onParentAdd = { parentId = it.id },
+                onParentRemove = { parentId = null },
+                getChildren = { vm.getChildren(it) }
+            )
             SubTaskMenu(
                 taskChildren = taskChildren,
                 getChild = { id ->
@@ -313,7 +322,7 @@ fun AddTaskScreen(
                 },
                 availableTaskList = if (currentTask == null) vm.tasks.collectAsState().value.filter { it.parentId == null } else vm.getAvailableSubTaskList(
                     currentTask!!
-                ),
+                ) - taskChildren.toSet(),
                 onAdd = { taskChildren = taskChildren + it },
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
                     taskChildren = vm.removeSubTask(
@@ -391,6 +400,82 @@ fun PriorityMenu(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ParentDisplay(
+    parent: Task?,
+    availableParentsList: List<Task>,
+    onParentAdd: (Task) -> Unit,
+    onParentRemove: () -> Unit,
+    getChildren: (Long) -> List<Task>
+) {
+    var showViewDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showRemoveParentDialog by remember { mutableStateOf(false) }
+    OutlinedMenuItem(
+        menuName = "Parent",
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+    ) {
+        RoundedOutlineButtonTidy(
+            text = if (parent != null) "View" else "Add",
+            onClick = { if (parent != null) showViewDialog = true else showAddDialog = true }
+        )
+    }
+    if (showViewDialog && parent != null) {
+        SimpleDialog(
+            onDismissRequest = { showViewDialog = false },
+            onConfirm = { showViewDialog = false },
+            showCancelButtons = false,
+            title = "Parent",
+        ) {
+            TaskCard(
+                task = parent,
+                children = getChildren(parent.id),
+                trailingIconButtons = buildList {
+                    add(
+                        TaskIconAction(
+                            icon = Icons.Default.Close,
+                            description = "Remove Parent",
+                            onClick = { showRemoveParentDialog = true },
+                        )
+                    )
+                }
+            )
+        }
+    }
+    if (showAddDialog) {
+        TaskSelectionDialog(
+            tasks = availableParentsList,
+            onConfirm = {
+                onParentAdd(it.first())
+                showAddDialog = false
+            },
+            onDismiss = { showAddDialog = false },
+            getChildren = getChildren,
+            singleSelection = true
+        )
+    }
+    if (showRemoveParentDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveParentDialog = false },
+            title = { Text("Remove Parent") },
+            text = { Text("Conform remove parent") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onParentRemove()
+                    showRemoveParentDialog = false
+                }) {
+                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveParentDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -921,7 +1006,7 @@ fun SubTaskMenu(
     }
     if (showAddDialog) {
         TaskSelectionDialog(
-            tasks = availableTaskList - taskChildren.toSet(),
+            tasks = availableTaskList,
             onConfirm = { selectedTasks ->
                 if (!removeProperty) showTaskPropertyWarningDialog =
                     selectedTasks.any { Utils.doesTaskContainProperty(it) }

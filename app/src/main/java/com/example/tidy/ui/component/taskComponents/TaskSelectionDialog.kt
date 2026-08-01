@@ -47,7 +47,8 @@ fun TaskSelectionDialog(
     onConfirm: (List<Task>) -> Unit,
     onDismiss: () -> Unit,
 //    children: List<Task>,
-    getChildren: (Long) -> List<Task>
+    getChildren: (Long) -> List<Task>,
+    singleSelection: Boolean = false
 ) {
     var selectedTasks: List<Task> by remember { mutableStateOf(emptyList()) }
     SimpleDialog(
@@ -80,10 +81,14 @@ fun TaskSelectionDialog(
                 TaskCard(
                     task = task,
                     onClick = {
-                        selectedTasks = if (selectedTasks.contains(task)) {
-                            selectedTasks - task
+                        selectedTasks = if (singleSelection) {
+                            emptyList<Task>() + task
                         } else {
-                            selectedTasks + task
+                            if (selectedTasks.contains(task)) {
+                                selectedTasks - task
+                            } else {
+                                selectedTasks + task
+                            }
                         }
                     },
                     children = getChildren(task.id),
