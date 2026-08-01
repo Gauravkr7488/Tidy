@@ -306,6 +306,7 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
+            ParentDisplay(vm.tasks.collectAsState().value.find { it.id == parentId })
             SubTaskMenu(
                 taskChildren = taskChildren,
                 getChild = { id ->
@@ -390,6 +391,33 @@ fun PriorityMenu(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ParentDisplay(parent: Task?) {
+    var showViewDialog by remember { mutableStateOf(false) }
+    OutlinedMenuItem(
+        menuName = "Parent",
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+    ) {
+        RoundedOutlineButtonTidy(
+            text = if (parent != null) "View" else "Add",
+            onClick = { if (parent != null) showViewDialog = true }
+        )
+    }
+    if (showViewDialog && parent != null) {
+        SimpleDialog(
+            onDismissRequest = { showViewDialog = false },
+            onConfirm = { showViewDialog = false },
+            showCancelButtons = false,
+            title = "Parent",
+        ) {
+            TaskCard(
+                task = parent,
+                children = emptyList()
+            )
         }
     }
 }
