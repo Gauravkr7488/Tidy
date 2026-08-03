@@ -117,20 +117,11 @@ fun MainScreen(taskService: TaskService) {
                 }
             }
 
-            composable("${Routes.ADD_TASK}/{taskId}") { backStackEntry ->
-                val taskId = backStackEntry.arguments?.getString("taskId")?.toLong()
-                if (taskId == null) {
-                    AddTaskScreen(
-                        sharedViewModel,
-                        navController,
-                    )
-                } else {
-                    AddTaskScreen(
-                        sharedViewModel,
-                        navController,
-                        taskId = taskId,
-                    )
-                }
+            composable(Routes.ADD_TASK) {
+                AddTaskScreen(
+                    sharedViewModel,
+                    navController
+                )
             }
 
             composable(Routes.BACKUP) {

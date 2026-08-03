@@ -97,7 +97,9 @@ fun HomeScreen(
                     }
                 }
                 FloatingActionButton(
-                    onClick = { navController.navigate("${Routes.ADD_TASK}/${0}") },
+                    onClick = {
+                        navController.navigate(Routes.ADD_TASK)
+                    },
                     modifier = Modifier.size(80.dp)
                 ) {
                     Icon(
@@ -150,7 +152,10 @@ fun HomeScreen(
                                 )
                             },
                             deleteTask = sharedViewModel::deleteTask,
-                            onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
+                            onEdit = {
+                                sharedViewModel.taskId = it.id
+                                navController.navigate(Routes.ADD_TASK)
+                            },
                             onSkip = sharedViewModel::skipTask,
                             getChildren = { id ->
                                 tasks.filter { it.parentId == id }
@@ -171,7 +176,10 @@ fun HomeScreen(
                             task,
                             toggleDoneStatus = sharedViewModel::toggleDoneStatus,
                             deleteTask = sharedViewModel::deleteTask,
-                            onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
+                            onEdit = {
+                                sharedViewModel.taskId = it.id
+                                navController.navigate(Routes.ADD_TASK)
+                            },
                             onSkip = sharedViewModel::skipTask,
                             getChildren = { id ->
                                 tasks.filter { it.parentId == id }

@@ -108,12 +108,10 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AddTaskScreen(
-    vm: SharedViewModel,
+    sharedViewModel: SharedViewModel,
     navController: NavController,
-    modifier: Modifier = Modifier,
-    taskId: Long = 0,
 ) {
-    var taskId: Long = taskId
+    var taskId: Long = 0
     var taskTitle by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
@@ -137,14 +135,14 @@ fun AddTaskScreen(
     var dueTime: Long? by remember { mutableStateOf(null) }
     var endDate: Long? by remember { mutableStateOf(null) }
     var currentTask: Task? by remember { mutableStateOf(null) }
-    val createMoreStaus = vm.createMoreStatus.collectAsState()
+    val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
-        val task = vm.getTask(taskId = taskId)
+        taskId = sharedViewModel.taskId
+        val task = sharedViewModel.getTask(taskId = taskId)
         if (task != null) {
             currentTask = task
-            taskId = task.id
-            taskChildren = vm.tasks.value.filter { it.parentId == task.id }
-            blockedByTasks = vm.getBlockedByTasks(taskId)
+            taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
+            blockedByTasks = sharedViewModel.getBlockedByTasks(taskId)
             parentId = task.parentId
             taskTitle = task.title
             description = task.description
@@ -170,7 +168,7 @@ fun AddTaskScreen(
     BackHandler(
         enabled = true
     ) {
-        if (createMoreStaus.value) vm.toggleCreateMoreStatus()
+        if (createMoreStaus.value) sharedViewModel.toggleCreateMoreStatus()
         navController.navigate(
             Routes.HOME,
             navOptions = navOptions {
@@ -182,7 +180,6 @@ fun AddTaskScreen(
     Scaffold(
         topBar =
             { TopAppBar(if (taskId == 0L) "Add Task" else "Edit Task") },
-        modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             if (showBottomButtons) {
                 FloatingActionButton(
@@ -210,15 +207,15 @@ fun AddTaskScreen(
                                     endDate = endDate,
                                     repeatAfterDone = repeatAfterDone,
                                 )
-                                val savedTaskId = vm.saveTask(task)
+                                val savedTaskId = sharedViewModel.saveTask(task)
                                 blockedByTasks.forEach {
                                     val blockerId =
-                                        if (it.id == 0L) vm.saveTask(it) else it.id
-                                    vm.blockTask(savedTaskId, blockerId)
+                                        if (it.id == 0L) sharedViewModel.saveTask(it) else it.id
+                                    sharedViewModel.blockTask(savedTaskId, blockerId)
                                 }
 
                                 taskChildren.forEach {
-                                    vm.saveTask(
+                                    sharedViewModel.saveTask(
                                         it.copy(
                                             parentId = savedTaskId,
                                         )
@@ -249,7 +246,7 @@ fun AddTaskScreen(
     )
     { innerPadding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
                 .padding(start = 16.dp, end = 16.dp)
@@ -307,30 +304,30 @@ fun AddTaskScreen(
                 onPriorityValueChange = { priority = it },
             )
             ParentDisplay(
-                parent = vm.tasks.collectAsState().value.find { it.id == parentId },
-                availableParentsList = if (currentTask != null) vm.getAvailableParentList(
+                parent = sharedViewModel.tasks.collectAsState().value.find { it.id == parentId },
+                availableParentsList = if (currentTask != null) sharedViewModel.getAvailableParentList(
                     currentTask!!
-                ) - taskChildren.toSet() else vm.tasks.collectAsState().value - taskChildren.toSet(),
+                ) - taskChildren.toSet() else sharedViewModel.tasks.collectAsState().value - taskChildren.toSet(),
                 onParentAdd = { parentId = it.id },
                 onParentRemove = { parentId = null },
-                getChildren = { vm.getChildren(it) }
+                getChildren = { sharedViewModel.getChildren(it) }
             )
             SubTaskMenu(
                 taskChildren = taskChildren,
                 getChild = { id ->
-                    vm.tasks.value.filter { it.parentId == id }
+                    sharedViewModel.tasks.value.filter { it.parentId == id }
                 },
                 availableTaskList = if (currentTask == null) {
-                    vm.tasks.collectAsState().value.filter { it.parentId == null && it.id != parentId }
+                    sharedViewModel.tasks.collectAsState().value.filter { it.parentId == null && it.id != parentId }
                 } else {
-                    val list = vm.getAvailableSubTaskList(
+                    val list = sharedViewModel.getAvailableSubTaskList(
                         currentTask!!
                     ) - taskChildren.toSet()
                     list.filter { it.id != parentId }
                 },
                 onAdd = { taskChildren = taskChildren + it },
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
-                    taskChildren = vm.removeSubTask(
+                    taskChildren = sharedViewModel.removeSubTask(
                         subTask,
                         taskChildren,
                         deleteTask,
@@ -341,9 +338,9 @@ fun AddTaskScreen(
             BlockedByMenu(
                 blockedByTasks = blockedByTasks,
                 getChildren = { id ->
-                    vm.tasks.value.filter { it.parentId == id }
+                    sharedViewModel.tasks.value.filter { it.parentId == id }
                 },
-                availableTaskList = vm.tasks.collectAsState().value.filter { it.id != taskId } - taskChildren.toSet(),
+                availableTaskList = sharedViewModel.tasks.collectAsState().value.filter { it.id != taskId } - taskChildren.toSet(),
                 onAdd = { blockedByTasks = blockedByTasks + it },
                 onTaskRemove = { blockedByTasks = blockedByTasks - it },
             )
@@ -356,7 +353,7 @@ fun AddTaskScreen(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { vm.toggleCreateMoreStatus() }
+            if (showBottomButtons && taskId == 0L) CreateMoreOption(checked = createMoreStaus.value) { sharedViewModel.toggleCreateMoreStatus() }
             if (showAlertDialog) {
                 EmptyTitleDialog { showAlertDialog = false }
             }
