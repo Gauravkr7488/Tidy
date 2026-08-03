@@ -18,6 +18,9 @@
 package com.example.tidy.viewModels
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tidy.TaskService
@@ -240,4 +243,6 @@ class SharedViewModel(
     fun getChildren(taskId: Long): List<Task> {
         return tasks.value.filter { it.parentId == taskId }
     }
+    
+    var taskId: Long by mutableLongStateOf(0)
 }
