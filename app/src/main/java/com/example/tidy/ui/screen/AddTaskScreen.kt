@@ -310,7 +310,7 @@ fun AddTaskScreen(
                 parent = vm.tasks.collectAsState().value.find { it.id == parentId },
                 availableParentsList = if (currentTask != null) vm.getAvailableParentList(
                     currentTask!!
-                )  - taskChildren.toSet()else vm.tasks.collectAsState().value,
+                ) - taskChildren.toSet() else vm.tasks.collectAsState().value - taskChildren.toSet(),
                 onParentAdd = { parentId = it.id },
                 onParentRemove = { parentId = null },
                 getChildren = { vm.getChildren(it) }
@@ -320,9 +320,14 @@ fun AddTaskScreen(
                 getChild = { id ->
                     vm.tasks.value.filter { it.parentId == id }
                 },
-                availableTaskList = if (currentTask == null) vm.tasks.collectAsState().value.filter { it.parentId == null } else vm.getAvailableSubTaskList(
-                    currentTask!!
-                ) - taskChildren.toSet(),
+                availableTaskList = if (currentTask == null) {
+                    vm.tasks.collectAsState().value.filter { it.parentId == null && it.id != parentId }
+                } else {
+                    val list = vm.getAvailableSubTaskList(
+                        currentTask!!
+                    ) - taskChildren.toSet()
+                    list.filter { it.id != parentId }
+                },
                 onAdd = { taskChildren = taskChildren + it },
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
                     taskChildren = vm.removeSubTask(
