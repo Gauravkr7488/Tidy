@@ -94,6 +94,7 @@ import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.buttons.OutlinedDropDownButton
 import com.example.tidy.ui.component.buttons.RoundedOutlineButtonTidy
 import com.example.tidy.ui.component.dialog.SimpleDialog
+import com.example.tidy.ui.component.dialog.TidyDialog
 import com.example.tidy.ui.component.list.FadingLazyRow
 import com.example.tidy.ui.component.menu.OutlinedMenuItem
 import com.example.tidy.ui.component.pickers.DatePickerTidy
@@ -303,7 +304,7 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
-            ParentDisplay(
+            ParentMenu(
                 parent = sharedViewModel.tasks.collectAsState().value.find { it.id == parentId },
                 availableParentsList = if (currentTask != null) sharedViewModel.getAvailableParentList(
                     currentTask!!
@@ -406,7 +407,7 @@ fun PriorityMenu(
 }
 
 @Composable
-fun ParentDisplay(
+fun ParentMenu(
     parent: Task?,
     availableParentsList: List<Task>,
     onParentAdd: (Task) -> Unit,
@@ -958,10 +959,10 @@ fun SubTaskMenu(
     onAdd: (List<Task>) -> Unit,
     onRemoveSubTask: (Task, Boolean, Boolean) -> Unit,
 ) {
-    val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var subTaskForRemove by remember { mutableStateOf(Utils.getEmptyTask()) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var showViewDialog by remember { mutableStateOf(false) }
     var deleteTask by remember { mutableStateOf(false) }
     var deleteChildren by remember { mutableStateOf(false) }
     var showTaskPropertyWarningDialog by remember { mutableStateOf(false) }
@@ -972,37 +973,49 @@ fun SubTaskMenu(
     ) {
         RoundedOutlineButtonTidy(
             text = if (taskChildren.isNotEmpty()) taskChildren.size.toString() else "Add",
-            onClick = { showAddDialog = true }
+            onClick = { showViewDialog = true }
         )
     }
-    if (taskChildren.isNotEmpty()) {
-        LazyColumn(
-            state = listState,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 300.dp)
-                .padding(bottom = 5.dp),
+    if (showViewDialog) {
+        TidyDialog(
+            title = "SubTasks",
+            onDismissRequest = { showViewDialog = false },
+            buttons = {
+                TextButton(onClick = { showViewDialog = false }) {
+                    Text("Close")
+                }
+                TextButton(onClick = { showAddDialog = true }) {
+                    Text("Add")
+                }
+            }
         ) {
-            items(
-                items = taskChildren
-            ) { task ->
-                TaskCard(
-                    task = task,
-                    trailingIconButtons = buildList {
-                        add(
-                            TaskIconAction(
-                                icon = Icons.Default.Close,
-                                description = "Remove Task",
-                                onClick = {
-                                    showDeleteDialog = true
-                                    subTaskForRemove = task
-                                },
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .padding(bottom = 5.dp),
+            ) {
+                items(
+                    items = taskChildren, key = { it.id }
+                ) { task ->
+                    TaskCard(
+                        task = task,
+                        trailingIconButtons = buildList {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Close,
+                                    description = "Remove Task",
+                                    onClick = {
+                                        showDeleteDialog = true
+                                        subTaskForRemove = task
+                                    },
+                                )
                             )
-                        )
-                    },
-                    children = getChild(task.id),
-                )
+                        },
+                        children = getChild(task.id),
+                    )
+                }
             }
         }
     }
