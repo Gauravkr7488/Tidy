@@ -243,6 +243,16 @@ class SharedViewModel(
     fun getChildren(taskId: Long): List<Task> {
         return tasks.value.filter { it.parentId == taskId }
     }
-    
-    var taskId: Long by mutableLongStateOf(0)
+
+    private var _taskId by mutableLongStateOf(0L)
+
+    var taskId: Long
+        get() {
+            val value = _taskId
+            _taskId = 0
+            return value
+        }
+        set(value) {
+            _taskId = value
+        }
 }
