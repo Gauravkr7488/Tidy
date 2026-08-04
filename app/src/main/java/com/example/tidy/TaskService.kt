@@ -29,4 +29,12 @@ class TaskService(
     override suspend fun getTask(id: Long): Task {
         return super.getTask(id)
     }
+
+    suspend fun archiveAndRescheduleNonDoneDailyTasksWithDueTime() {
+        val tasks = getNonDoneDailyTasksWithDueDate()
+        tasks.forEach {
+            updateTask(it.copy(hide = true))
+            scheduleService.scheduleTask(it)
+        }
+    }
 }
