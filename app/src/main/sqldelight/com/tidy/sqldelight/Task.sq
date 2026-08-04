@@ -197,3 +197,6 @@ UPDATE Task SET hide = :hide WHERE id IN (SELECT id FROM descendants);
 
 resetSkippedTasks:
 UPDATE Task SET hide = 0 WHERE hide = 1 AND done = 0;
+
+getNonDoneDailyTasksWithDueDate:
+SELECT * FROM Task WHERE done = 0 AND hide = 0 AND repeatType = ?;

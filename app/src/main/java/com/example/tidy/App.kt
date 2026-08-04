@@ -42,7 +42,7 @@ class App : Application() {
         WorkManager.initialize(this, config)
 
         scheduleService.schedulePeriodicWork(
-            action = TaskActions.RESET_SKIPPED,
+            action = TaskActions.RESET_DAY,
             intervalInMilli = TimeUnit.HOURS.toMillis(24),
             label = "dailyReset",
             initialDelayInMilli = calculateInitialDelay()
