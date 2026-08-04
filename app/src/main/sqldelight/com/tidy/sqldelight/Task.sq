@@ -58,7 +58,7 @@ WHERE BlockedTask.task_id = ?;
 
 
 blockTask:
-INSERT INTO BlockedTask(task_id, blockedBy_id)
+INSERT OR IGNORE INTO BlockedTask(task_id, blockedBy_id)
 VALUES (
 ?,
 ?
