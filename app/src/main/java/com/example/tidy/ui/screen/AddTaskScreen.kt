@@ -224,7 +224,6 @@ fun AddTaskScreen(
                                 }
                                 showBottomButtons = createMoreStaus.value
                                 if (createMoreStaus.value) {
-                                    sharedViewModel.taskId = 0
                                     navController.navigate(Routes.ADD_TASK)
                                 } else navController.navigate(
                                     Routes.HOME,
