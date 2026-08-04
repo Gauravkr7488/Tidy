@@ -183,11 +183,14 @@ fun SearchScreen(
                     items(filteredTasks, key = { it.id }) { task ->
                         TaskCard(
                             task = task,
-                            onClick = { navController.navigate("${Routes.ADD_TASK}/${task.id}") },
+                            onClick = {
+                                sharedViewModel.taskId = task.id
+                                navController.navigate(Routes.ADD_TASK)
+                            },
                             children = sharedViewModel.tasks.collectAsState().value.filter { it.parentId == task.id },
                             contextMenuOptions =
                                 buildList {
-                                    if (task.parentId == null){
+                                    if (task.parentId == null) {
                                         if (!task.hide) {
                                             add(
                                                 TaskContextAction(
@@ -211,7 +214,8 @@ fun SearchScreen(
                                                     description = "Unarchive Task",
                                                     onClick = {
                                                         coroutineScope.launch {
-                                                            val updatedTask = task.copy(hide = false)
+                                                            val updatedTask =
+                                                                task.copy(hide = false)
                                                             sharedViewModel.saveTask(updatedTask)
                                                         }
                                                     },

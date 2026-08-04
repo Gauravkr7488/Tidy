@@ -223,8 +223,10 @@ fun AddTaskScreen(
                                     )
                                 }
                                 showBottomButtons = createMoreStaus.value
-                                if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")
-                                else navController.navigate(
+                                if (createMoreStaus.value) {
+                                    sharedViewModel.taskId = 0
+                                    navController.navigate(Routes.ADD_TASK)
+                                } else navController.navigate(
                                     Routes.HOME,
                                     navOptions = navOptions {
                                         popUpTo(Routes.HOME) { inclusive = true }
@@ -971,9 +973,18 @@ fun SubTaskMenu(
         menuName = "Sub Tasks",
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        RoundedOutlineButtonTidy(
-            text = if (taskChildren.isNotEmpty()) taskChildren.size.toString() else "Add",
+        var text: String
+        var onClick: () -> Unit
+        if (taskChildren.isNotEmpty()) {
+            text = taskChildren.size.toString()
             onClick = { showViewDialog = true }
+        } else {
+            text = "Add"
+            onClick = { showAddDialog = true }
+        }
+        RoundedOutlineButtonTidy(
+            text = text,
+            onClick = onClick
         )
     }
     if (showViewDialog) {
@@ -1126,44 +1137,67 @@ fun BlockedByMenu(
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var taskToRemove by remember { mutableStateOf(Utils.getEmptyTask()) }
+    var showViewDialog by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem(
         menuName = "Blocked By",
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        RoundedOutlineButtonTidy(
-            text = if (blockedByTasks.isNotEmpty()) blockedByTasks.size.toString() else "Add",
+        var text: String
+        var onClick: () -> Unit
+        if (blockedByTasks.isNotEmpty()) {
+            text = blockedByTasks.size.toString()
+            onClick = { showViewDialog = true }
+        } else {
+            text = "Add"
             onClick = { showAddDialog = true }
+        }
+        RoundedOutlineButtonTidy(
+            text = text,
+            onClick = onClick
         )
     }
-    if (blockedByTasks.isNotEmpty()) {
-        LazyColumn(
-            state = listState,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 300.dp)
-                .padding(bottom = 5.dp),
+    if (showViewDialog) {
+        TidyDialog(
+            title = "Blocked By",
+            onDismissRequest = { showViewDialog = false },
+            buttons = {
+                TextButton(onClick = { showViewDialog = false }) {
+                    Text("Close")
+                }
+                TextButton(onClick = { showAddDialog = true }) {
+                    Text("Add")
+                }
+            }
         ) {
-            items(
-                items = blockedByTasks
-            ) { task ->
-                TaskCard(
-                    task = task,
-                    trailingIconButtons = buildList {
-                        add(
-                            TaskIconAction(
-                                icon = Icons.Default.Close,
-                                description = "Remove Task",
-                                onClick = {
-                                    showDeleteDialog = true
-                                    taskToRemove = task
-                                },
+            LazyColumn(
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .padding(bottom = 5.dp),
+            ) {
+                items(
+                    items = blockedByTasks
+                ) { task ->
+                    TaskCard(
+                        task = task,
+                        trailingIconButtons = buildList {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Close,
+                                    description = "Remove Task",
+                                    onClick = {
+                                        showDeleteDialog = true
+                                        taskToRemove = task
+                                    },
+                                )
                             )
-                        )
-                    },
-                    children = getChildren(task.id),
-                )
+                        },
+                        children = getChildren(task.id),
+                    )
+                }
             }
         }
     }
