@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,16 +40,17 @@ import com.tidy.sqldelight.Task
 fun SearchTasksTidy(
     tasks: List<Task>,
     onFilteredTasksChanged: (List<Task>) -> Unit
-){
+) {
     var query by remember { mutableStateOf("") }
-    var selectedFilters: List<String> by remember { mutableStateOf(emptyList()) }
+    var includeFilters: List<String> by remember { mutableStateOf(emptyList()) }
+    var excludeFilters: List<String> by remember { mutableStateOf(emptyList()) }
     val filterList = listOf("Repeat", "Parents", "Archived")
     val filteredTasks = tasks.filter { task ->
         val matchesQuery = query.isBlank() ||
                 task.title.contains(query, ignoreCase = true) ||
                 task.description.contains(query, ignoreCase = true)
-        val matchesFilter = selectedFilters.isEmpty() ||
-                selectedFilters.all { filter ->
+        val matchesFilter = includeFilters.isEmpty() ||
+                includeFilters.all { filter ->
                     when (filter) {
                         "Repeat" -> task.repeatType != RepeatTypes.NONE
                         "Parents" -> task.parentId == null
@@ -55,7 +58,15 @@ fun SearchTasksTidy(
                         else -> false
                     }
                 }
-        matchesQuery && matchesFilter
+        val excludeFilter = excludeFilters.any {
+            when (it) {
+                "Repeat" -> task.repeatType != RepeatTypes.NONE
+                "Parents" -> task.parentId == null
+                "Archived" -> task.hide
+                else -> false
+            }
+        }
+        matchesQuery && matchesFilter && !excludeFilter
     }
 
     LaunchedEffect(filteredTasks) {
@@ -78,9 +89,21 @@ fun SearchTasksTidy(
         filterList.forEach { filter ->
             item {
                 FilterChip(
-                    selected = selectedFilters.contains(filter),
-                    onClick = { if (selectedFilters.contains(filter)) selectedFilters -= filter else selectedFilters += filter },
-                    label = { Text(filter) }
+                    selected = includeFilters.contains(filter),
+                    onClick = {
+                        if (includeFilters.contains(filter)) {
+                            includeFilters -= filter
+                            excludeFilters += filter
+                        } else if (excludeFilters.contains(filter)) {
+                            excludeFilters -= filter
+                        } else {
+                            includeFilters += filter
+                        }
+                    },
+                    label = { Text(filter) },
+                    colors = if (excludeFilters.contains(filter)) FilterChipDefaults.filterChipColors(
+                        MaterialTheme.colorScheme.surfaceVariant
+                    ) else FilterChipDefaults.filterChipColors()
                 )
             }
         }
