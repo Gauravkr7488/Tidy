@@ -210,7 +210,7 @@ class SharedViewModel(
         return tasks.filter { it !in ancestors && it !in descendants }
     }
 
-    fun getAvailableParentList(task: Task):List<Task>{
+    fun getAvailableParentList(task: Task): List<Task> {
         val descendants = getDescendantList(task)
         return tasks.value.filter { it != task && it !in descendants }
     }
@@ -240,6 +240,7 @@ class SharedViewModel(
         }
         return children
     }
+
     fun getChildren(taskId: Long): List<Task> {
         return tasks.value.filter { it.parentId == taskId }
     }
@@ -255,4 +256,10 @@ class SharedViewModel(
         set(value) {
             _taskId = value
         }
+
+    fun deleteAllBlocks(taskId: Long) {
+        viewModelScope.launch {
+            taskService.deleteAllBlocks(taskId)
+        }
+    }
 }

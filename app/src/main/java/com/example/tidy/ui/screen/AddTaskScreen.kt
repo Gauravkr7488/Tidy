@@ -209,6 +209,7 @@ fun AddTaskScreen(
                                     repeatAfterDone = repeatAfterDone,
                                 )
                                 val savedTaskId = sharedViewModel.saveTask(task)
+                                sharedViewModel.deleteAllBlocks(savedTaskId)
                                 blockedByTasks.forEach {
                                     val blockerId =
                                         if (it.id == 0L) sharedViewModel.saveTask(it) else it.id

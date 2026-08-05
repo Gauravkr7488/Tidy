@@ -64,6 +64,9 @@ VALUES (
 ?
 );
 
+removeAllBlocks:
+DELETE FROM BlockedTask WHERE task_id = ?;
+
 updateTask:
 UPDATE Task
 SET
