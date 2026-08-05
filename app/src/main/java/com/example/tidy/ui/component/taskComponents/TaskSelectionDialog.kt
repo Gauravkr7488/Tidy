@@ -18,20 +18,16 @@ package com.example.tidy.ui.component.taskComponents
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,9 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Utils
-import com.example.tidy.constants.RepeatTypes
+import com.example.tidy.ui.component.SearchTasksTidy
 import com.example.tidy.ui.component.dialog.SimpleDialog
-import com.example.tidy.ui.component.textField.SearchTextField
 import com.tidy.sqldelight.Task
 
 
@@ -55,8 +50,6 @@ fun TaskSelectionDialog(
     singleSelection: Boolean = false
 ) {
     var selectedTasks: List<Task> by remember { mutableStateOf(emptyList()) }
-    var selectedFilters: List<String> by remember { mutableStateOf(emptyList()) }
-    val filterList = listOf("Repeat", "Parents", "Archived")
     SimpleDialog(
         onDismissRequest = onDismiss,
         onConfirm = { onConfirm(selectedTasks) },
@@ -64,40 +57,9 @@ fun TaskSelectionDialog(
     ) {
         var query by remember { mutableStateOf("") }
         val listState = rememberLazyListState()
-        val filteredTasks = tasks.filter { task ->
-            val matchesQuery = query.isBlank() ||
-                    task.title.contains(query, ignoreCase = true) ||
-                    task.description.contains(query, ignoreCase = true)
-            val matchesFilter = selectedFilters.isEmpty() ||
-                    selectedFilters.all { filter ->
-                        when (filter) {
-                            "Repeat" -> task.repeatType != RepeatTypes.NONE
-                            "Parents" -> task.parentId == null
-                            "Archived" -> task.hide
-                            else -> false
-                        }
-                    }
-            matchesQuery && matchesFilter
-        }
-        SearchTextField(
-            query = query,
-            placeHolder = "Search tasks",
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) { query = it }
-
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            filterList.forEach { filter ->
-                item {
-                    FilterChip(
-                        selected = selectedFilters.contains(filter),
-                        onClick = { if (selectedFilters.contains(filter)) selectedFilters -= filter else selectedFilters += filter },
-                        label = { Text(filter) }
-                    )
-                }
-            }
+        var filteredTasks: List<Task> by remember { mutableStateOf(emptyList()) }
+        SearchTasksTidy(tasks) {
+            filteredTasks = it
         }
 
         LazyColumn(
