@@ -155,4 +155,8 @@ open class DbOperation(
     suspend fun getNonDoneDailyTasksWithDueDate() = withContext(Dispatchers.IO) {
         return@withContext db.taskQueries.getNonDoneDailyTasksWithDueDate(RepeatTypes.DAY).executeAsList()
     }
+
+    suspend fun deleteAllBlocks(taskId: Long) = withContext(Dispatchers.IO){
+        db.taskQueries.removeAllBlocks(taskId)
+    }
 }
