@@ -1008,7 +1008,7 @@ fun SubTaskMenu(
                     .padding(bottom = 5.dp),
             ) {
                 items(
-                    items = taskChildren, key = { it.id }
+                    items = taskChildren
                 ) { task ->
                     TaskCard(
                         task = task,
@@ -1032,7 +1032,7 @@ fun SubTaskMenu(
     }
     if (showAddDialog) {
         TaskSelectionDialog(
-            tasks = availableTaskList,
+            tasks = availableTaskList - taskChildren.toSet(),
             onConfirm = { selectedTasks ->
                 if (!removeProperty) showTaskPropertyWarningDialog =
                     selectedTasks.any { Utils.doesTaskContainProperty(it) }
@@ -1203,7 +1203,7 @@ fun BlockedByMenu(
     }
     if (showAddDialog) {
         TaskSelectionDialog(
-            tasks = availableTaskList,
+            tasks = availableTaskList - blockedByTasks.toSet(),
             onConfirm = { selectedTasks ->
                 var tasksToAdd: List<Task> = emptyList()
                 selectedTasks.forEach {
