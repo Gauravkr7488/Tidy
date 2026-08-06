@@ -105,16 +105,15 @@ fun TaskSelectionDialog(
                             query = ""
                         },
                         children = emptyList(),
-                        trailingIcons =
-                            buildList {
-                                add(
-                                    TaskIconAction(
-                                        icon = Icons.Default.Create,
-                                        description = "create new",
-                                        onClick = {},
-                                    )
+                        trailingIconButtons = buildList {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Create,
+                                    description = "create new",
+                                    onClick = {},
                                 )
-                            },
+                            )
+                        }
                     )
                 }
             }
