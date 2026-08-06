@@ -1,5 +1,6 @@
 package com.example.tidy
 
+import android.util.Log
 import com.tidy.sqldelight.Task
 import com.yourapp.db.AppDatabase
 
@@ -8,6 +9,11 @@ class TaskService(
     private val scheduleService: ScheduleService
 ) : DbOperation(db = db) {
     override suspend fun saveTask(task: Task): Long {
+        if (task.parentId != null){
+            val descendants = getAllDescendants(task.id)
+            val isLooping = descendants.contains(task.parentId)
+            if (isLooping) throw Exception("isLooping")
+        }
         if (task.id == 0L) {
             super.saveTask(task)
             val id = getLastRowInsertId()
