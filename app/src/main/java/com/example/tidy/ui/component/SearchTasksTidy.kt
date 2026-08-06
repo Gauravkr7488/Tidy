@@ -39,6 +39,7 @@ import com.tidy.sqldelight.Task
 @Composable
 fun SearchTasksTidy(
     tasks: List<Task>,
+    onQueryChange: (String) -> Unit,
     onFilteredTasksChanged: (List<Task>) -> Unit
 ) {
     var query by remember { mutableStateOf("") }
@@ -80,6 +81,7 @@ fun SearchTasksTidy(
     ) {
         @Suppress("AssignedValueIsNeverRead")
         query = it
+        onQueryChange(it)
     }
 
     LazyRow(

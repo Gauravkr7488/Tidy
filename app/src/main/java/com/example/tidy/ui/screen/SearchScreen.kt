@@ -90,7 +90,10 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
         ) {
-            SearchTasksTidy(tasks) {
+            SearchTasksTidy(
+                tasks,
+                onQueryChange = { query = it }
+            ) {
                 filteredTasks = it
             }
             if (filteredTasks.isEmpty()) {

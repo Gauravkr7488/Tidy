@@ -58,7 +58,10 @@ fun TaskSelectionDialog(
         var query by remember { mutableStateOf("") }
         val listState = rememberLazyListState()
         var filteredTasks: List<Task> by remember { mutableStateOf(emptyList()) }
-        SearchTasksTidy(tasks) {
+        SearchTasksTidy(
+            tasks,
+            onQueryChange = { query = it }
+        ) {
             filteredTasks = it
         }
 
