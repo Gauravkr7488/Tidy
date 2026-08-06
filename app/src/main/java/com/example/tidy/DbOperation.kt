@@ -153,10 +153,16 @@ open class DbOperation(
     }
 
     suspend fun getNonDoneDailyTasksWithDueDate() = withContext(Dispatchers.IO) {
-        return@withContext db.taskQueries.getNonDoneDailyTasksWithDueDate(RepeatTypes.DAY).executeAsList()
+        return@withContext db.taskQueries.getNonDoneDailyTasksWithDueDate(RepeatTypes.DAY)
+            .executeAsList()
     }
 
-    suspend fun deleteAllBlocks(taskId: Long) = withContext(Dispatchers.IO){
+    suspend fun deleteAllBlocks(taskId: Long) = withContext(Dispatchers.IO) {
         db.taskQueries.removeAllBlocks(taskId)
+    }
+
+    val tq = db.taskQueries
+    suspend fun getAllDescendants(taskId: Long) = withContext(Dispatchers.IO) {
+        return@withContext tq.getAllDescendants(taskId).executeAsList()
     }
 }

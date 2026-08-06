@@ -8,6 +8,11 @@ class TaskService(
     private val scheduleService: ScheduleService
 ) : DbOperation(db = db) {
     override suspend fun saveTask(task: Task): Long {
+        if (task.parentId != null){
+            val descendants = getAllDescendants(task.id)
+            val isLooping = task.id == task.parentId || descendants.contains(task.parentId)
+            if (isLooping) throw Exception("isLooping")
+        }
         if (task.id == 0L) {
             super.saveTask(task)
             val id = getLastRowInsertId()
