@@ -65,7 +65,6 @@ fun TaskCard(
     modifier: Modifier = Modifier,
     onClick: (Task) -> Unit = {},
     leadingIcons: List<TaskIconAction> = emptyList(),
-    trailingIcons: List<TaskIconAction> = emptyList(),
     trailingIconButtons: List<TaskIconAction> = emptyList(),
     contextMenuOptions: List<TaskContextAction> = emptyList(),
     hideScheduleBadge: Boolean = false,
@@ -173,14 +172,6 @@ fun TaskCard(
                         contentDescription = "Blocked"
                     )
                 }
-            }
-            trailingIcons.forEach { (icon, description, _, tint, modifier) ->
-                Icon(
-                    imageVector = icon,
-                    contentDescription = description,
-                    tint = tint,
-                    modifier = modifier
-                )
             }
             trailingIconButtons.forEach { (icon, description, onCLick, tint, modifier) ->
                 IconButton(
