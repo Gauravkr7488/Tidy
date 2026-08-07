@@ -99,6 +99,7 @@ import com.example.tidy.ui.component.list.FadingLazyRow
 import com.example.tidy.ui.component.menu.OutlinedMenuItem
 import com.example.tidy.ui.component.pickers.DatePickerTidy
 import com.example.tidy.ui.component.pickers.TimePickerTidy
+import com.example.tidy.ui.component.subTaskComponents.SubTaskCard
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.ui.component.taskComponents.TaskSelectionDialog
@@ -435,18 +436,30 @@ fun ParentMenu(
             showCancelButtons = false,
             title = "Parent",
         ) {
-            TaskCard(
+//            TaskCard(
+//                task = parent,
+//                children = getChildren(parent.id),
+//                trailingIconButtons = buildList {
+//                    add(
+//                        TaskIconAction(
+//                            icon = Icons.Default.Close,
+//                            description = "Remove Parent",
+//                            onClick = { showRemoveParentDialog = true },
+//                        )
+//                    )
+//                }
+//            )
+            var expandList: List<Long> by remember { mutableStateOf(emptyList()) }
+            SubTaskCard(
                 task = parent,
                 children = getChildren(parent.id),
-                trailingIconButtons = buildList {
-                    add(
-                        TaskIconAction(
-                            icon = Icons.Default.Close,
-                            description = "Remove Parent",
-                            onClick = { showRemoveParentDialog = true },
-                        )
-                    )
-                }
+                toggleDoneStatus = {},
+                toggleExpandStatus = {if (expandList.contains(it)) expandList -= it else expandList += it},
+                deleteTask = { _, _ -> },
+                onEdit = {},
+                onSkip = {},
+                expandList = expandList.toSet(),
+                getChildren = getChildren
             )
         }
     }
