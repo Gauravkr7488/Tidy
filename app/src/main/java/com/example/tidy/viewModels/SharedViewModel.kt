@@ -126,9 +126,8 @@ class SharedViewModel(
         val task = taskService.getTask(id)
         val children = tasks.value.filter { it.parentId == id }
         if (deleteSubtasks) {
-            children.forEach { task ->
-                deleteTaskAsync(task.id, true)
-            }
+            val childrenIds = children.map { it.id }
+            taskService.deleteTasks(childrenIds)
         }
         val parentId = task.parentId
         updateBlockedTasksStatus(task.id, false)
