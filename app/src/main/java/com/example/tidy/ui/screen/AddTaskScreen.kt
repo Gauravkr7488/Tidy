@@ -99,6 +99,7 @@ import com.example.tidy.ui.component.list.FadingLazyRow
 import com.example.tidy.ui.component.menu.OutlinedMenuItem
 import com.example.tidy.ui.component.pickers.DatePickerTidy
 import com.example.tidy.ui.component.pickers.TimePickerTidy
+import com.example.tidy.ui.component.subTaskComponents.SubTaskCard
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.ui.component.taskComponents.TaskSelectionDialog
@@ -429,25 +430,42 @@ fun ParentMenu(
         )
     }
     if (showViewDialog && parent != null) {
-        SimpleDialog(
-            onDismissRequest = { showViewDialog = false },
-            onConfirm = { showViewDialog = false },
-            showCancelButtons = false,
+        TidyDialog(
             title = "Parent",
+            onDismissRequest = { showViewDialog = false },
+            buttons = {
+                TextButton(
+                    onClick = { showRemoveParentDialog = true },
+                ) {
+                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                }
+                TextButton(onClick = { showViewDialog = false }) {
+                    Text("Ok")
+                }
+            }
         ) {
-            TaskCard(
-                task = parent,
-                children = getChildren(parent.id),
-                trailingIconButtons = buildList {
-                    add(
-                        TaskIconAction(
-                            icon = Icons.Default.Close,
-                            description = "Remove Parent",
-                            onClick = { showRemoveParentDialog = true },
-                        )
+            var expandList: List<Long> by remember { mutableStateOf(emptyList()) }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .padding(bottom = 5.dp),
+            ) {
+                item {
+                    SubTaskCard(
+                        task = parent,
+                        children = getChildren(parent.id),
+                        toggleDoneStatus = {},
+                        toggleExpandStatus = { if (expandList.contains(it)) expandList -= it else expandList += it },
+                        deleteTask = { _, _ -> },
+                        onEdit = {},
+                        onSkip = {},
+                        expandList = expandList.toSet(),
+                        getChildren = getChildren,
+                        diableContextMenu = true
                     )
                 }
-            )
+            }
         }
     }
     if (showAddDialog) {
