@@ -461,7 +461,8 @@ fun ParentMenu(
                         onEdit = {},
                         onSkip = {},
                         expandList = expandList.toSet(),
-                        getChildren = getChildren
+                        getChildren = getChildren,
+                        diableContextMenu = true
                     )
                 }
             }
