@@ -261,4 +261,10 @@ class SharedViewModel(
             taskService.deleteAllBlocks(taskId)
         }
     }
+
+    fun syncTaskAndDescendantsHideStatus(task: Task){
+        viewModelScope.launch {
+            taskService.updateTaskAndDescendantsHideStatus(task.id, task.hide)
+        }
+    }
 }
