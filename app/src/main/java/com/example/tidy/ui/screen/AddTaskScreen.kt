@@ -430,11 +430,19 @@ fun ParentMenu(
         )
     }
     if (showViewDialog && parent != null) {
-        SimpleDialog(
-            onDismissRequest = { showViewDialog = false },
-            onConfirm = { showViewDialog = false },
-            showCancelButtons = false,
+        TidyDialog(
             title = "Parent",
+            onDismissRequest = { showViewDialog = false },
+            buttons = {
+                TextButton(
+                    onClick = { showRemoveParentDialog = true },
+                ) {
+                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                }
+                TextButton(onClick = { showViewDialog = false }) {
+                    Text("Ok")
+                }
+            }
         ) {
             var expandList: List<Long> by remember { mutableStateOf(emptyList()) }
             LazyColumn(
@@ -457,19 +465,6 @@ fun ParentMenu(
                     )
                 }
             }
-//            TaskCard(
-//                task = parent,
-//                children = getChildren(parent.id),
-//                trailingIconButtons = buildList {
-//                    add(
-//                        TaskIconAction(
-//                            icon = Icons.Default.Close,
-//                            description = "Remove Parent",
-//                            onClick = { showRemoveParentDialog = true },
-//                        )
-//                    )
-//                }
-//            )
         }
     }
     if (showAddDialog) {
