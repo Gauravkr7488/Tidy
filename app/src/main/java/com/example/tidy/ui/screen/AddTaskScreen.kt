@@ -436,6 +436,27 @@ fun ParentMenu(
             showCancelButtons = false,
             title = "Parent",
         ) {
+            var expandList: List<Long> by remember { mutableStateOf(emptyList()) }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .padding(bottom = 5.dp),
+            ) {
+                item {
+                    SubTaskCard(
+                        task = parent,
+                        children = getChildren(parent.id),
+                        toggleDoneStatus = {},
+                        toggleExpandStatus = { if (expandList.contains(it)) expandList -= it else expandList += it },
+                        deleteTask = { _, _ -> },
+                        onEdit = {},
+                        onSkip = {},
+                        expandList = expandList.toSet(),
+                        getChildren = getChildren
+                    )
+                }
+            }
 //            TaskCard(
 //                task = parent,
 //                children = getChildren(parent.id),
@@ -449,18 +470,6 @@ fun ParentMenu(
 //                    )
 //                }
 //            )
-            var expandList: List<Long> by remember { mutableStateOf(emptyList()) }
-            SubTaskCard(
-                task = parent,
-                children = getChildren(parent.id),
-                toggleDoneStatus = {},
-                toggleExpandStatus = {if (expandList.contains(it)) expandList -= it else expandList += it},
-                deleteTask = { _, _ -> },
-                onEdit = {},
-                onSkip = {},
-                expandList = expandList.toSet(),
-                getChildren = getChildren
-            )
         }
     }
     if (showAddDialog) {
