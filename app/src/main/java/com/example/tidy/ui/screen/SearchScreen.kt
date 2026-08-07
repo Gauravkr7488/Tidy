@@ -127,7 +127,9 @@ fun SearchScreen(
                                                     onClick = {
                                                         coroutineScope.launch {
                                                             val updatedTask = task.copy(hide = true)
-                                                            sharedViewModel.saveTask(updatedTask)
+                                                            sharedViewModel.syncTaskAndDescendantsHideStatus(
+                                                                updatedTask
+                                                            )
                                                         }
                                                     },
                                                     color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -143,7 +145,9 @@ fun SearchScreen(
                                                         coroutineScope.launch {
                                                             val updatedTask =
                                                                 task.copy(hide = false)
-                                                            sharedViewModel.saveTask(updatedTask)
+                                                            sharedViewModel.syncTaskAndDescendantsHideStatus(
+                                                                updatedTask
+                                                            )
                                                         }
                                                     },
                                                     color = MaterialTheme.colorScheme.onSecondaryContainer
