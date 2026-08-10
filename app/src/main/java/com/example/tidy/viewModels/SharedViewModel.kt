@@ -18,9 +18,13 @@
 package com.example.tidy.viewModels
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tidy.DbOperation
+import com.example.tidy.TaskService
+import com.example.tidy.Utils
 import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.Task
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,10 +37,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class SharedViewModel(
-    private val dbOperation: DbOperation,
+    private val taskService: TaskService,
 ) : ViewModel() {
 
-    val tasks = dbOperation.observeTasks()
+    val tasks = taskService.observeTasks()
         .map { tasks -> sortByPriority(tasks) }
         .stateIn(
             viewModelScope,
@@ -45,67 +49,53 @@ class SharedViewModel(
         )
 
     fun sortByPriority(tasks: List<Task>): List<Task> {
-
         val sorted = tasks.sortedWith(compareBy {
             it.priority ?: Long.MAX_VALUE  // null sorts last
         })
-
         return sorted
     }
 
     fun cleanCompletedTasks() {
         viewModelScope.launch {
-            val doneTasks = tasks.value.filter { it.done == 1L }
+            val doneTasks =
+                tasks.value.filter { it.done && it.parentId == null && !it.hide }
             doneTasks.forEach { task ->
-                if (isRootTaskDoneOrArchived(task)) {
-                    if (task.repeatType != RepeatTypes.NONE) {
-                        val updatedTask = task.copy(
-                            done = 0L,
-                            hide = 1L
-                        )
-                        dbOperation.saveTask(updatedTask)
-                    } else {
-                        deleteTaskAndChildren(task.id)
-                    }
+                if (task.repeatType != RepeatTypes.NONE) {
+                    taskService.saveTask(task.copy(hide = true))
+                } else {
+                    deleteTaskAndChildren(task.id)
                 }
             }
         }
     }
 
-    private suspend fun isRootTaskDoneOrArchived(task: Task): Boolean {
-        if (task.parentId == null) return true
-        val parent = dbOperation.getTask(task.parentId) ?: return true
-        if (parent.hide == 1L) return true
-        if (parent.done == 0L) isRootTaskDoneOrArchived(parent)
-        return false
-    }
-
     private suspend fun deleteTaskAndChildren(id: Long) {
-        dbOperation.getTask(id) ?: return
+        taskService.getTask(id)
         val children = tasks.value.filter { it.parentId == id }
         if (children.isNotEmpty()) children.forEach { deleteTaskAndChildren(it.id) }
-        dbOperation.deleteTask(id)
+        taskService.deleteTask(id)
     }
 
     suspend fun getBlockedTasks(taskId: Long): List<Task> {
-        return dbOperation.getBlockedTasks(taskId)
+        return taskService.getBlockedTasks(taskId)
     }
 
     suspend fun getBlockedByTasks(taskId: Long): List<Task> {
-        return dbOperation.getBlockedByTasks(taskId)
+        return taskService.getBlockedByTasks(taskId)
     }
 
-    fun addBlockedByTasks(taskId: Long, blockerId: Long) {
+    fun blockTask(taskId: Long, blockerId: Long) {
         viewModelScope.launch {
-            val x = dbOperation.getBlockedTask(taskId = taskId, blockerId = blockerId)
-            if (x == null) dbOperation.addBlocker(taskId, blockerId)
+            taskService.blockTask(taskId, blockerId)
         }
     }
 
-    fun toggleDoneStatus(task: Task) {
+    fun toggleDoneStatus(taskId: Long) {
         viewModelScope.launch {
-            dbOperation.updateDoneStatus(task.id)
-            if (task.parentId != null) dbOperation.updateParentDoneStatus(task.parentId)
+            val task = getTask(taskId) ?: return@launch
+            val done = !task.done
+            taskService.saveTask((task.copy(done = done)))
+            taskService.updateParentsDoneStatus(task.parentId)
             updateBlockedTasksStatus(
                 task.id,
                 task.done
@@ -113,7 +103,7 @@ class SharedViewModel(
         }
     }
 
-    suspend fun updateBlockedTasksStatus(taskId: Long, updatedBlockStatus: Long) {
+    suspend fun updateBlockedTasksStatus(taskId: Long, updatedBlockStatus: Boolean) {
         val blockedTasks = getBlockedTasks(taskId)
         blockedTasks.forEach {
             saveTask(it.copy(blockStatus = updatedBlockStatus))
@@ -122,8 +112,7 @@ class SharedViewModel(
 
     fun skipTask(task: Task) {
         viewModelScope.launch {
-            dbOperation.saveTask(task.copy(hide = 1L))
-            dbOperation.updateChildrenRepeatAndHideStatus(task.id)
+            taskService.updateTaskAndDescendantsHideStatus(task.id, true)
         }
     }
 
@@ -134,42 +123,42 @@ class SharedViewModel(
     }
 
     private suspend fun deleteTaskAsync(id: Long, deleteSubtasks: Boolean) {
-        val task = dbOperation.getTask(id) ?: return
+        val task = taskService.getTask(id)
         val children = tasks.value.filter { it.parentId == id }
         if (deleteSubtasks) {
-            children.forEach { task ->
-                deleteTaskAsync(task.id, true)
-            }
+            val childrenIds = children.map { it.id }
+            taskService.deleteTasks(childrenIds)
         }
         val parentId = task.parentId
-        updateBlockedTasksStatus(task.id, 0)
-        dbOperation.deleteTask(task.id)
-        updateParentStatus(parentId)
-    }
-
-    private suspend fun updateParentStatus(parentId: Long?) {
-        if (parentId != null) { // update parent status
-            val parent = dbOperation.getTask(parentId) ?: return
-            val parentChildren = tasks.value.filter { it.parentId == parentId }
-            val parentStatus = parentChildren.all { it.done == 0L }
-            dbOperation.saveTask(parent.copy(done = if (!parentStatus) 0L else 1L))
-            dbOperation.updateParentDoneStatus(parentId)
-        }
+        updateBlockedTasksStatus(task.id, false)
+        taskService.deleteTask(task.id)
+        taskService.updateParentsDoneStatus(parentId)
     }
 
     suspend fun getTask(taskId: Long): Task? {
         if (taskId == 0L) return null
-        return dbOperation.getTask(taskId)
+        return taskService.getTask(taskId)
     }
 
-    suspend fun saveTask(task: Task, startNow: Boolean = false): Long? {
-        println("startNow = $startNow")
-        val hide: Long =
-            if (startNow || task.repeatType == RepeatTypes.NONE && task.dueDateAndTime == null) 0 else 1
-        println("hide = $hide")
-        val i = dbOperation.saveTask(task.copy(hide = hide)) ?: return null
-        dbOperation.updateChildrenRepeatAndHideStatus(i)
-        return i
+    suspend fun saveTask(task: Task): Long {
+        val updatedTask = syncTaskWithParent(task)
+        return taskService.saveTask(updatedTask)
+    }
+
+    private suspend fun syncTaskWithParent(task: Task): Task {
+        if (task.parentId == null) return task
+        val emptyTask = Utils.getEmptyTask()
+        val parentTask = taskService.getTask(task.parentId)
+        return task.copy(
+            hide = parentTask.hide,
+            repeatType = emptyTask.repeatType,
+            repeatDays = emptyTask.repeatDays,
+            dueDateAndTime = emptyTask.dueDateAndTime,
+            frequencyNumber = emptyTask.frequencyNumber,
+            priority = emptyTask.priority,
+            endDate = emptyTask.endDate,
+            repeatAfterDone = emptyTask.repeatAfterDone
+        )
     }
 
     fun removeSubTask(
@@ -182,12 +171,12 @@ class SharedViewModel(
 
         viewModelScope.launch {
             list.remove(task)
-            if (task.parentId != null) dbOperation.saveTask(task.copy(parentId = null)) // to prevent saving of tasks that are removed before the saving of parent
+            if (task.parentId != null) taskService.saveTask(task.copy(parentId = null)) // to prevent saving of tasks that are removed before the saving of parent
             if (deleteTask) {
                 if (deleteChildren) {
                     deleteTaskAndChildren(task.id)
                 } else {
-                    dbOperation.deleteTask(task.id)
+                    taskService.deleteTask(task.id)
                 }
             }
         }
@@ -213,36 +202,69 @@ class SharedViewModel(
     var listState: LazyListState? = null
 
     fun getAvailableSubTaskList(task: Task): List<Task> {
-        val tasks = tasks.value.filter { it != task  && it.parentId == null}
+        val tasks = tasks.value.filter { it != task && it.parentId == null }
         if (task.parentId == null) return tasks
-        val parents = getParentList(task)
-        val children = getChildrenList(task)
-        return tasks.filter { it !in parents && it !in children }
+        val ancestors = getAncestorList(task)
+        val descendants = getDescendantList(task)
+        return tasks.filter { it !in ancestors && it !in descendants }
     }
 
-    fun getParentList(task: Task): List<Task> {
+    fun getAvailableParentList(task: Task): List<Task> {
+        val descendants = getDescendantList(task)
+        return tasks.value.filter { it != task && it !in descendants }
+    }
+
+    fun getAncestorList(task: Task): List<Task> {
         val tasks = tasks.value
         if (task.parentId == null) return emptyList()
         val parents: MutableList<Task> = mutableListOf()
         tasks.forEach {
             if (task.parentId == it.id) {
                 parents.add(it)
-                parents.addAll(getParentList(it))
+                parents.addAll(getAncestorList(it))
             }
         }
         return parents
     }
 
-    fun getChildrenList(task: Task): List<Task> {
+    fun getDescendantList(task: Task): List<Task> {
         val tasks = tasks.value
         if (task.parentId == null) return emptyList()
         val children: MutableList<Task> = mutableListOf()
         tasks.forEach {
             if (it.parentId == task.id) {
                 children.add(it)
-                children.addAll(getChildrenList(it))
+                children.addAll(getDescendantList(it))
             }
         }
         return children
+    }
+
+    fun getChildren(taskId: Long): List<Task> {
+        return tasks.value.filter { it.parentId == taskId }
+    }
+
+    private var _taskId by mutableLongStateOf(0L)
+
+    var taskId: Long
+        get() {
+            val value = _taskId
+            _taskId = 0
+            return value
+        }
+        set(value) {
+            _taskId = value
+        }
+
+    fun deleteAllBlocks(taskId: Long) {
+        viewModelScope.launch {
+            taskService.deleteAllBlocks(taskId)
+        }
+    }
+
+    fun syncTaskAndDescendantsHideStatus(task: Task){
+        viewModelScope.launch {
+            taskService.updateTaskAndDescendantsHideStatus(task.id, task.hide)
+        }
     }
 }

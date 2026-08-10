@@ -44,19 +44,16 @@ class MainActivity : ComponentActivity() {
         database = app.database
         enableEdgeToEdge()
         setContent {
-            val dbOperation = DbOperation(
-                db = database,
-                context = app.applicationContext
-            )
+            val alarmService = AlarmService(this)
+            val workService = WorkService(this)
+            val scheduleService = ScheduleService(alarmService, workService)
+            val taskService = TaskService(db = database, scheduleService)
             TidyTheme {
-                MainScreen(
-                    dbOperation,
-                )
+                MainScreen(taskService)
             }
         }
         createNotificationChannel(this)
         askNotificationPermission()
-//        Utils.requestExactAlarmPermission(this)
     }
 
     private fun createNotificationChannel(context: Context) {

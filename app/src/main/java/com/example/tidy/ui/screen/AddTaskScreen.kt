@@ -66,7 +66,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -95,10 +94,12 @@ import com.example.tidy.constants.WeekDays
 import com.example.tidy.ui.component.buttons.OutlinedDropDownButton
 import com.example.tidy.ui.component.buttons.RoundedOutlineButtonTidy
 import com.example.tidy.ui.component.dialog.SimpleDialog
+import com.example.tidy.ui.component.dialog.TidyDialog
 import com.example.tidy.ui.component.list.FadingLazyRow
 import com.example.tidy.ui.component.menu.OutlinedMenuItem
 import com.example.tidy.ui.component.pickers.DatePickerTidy
 import com.example.tidy.ui.component.pickers.TimePickerTidy
+import com.example.tidy.ui.component.subTaskComponents.SubTaskCard
 import com.example.tidy.ui.component.taskComponents.TaskCard
 import com.example.tidy.ui.component.taskComponents.TaskIconAction
 import com.example.tidy.ui.component.taskComponents.TaskSelectionDialog
@@ -111,10 +112,8 @@ import kotlinx.coroutines.launch
 fun AddTaskScreen(
     sharedViewModel: SharedViewModel,
     navController: NavController,
-    modifier: Modifier = Modifier,
-    taskId: Long = 0,
 ) {
-    var taskId: Long = taskId
+    var taskId: Long = 0
     var taskTitle by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
@@ -129,8 +128,8 @@ fun AddTaskScreen(
     var showBottomButtons by remember { mutableStateOf(true) } // to make the transition to the home look better
     var showAlertDialog by remember { mutableStateOf(false) }
     var parentId: Long? by remember { mutableStateOf(null) }
-    var hide: Long by remember { mutableLongStateOf(0) }
-    var done: Long by remember { mutableLongStateOf(0) }
+    var hide: Boolean by remember { mutableStateOf(true) }
+    var done: Boolean by remember { mutableStateOf(false) }
     var startNow by remember { mutableStateOf(false) }
     var repeatAfterDone by remember { mutableStateOf(false) }
     var priority: Long? by remember { mutableStateOf(null) }
@@ -140,10 +139,10 @@ fun AddTaskScreen(
     var currentTask: Task? by remember { mutableStateOf(null) }
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
     LaunchedEffect(Unit) {
+        taskId = sharedViewModel.taskId
         val task = sharedViewModel.getTask(taskId = taskId)
         if (task != null) {
             currentTask = task
-            taskId = task.id
             taskChildren = sharedViewModel.tasks.value.filter { it.parentId == task.id }
             blockedByTasks = sharedViewModel.getBlockedByTasks(taskId)
             parentId = task.parentId
@@ -158,7 +157,7 @@ fun AddTaskScreen(
             dueTime = task.dueDateAndTime
             frequencyNumber = task.frequencyNumber
             endDate = task.endDate
-            repeatAfterDone = task.repeatAfterDone == 1L
+            repeatAfterDone = task.repeatAfterDone
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -183,59 +182,52 @@ fun AddTaskScreen(
     Scaffold(
         topBar =
             { TopAppBar(if (taskId == 0L) "Add Task" else "Edit Task") },
-        modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             if (showBottomButtons) {
                 FloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
                             if (taskTitle != "") {
-                                val savedTaskId = sharedViewModel.saveTask(
-                                    Task(
-                                        id = taskId,
-                                        title = taskTitle,
-                                        repeatType = repeatType,
-                                        repeatDays = repeatDays,
-                                        description = description,
-                                        done = done,
-                                        hide = hide,
-                                        createdAt = System.currentTimeMillis(),
-                                        parentId = parentId,
-                                        blockStatus = if (blockedByTasks.all { it.done == 1L }) 0L else 1L,
-                                        priority = priority,
-                                        dueDateAndTime = Utils.combineDateAndTimeMillis(
-                                            dueDate,
-                                            dueTime
-                                        ),
-                                        frequencyNumber = frequencyNumber,
-                                        endDate = endDate,
-                                        repeatAfterDone = if (repeatAfterDone) 1L else 0L,
-                                    ), startNow
+                                val dueTimeAndDate = Utils.combineDateAndTimeMillis(
+                                    dueDate,
+                                    dueTime
                                 )
-                                if (savedTaskId == null) return@launch
+                                val task = Task(
+                                    id = taskId,
+                                    title = taskTitle,
+                                    repeatType = repeatType,
+                                    repeatDays = repeatDays,
+                                    description = description,
+                                    done = done,
+                                    hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null) false else hide,
+                                    createdAt = System.currentTimeMillis(),
+                                    parentId = parentId,
+                                    blockStatus = !blockedByTasks.all { it.done },
+                                    priority = priority,
+                                    dueDateAndTime = dueTimeAndDate,
+                                    frequencyNumber = frequencyNumber,
+                                    endDate = endDate,
+                                    repeatAfterDone = repeatAfterDone,
+                                )
+                                val savedTaskId = sharedViewModel.saveTask(task)
+                                sharedViewModel.deleteAllBlocks(savedTaskId)
                                 blockedByTasks.forEach {
                                     val blockerId =
                                         if (it.id == 0L) sharedViewModel.saveTask(it) else it.id
-                                    if (blockerId == null) {
-                                        println("issue while saving new blocker")
-                                        return@forEach
-                                    }
-                                    sharedViewModel.addBlockedByTasks(savedTaskId, blockerId)
+                                    sharedViewModel.blockTask(savedTaskId, blockerId)
                                 }
+
                                 taskChildren.forEach {
                                     sharedViewModel.saveTask(
                                         it.copy(
                                             parentId = savedTaskId,
-                                            repeatType = repeatType,
-                                            repeatDays = repeatDays,
-
-                                            ), startNow
+                                        )
                                     )
                                 }
-
                                 showBottomButtons = createMoreStaus.value
-                                if (createMoreStaus.value) navController.navigate("${Routes.ADD_TASK}/${0}")
-                                else navController.navigate(
+                                if (createMoreStaus.value) {
+                                    navController.navigate(Routes.ADD_TASK)
+                                } else navController.navigate(
                                     Routes.HOME,
                                     navOptions = navOptions {
                                         popUpTo(Routes.HOME) { inclusive = true }
@@ -258,7 +250,7 @@ fun AddTaskScreen(
     )
     { innerPadding ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
                 .padding(start = 16.dp, end = 16.dp)
@@ -315,14 +307,28 @@ fun AddTaskScreen(
                 priorityValue = priority,
                 onPriorityValueChange = { priority = it },
             )
+            ParentMenu(
+                parent = sharedViewModel.tasks.collectAsState().value.find { it.id == parentId },
+                availableParentsList = if (currentTask != null) sharedViewModel.getAvailableParentList(
+                    currentTask!!
+                ) - taskChildren.toSet() else sharedViewModel.tasks.collectAsState().value - taskChildren.toSet(),
+                onParentAdd = { parentId = it.id },
+                onParentRemove = { parentId = null },
+                getChildren = { sharedViewModel.getChildren(it) }
+            )
             SubTaskMenu(
                 taskChildren = taskChildren,
                 getChild = { id ->
                     sharedViewModel.tasks.value.filter { it.parentId == id }
                 },
-                availableTaskList = if (currentTask == null) sharedViewModel.tasks.collectAsState().value else sharedViewModel.getAvailableSubTaskList(
-                    currentTask!!
-                ),
+                availableTaskList = if (currentTask == null) {
+                    sharedViewModel.tasks.collectAsState().value.filter { it.parentId == null && it.id != parentId }
+                } else {
+                    val list = sharedViewModel.getAvailableSubTaskList(
+                        currentTask!!
+                    ) - taskChildren.toSet()
+                    list.filter { it.id != parentId }
+                },
                 onAdd = { taskChildren = taskChildren + it },
                 onRemoveSubTask = { subTask, deleteTask, deleteChildren ->
                     taskChildren = sharedViewModel.removeSubTask(
@@ -338,7 +344,7 @@ fun AddTaskScreen(
                 getChildren = { id ->
                     sharedViewModel.tasks.value.filter { it.parentId == id }
                 },
-                availableTaskList = sharedViewModel.tasks.collectAsState().value.filter { it.id != taskId },
+                availableTaskList = sharedViewModel.tasks.collectAsState().value.filter { it.id != taskId } - taskChildren.toSet(),
                 onAdd = { blockedByTasks = blockedByTasks + it },
                 onTaskRemove = { blockedByTasks = blockedByTasks - it },
             )
@@ -400,6 +406,99 @@ fun PriorityMenu(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ParentMenu(
+    parent: Task?,
+    availableParentsList: List<Task>,
+    onParentAdd: (Task) -> Unit,
+    onParentRemove: () -> Unit,
+    getChildren: (Long) -> List<Task>
+) {
+    var showViewDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showRemoveParentDialog by remember { mutableStateOf(false) }
+    OutlinedMenuItem(
+        menuName = "Parent",
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+    ) {
+        RoundedOutlineButtonTidy(
+            text = if (parent != null) "View" else "Add",
+            onClick = { if (parent != null) showViewDialog = true else showAddDialog = true }
+        )
+    }
+    if (showViewDialog && parent != null) {
+        TidyDialog(
+            title = "Parent",
+            onDismissRequest = { showViewDialog = false },
+            buttons = {
+                TextButton(
+                    onClick = { showRemoveParentDialog = true },
+                ) {
+                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                }
+                TextButton(onClick = { showViewDialog = false }) {
+                    Text("Ok")
+                }
+            }
+        ) {
+            var expandList: List<Long> by remember { mutableStateOf(emptyList()) }
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .padding(bottom = 5.dp),
+            ) {
+                item {
+                    SubTaskCard(
+                        task = parent,
+                        children = getChildren(parent.id),
+                        toggleDoneStatus = {},
+                        toggleExpandStatus = { if (expandList.contains(it)) expandList -= it else expandList += it },
+                        deleteTask = { _, _ -> },
+                        onEdit = {},
+                        onSkip = {},
+                        expandList = expandList.toSet(),
+                        getChildren = getChildren,
+                        diableContextMenu = true
+                    )
+                }
+            }
+        }
+    }
+    if (showAddDialog) {
+        TaskSelectionDialog(
+            tasks = availableParentsList,
+            onConfirm = {
+                onParentAdd(it.first())
+                showAddDialog = false
+            },
+            onDismiss = { showAddDialog = false },
+            getChildren = getChildren,
+            singleSelection = true
+        )
+    }
+    if (showRemoveParentDialog) {
+        AlertDialog(
+            onDismissRequest = { showRemoveParentDialog = false },
+            title = { Text("Remove Parent") },
+            text = { Text("Conform remove parent") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onParentRemove()
+                    showRemoveParentDialog = false
+                }) {
+                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRemoveParentDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -880,68 +979,101 @@ fun SubTaskMenu(
     onAdd: (List<Task>) -> Unit,
     onRemoveSubTask: (Task, Boolean, Boolean) -> Unit,
 ) {
-    val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var subTaskForRemove by remember { mutableStateOf(Utils.getEmptyTask()) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var showViewDialog by remember { mutableStateOf(false) }
     var deleteTask by remember { mutableStateOf(false) }
     var deleteChildren by remember { mutableStateOf(false) }
+    var showTaskPropertyWarningDialog by remember { mutableStateOf(false) }
+    var removeProperty by remember { mutableStateOf(false) }
     OutlinedMenuItem(
         menuName = "Sub Tasks",
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        RoundedOutlineButtonTidy(
-            text = if (taskChildren.isNotEmpty()) taskChildren.size.toString() else "Add",
+        var text: String
+        var onClick: () -> Unit
+        if (taskChildren.isNotEmpty()) {
+            text = taskChildren.size.toString()
+            onClick = { showViewDialog = true }
+        } else {
+            text = "Add"
             onClick = { showAddDialog = true }
+        }
+        RoundedOutlineButtonTidy(
+            text = text,
+            onClick = onClick
         )
     }
-    if (taskChildren.isNotEmpty()) {
-        LazyColumn(
-            state = listState,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 300.dp)
-                .padding(bottom = 5.dp),
+    if (showViewDialog) {
+        TidyDialog(
+            title = "SubTasks",
+            onDismissRequest = { showViewDialog = false },
+            buttons = {
+                TextButton(onClick = { showViewDialog = false }) {
+                    Text("Close")
+                }
+                TextButton(onClick = { showAddDialog = true }) {
+                    Text("Add")
+                }
+            }
         ) {
-            items(
-                items = taskChildren
-            ) { task ->
-                TaskCard(
-                    task = task,
-                    trailingIconButtons = buildList {
-                        add(
-                            TaskIconAction(
-                                icon = Icons.Default.Close,
-                                description = "Remove Task",
-                                onClick = {
-                                    showDeleteDialog = true
-                                    subTaskForRemove = task
-                                },
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .padding(bottom = 5.dp),
+            ) {
+                items(
+                    items = taskChildren
+                ) { task ->
+                    TaskCard(
+                        task = task,
+                        trailingIconButtons = buildList {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Close,
+                                    description = "Remove Task",
+                                    onClick = {
+                                        showDeleteDialog = true
+                                        subTaskForRemove = task
+                                    },
+                                )
                             )
-                        )
-                    },
-                    children = getChild(task.id),
-                )
+                        },
+                        children = getChild(task.id),
+                    )
+                }
             }
         }
     }
     if (showAddDialog) {
         TaskSelectionDialog(
-            tasks = availableTaskList,
+            tasks = availableTaskList - taskChildren.toSet(),
             onConfirm = { selectedTasks ->
-                var tasksToAdd: List<Task> = emptyList()
-                selectedTasks.forEach {
-                    if (!taskChildren.contains(it)) tasksToAdd = tasksToAdd + it
+                if (!removeProperty) showTaskPropertyWarningDialog =
+                    selectedTasks.any { Utils.doesTaskContainProperty(it) }
+                if (!showTaskPropertyWarningDialog) {
+                    onAdd(selectedTasks)
+                    showAddDialog = false
                 }
-                onAdd(tasksToAdd)
-                showAddDialog = false
             },
             onDismiss = { showAddDialog = false },
             getChildren = { getChild(it) }
         )
     }
-
+    if (showTaskPropertyWarningDialog) {
+        SimpleDialog(
+            onDismissRequest = { showTaskPropertyWarningDialog = false },
+            onConfirm = {
+                removeProperty = true
+                showTaskPropertyWarningDialog = false
+            },
+            title = "Task property will be removed",
+            showCancelButtons = true
+        ) { Text("The selected task properties will be removed once added as a subtask") }
+    }
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -1023,50 +1155,73 @@ fun BlockedByMenu(
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var taskToRemove by remember { mutableStateOf(Utils.getEmptyTask()) }
+    var showViewDialog by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
     OutlinedMenuItem(
         menuName = "Blocked By",
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
-        RoundedOutlineButtonTidy(
-            text = if (blockedByTasks.isNotEmpty()) blockedByTasks.size.toString() else "Add",
+        var text: String
+        var onClick: () -> Unit
+        if (blockedByTasks.isNotEmpty()) {
+            text = blockedByTasks.size.toString()
+            onClick = { showViewDialog = true }
+        } else {
+            text = "Add"
             onClick = { showAddDialog = true }
+        }
+        RoundedOutlineButtonTidy(
+            text = text,
+            onClick = onClick
         )
     }
-    if (blockedByTasks.isNotEmpty()) {
-        LazyColumn(
-            state = listState,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 300.dp)
-                .padding(bottom = 5.dp),
+    if (showViewDialog) {
+        TidyDialog(
+            title = "Blocked By",
+            onDismissRequest = { showViewDialog = false },
+            buttons = {
+                TextButton(onClick = { showViewDialog = false }) {
+                    Text("Close")
+                }
+                TextButton(onClick = { showAddDialog = true }) {
+                    Text("Add")
+                }
+            }
         ) {
-            items(
-                items = blockedByTasks
-            ) { task ->
-                TaskCard(
-                    task = task,
-                    trailingIconButtons = buildList {
-                        add(
-                            TaskIconAction(
-                                icon = Icons.Default.Close,
-                                description = "Remove Task",
-                                onClick = {
-                                    showDeleteDialog = true
-                                    taskToRemove = task
-                                },
+            LazyColumn(
+                state = listState,
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)
+                    .padding(bottom = 5.dp),
+            ) {
+                items(
+                    items = blockedByTasks
+                ) { task ->
+                    TaskCard(
+                        task = task,
+                        trailingIconButtons = buildList {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Close,
+                                    description = "Remove Task",
+                                    onClick = {
+                                        showDeleteDialog = true
+                                        taskToRemove = task
+                                    },
+                                )
                             )
-                        )
-                    },
-                    children = getChildren(task.id),
-                )
+                        },
+                        children = getChildren(task.id),
+                    )
+                }
             }
         }
     }
     if (showAddDialog) {
         TaskSelectionDialog(
-            tasks = availableTaskList,
+            tasks = availableTaskList - blockedByTasks.toSet(),
             onConfirm = { selectedTasks ->
                 var tasksToAdd: List<Task> = emptyList()
                 selectedTasks.forEach {

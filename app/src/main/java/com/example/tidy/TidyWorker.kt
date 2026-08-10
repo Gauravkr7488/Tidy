@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2026  Gaurav Kumar
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package com.example.tidy
 
 import android.content.Context
@@ -8,16 +24,20 @@ import androidx.work.WorkerParameters
 import com.example.tidy.constants.RepeatTypes
 import com.example.tidy.constants.TaskActions
 
-class TidyWorker(context: Context, params: WorkerParameters, private val dbOperation: DbOperation) :
+class TidyWorker(
+    context: Context,
+    params: WorkerParameters,
+    private val taskService: TaskService
+) :
     CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         return when (val action = inputData.getString("action")) {
             TaskActions.UNARCHIVE -> {
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
-                val task = dbOperation.getTask(taskId) ?: return Result.failure()
-                if (task.done == 1L || task.hide == 1L) {
-                    dbOperation.saveTask(task.copy(done = 0, hide = 0, priority = 1))
+                val task = taskService.getTask(taskId)
+                if (task.done || task.hide) {
+                    taskService.saveTask(task.copy(done = false, hide = false))
                     Utils.sendNotification(
                         applicationContext,
                         title = "Schedule met",
@@ -28,9 +48,10 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
             }
 
             TaskActions.BACKUP -> {
-                Utils.exportSilently(dbOperation, applicationContext)
-                Utils.scheduleWork(
-                    context = applicationContext,
+                val backupService = BackupService(taskService, applicationContext)
+                backupService.exportSilently()
+                val workService = WorkService(applicationContext)
+                workService.scheduleWork(
                     scheduleTime = Utils.getAutoBackupTime(),
                     action = action,
                     taskId = null
@@ -39,11 +60,24 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
             }
 
             TaskActions.RESET_ALARMS -> {
-                val tasks = dbOperation.taskGetAll()
+                val tasks = taskService.taskGetAll()
                 tasks.forEach { task ->
                     if (task.repeatType == RepeatTypes.NONE && task.dueDateAndTime == null) return@forEach
-                    dbOperation.saveTask(task)
+                    taskService.saveTask(task)
                 }
+                Result.success()
+            }
+
+            TaskActions.RESET_DAY -> {
+                val count = taskService.resetSkippedTasks()
+                if (count > 0) {
+                    Utils.sendNotification(
+                        context = applicationContext,
+                        title = "Skipped tasks Unarchived",
+                        message = "$count tasks unarchived"
+                    )
+                }
+                taskService.archiveAndRescheduleNonDoneDailyTasksWithDueTime()
                 Result.success()
             }
 
@@ -52,14 +86,14 @@ class TidyWorker(context: Context, params: WorkerParameters, private val dbOpera
     }
 }
 
-class TidyWorkerFactory(private val dbOperation: DbOperation) : WorkerFactory() {
+class TidyWorkerFactory(private val taskService: TaskService) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
         workerClassName: String,
         workerParameters: WorkerParameters
     ): ListenableWorker? {
         return if (workerClassName == TidyWorker::class.java.name)
-            TidyWorker(appContext, workerParameters, dbOperation)
+            TidyWorker(appContext, workerParameters, taskService)
         else null
     }
 }

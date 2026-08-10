@@ -67,9 +67,10 @@ fun HomeScreen(
 ) {
     val taskState = sharedViewModel.tasks.collectAsState()
     val tasks = taskState.value
-    val activeTasks = tasks.filter { task -> task.parentId == null && task.hide == 0L && task.blockStatus == 0L}
+    val activeTasks =
+        tasks.filter { task -> task.parentId == null && !task.hide && !task.blockStatus }
 
-    val hasDoneTask = activeTasks.any { it.done == 1L }
+    val hasDoneTask = activeTasks.any { it.done }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
@@ -96,7 +97,9 @@ fun HomeScreen(
                     }
                 }
                 FloatingActionButton(
-                    onClick = { navController.navigate("${Routes.ADD_TASK}/${0}") },
+                    onClick = {
+                        navController.navigate(Routes.ADD_TASK)
+                    },
                     modifier = Modifier.size(80.dp)
                 ) {
                     Icon(
@@ -110,7 +113,7 @@ fun HomeScreen(
         topBar = {
             var doneTaskCount = 0
             activeTasks.forEach { task ->
-                if (task.done == 1L) doneTaskCount++
+                if (task.done) doneTaskCount++
             }
             TopAppBar("My Tasks", subtitle = "$doneTaskCount/${activeTasks.size} tasks Completed")
         }
@@ -139,17 +142,20 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(
-                        activeTasks.filter { it.done == 0L },
+                        activeTasks.filter { !it.done },
                         key = { "undone-${it.id}" }) { task -> // undone cause the unique key is needed for click
                         SubTaskCard(
                             task,
                             toggleDoneStatus = {
-                                if (task.blockStatus == 0L) sharedViewModel.toggleDoneStatus(
+                                if (!task.blockStatus) sharedViewModel.toggleDoneStatus(
                                     it
                                 )
                             },
                             deleteTask = sharedViewModel::deleteTask,
-                            onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
+                            onEdit = {
+                                sharedViewModel.taskId = it.id
+                                navController.navigate(Routes.ADD_TASK)
+                            },
                             onSkip = sharedViewModel::skipTask,
                             getChildren = { id ->
                                 tasks.filter { it.parentId == id }
@@ -165,12 +171,15 @@ fun HomeScreen(
 
                     item { Spacer(modifier = Modifier.heightIn(10.dp)) }
 
-                    items(activeTasks.filter { it.done == 1L }, key = { it.id }) { task ->
+                    items(activeTasks.filter { it.done }, key = { it.id }) { task ->
                         SubTaskCard(
                             task,
                             toggleDoneStatus = sharedViewModel::toggleDoneStatus,
                             deleteTask = sharedViewModel::deleteTask,
-                            onEdit = { navController.navigate("${Routes.ADD_TASK}/${it.id}") },
+                            onEdit = {
+                                sharedViewModel.taskId = it.id
+                                navController.navigate(Routes.ADD_TASK)
+                            },
                             onSkip = sharedViewModel::skipTask,
                             getChildren = { id ->
                                 tasks.filter { it.parentId == id }

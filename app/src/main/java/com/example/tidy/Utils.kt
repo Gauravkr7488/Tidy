@@ -30,35 +30,21 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
-import androidx.documentfile.provider.DocumentFile
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.Ace777.tidy.R
-import com.example.tidy.constants.Options
 import com.example.tidy.constants.RepeatTypes
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.gson.Gson
-import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Collections.emptyList
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
-import java.util.concurrent.TimeUnit
 
 object Utils {
-    fun getCurrentDate(): String {
-        return SimpleDateFormat("dd", Locale.getDefault())
-            .format(Calendar.getInstance().time) // gives "01", "02"
-    }
-
     fun changeDateFormat(date: Long, pattern: String): String {
         return SimpleDateFormat(pattern, Locale.getDefault()).apply {
             timeZone = TimeZone.getDefault()
@@ -111,22 +97,6 @@ object Utils {
         }.timeInMillis
     }
 
-    fun scheduleWork(context: Context, taskId: Long?, scheduleTime: Long, action: String) {
-        val delay = scheduleTime - System.currentTimeMillis()
-
-        if (delay <= 0) return // Due date already passed
-
-        val data = workDataOf("task_id" to taskId, "action" to action)
-
-        val request = OneTimeWorkRequestBuilder<TidyWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .setInputData(data)
-            .addTag("tidy-$action") // Tag for cancellation
-            .addTag("tidy-$taskId")
-            .build()
-        WorkManager.getInstance(context).enqueue(request)
-    }
-
     fun scheduleImmediateWork(context: Context, taskId: Long?, action: String) {
         val data = workDataOf("task_id" to taskId, "action" to action)
 
@@ -139,30 +109,6 @@ object Utils {
         WorkManager.getInstance(context).enqueue(request)
     }
 
-//    fun cancelAllWorkById(context: Context, taskId: Long) {
-//        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$taskId")
-//    }
-
-    fun cancelAllWorkByAction(context: Context, action: String) {
-        WorkManager.getInstance(context).cancelAllWorkByTag("tidy-$action")
-    }
-
-    fun createBackupJson(
-        tasks: List<Task>,
-        lastResetDate: String,
-        taskBlocks: List<BlockedTask>
-    ): String {
-        val blockerList = taskBlocks.groupBy { it.task_id }
-        val taskDtos = tasks.map { task ->
-            val string =
-                if (blockerList.containsKey(task.id)) blockerList[task.id]?.joinToString(",") { it.blockedBy_id.toString() } else null
-            task.toTaskDto(string)
-        }
-        val backupDto = BackupDto(lastResetDate, taskDtos)
-        val json = Gson().toJson(backupDto)
-        return json
-    }
-
     fun getEmptyTask(): Task {
         return Task(
             id = 0,
@@ -170,16 +116,16 @@ object Utils {
             repeatType = RepeatTypes.NONE,
             repeatDays = "",
             description = "",
-            done = 0,
-            hide = 0,
+            done = false,
+            hide = false,
             createdAt = System.currentTimeMillis(),
             parentId = null,
-            blockStatus = 0,
+            blockStatus = false,
             priority = null,
             dueDateAndTime = null,
             frequencyNumber = null,
             endDate = null,
-            repeatAfterDone = 0,
+            repeatAfterDone = false,
         )
     }
 
@@ -187,20 +133,20 @@ object Utils {
         return TaskBackupDto(
             id = id,
             title = title,
-            done = done == 1L,
+            done = done,
             repeatType = repeatType,
             repeatOn = repeatDays,
             description = description,
-            hide = hide == 1L,
+            hide = hide,
             createdAt = createdAt,
             parentId = parentId,
             blockedBy = taskBlockString,
-            blockedStatus = blockStatus == 1L,
+            blockedStatus = blockStatus,
             priority = priority,
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
             endDate = endDate,
-            repeatAfterDone = repeatAfterDone == 1L
+            repeatAfterDone = repeatAfterDone
         )
     }
 
@@ -208,79 +154,25 @@ object Utils {
         return Task(
             id = id,
             title = title,
-            done = if (done) 1L else 0L,
+            done = done,
             repeatType = repeatType.uppercase(),
             repeatDays = repeatOn,
             description = description ?: "",
-            hide = if (hide) 1L else 0L,
+            hide = hide,
             parentId = parentId,
-            blockStatus = if (blockedStatus) 1L else 0L,
+            blockStatus = blockedStatus,
             createdAt = createdAt,
             priority = priority,
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
             endDate = endDate,
-            repeatAfterDone = if (repeatAfterDone) 1L else 0L,
+            repeatAfterDone = repeatAfterDone,
         )
     }
 
-    fun getBlockerFromString(blockString: String, id: Long): List<BlockedTask> {
-        if (blockString.isEmpty()) return emptyList()
-        val blockIds = blockString.split(",")
-        if (blockIds.isEmpty()) return emptyList()
-        val blockers: List<BlockedTask> = blockIds.filter { it.isNotEmpty() }.map {
-            BlockedTask(
-                task_id = id,
-                blockedBy_id = it.trim().toLong()
-            )
-        }
-        return blockers
-    }
-
-    suspend fun exportSilently(dbOperation: DbOperation, context: Context): Result<Unit> =
-        withContext(Dispatchers.IO) {
-            val prefs = context.getSharedPreferences("backup_prefs", Context.MODE_PRIVATE)
-
-            return@withContext try {
-                // TODO FIX
-                val tasks = dbOperation.taskGetAll()
-                var lastResetDate = dbOperation.getLastResetDate()
-                if (lastResetDate == null) lastResetDate = getCurrentDate()
-                val taskBlockers = dbOperation.getAllBlockers()
-                val json = createBackupJson(tasks, lastResetDate, taskBlockers)
-
-                val timestamp =
-                    SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-                val fileName = "backup_$timestamp.json"
-
-                val savedUri = prefs.getString("backup_uri", null)
-
-                if (savedUri != null) {
-                    // Write to user-picked folder
-                    val treeUri = savedUri.toUri()
-                    val docTree = DocumentFile.fromTreeUri(context, treeUri)
-                    val file = docTree?.createFile("application/json", fileName)
-                    file?.uri?.let { fileUri ->
-                        context.contentResolver.openOutputStream(fileUri)?.use { stream ->
-                            stream.write(json.toByteArray())
-                        }
-                    }
-                } else {
-                    // Fallback to internal storage if no folder picked yet
-                    val backupDir = File(context.filesDir, "backups").also { it.mkdirs() }
-                    File(backupDir, fileName).writeText(json)
-                }
-
-                Result.success(Unit)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Result.failure(e)
-            }
-        }
-
     fun getAutoBackupTime(): Long {
         val c = Calendar.getInstance()
-        c.add(Calendar.HOUR, 1)
+        c.add(Calendar.HOUR_OF_DAY, 1)
         return c.timeInMillis
     }
 
@@ -318,44 +210,6 @@ object Utils {
         fun nextId(): Int = ++lastId
     }
 
-    fun scheduleAlarm(context: Context, scheduleTime: Long, action: String, taskId: Long) {
-        val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra(Options.ACTION, action)
-            putExtra(Options.TASK_ID, taskId)
-        }
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            taskId.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-            println("permission not given")
-            return
-        }
-
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            scheduleTime,
-            pendingIntent
-        )
-    }
-
-    fun cancelAlarm(context: Context, taskId: Long) {
-        val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, AlarmReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            taskId.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(pendingIntent)
-    }
-
     fun requestExactAlarmPermission(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
@@ -374,4 +228,10 @@ object Utils {
             }
         }
     }
+
+    fun doesTaskContainProperty(task: Task): Boolean {
+        val emptyTask = getEmptyTask()
+        return task.repeatType != emptyTask.repeatType || task.dueDateAndTime != emptyTask.dueDateAndTime || task.priority != emptyTask.priority
+    }
+
 }

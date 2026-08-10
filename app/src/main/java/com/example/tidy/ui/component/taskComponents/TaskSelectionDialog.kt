@@ -36,8 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Utils
+import com.example.tidy.ui.component.SearchTasksTidy
 import com.example.tidy.ui.component.dialog.SimpleDialog
-import com.example.tidy.ui.component.textField.SearchTextField
 import com.tidy.sqldelight.Task
 
 
@@ -46,8 +46,8 @@ fun TaskSelectionDialog(
     tasks: List<Task>,
     onConfirm: (List<Task>) -> Unit,
     onDismiss: () -> Unit,
-//    children: List<Task>,
-    getChildren: (Long) -> List<Task>
+    getChildren: (Long) -> List<Task>,
+    singleSelection: Boolean = false
 ) {
     var selectedTasks: List<Task> by remember { mutableStateOf(emptyList()) }
     SimpleDialog(
@@ -57,17 +57,14 @@ fun TaskSelectionDialog(
     ) {
         var query by remember { mutableStateOf("") }
         val listState = rememberLazyListState()
-        val filteredTasks = tasks.filter { task ->
-            val matchesQuery = query.isBlank() ||
-                    task.title.contains(query, ignoreCase = true) ||
-                    task.description.contains(query, ignoreCase = true)
-            return@filter matchesQuery
+        var filteredTasks: List<Task> by remember { mutableStateOf(emptyList()) }
+        SearchTasksTidy(
+            tasks,
+            onQueryChange = { query = it }
+        ) {
+            filteredTasks = it
         }
-        SearchTextField(
-            query = query,
-            placeHolder = "Search tasks",
-            modifier = Modifier.padding(vertical = 8.dp)
-        ) { query = it }
+
         LazyColumn(
             state = listState,
             verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -80,10 +77,14 @@ fun TaskSelectionDialog(
                 TaskCard(
                     task = task,
                     onClick = {
-                        selectedTasks = if (selectedTasks.contains(task)) {
-                            selectedTasks - task
+                        selectedTasks = if (singleSelection) {
+                            emptyList<Task>() + task
                         } else {
-                            selectedTasks + task
+                            if (selectedTasks.contains(task)) {
+                                selectedTasks - task
+                            } else {
+                                selectedTasks + task
+                            }
                         }
                     },
                     children = getChildren(task.id),
@@ -104,16 +105,15 @@ fun TaskSelectionDialog(
                             query = ""
                         },
                         children = emptyList(),
-                        trailingIcons =
-                            buildList {
-                                add(
-                                    TaskIconAction(
-                                        icon = Icons.Default.Create,
-                                        description = "create new",
-                                        onClick = {},
-                                    )
+                        trailingIconButtons = buildList {
+                            add(
+                                TaskIconAction(
+                                    icon = Icons.Default.Create,
+                                    description = "create new",
+                                    onClick = {},
                                 )
-                            },
+                            )
+                        }
                     )
                 }
             }

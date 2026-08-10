@@ -1,3 +1,5 @@
+import kotlin.Boolean;
+
 -- /*
 --  * Copyright (C) 2026  Gaurav Kumar
 --  *
@@ -18,19 +20,19 @@
 CREATE TABLE Task (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    done INTEGER NOT NULL DEFAULT 0,
+    done INTEGER AS Boolean NOT NULL DEFAULT 0,
     repeatType TEXT NOT NULL DEFAULT 'NONE',
     repeatDays TEXT NOT NULL DEFAULT '',
     description TEXT NOT NULL DEFAULT '',
-    hide INTEGER NOT NULL DEFAULT 0,
+    hide INTEGER AS Boolean NOT NULL DEFAULT 0,
     createdAt INTEGER NOT NULL,
     parentId INTEGER,                       -- NULL = root task
-    blockStatus INTEGER NOT NULL DEFAULT 0,
+    blockStatus INTEGER AS Boolean NOT NULL DEFAULT 0,
     priority INTEGER,
     dueDateAndTime INTEGER,
     frequencyNumber TEXT,
     endDate INTEGER,
-    repeatAfterDone INTEGER NOT NULL DEFAULT 0,
+    repeatAfterDone INTEGER AS Boolean NOT NULL DEFAULT 0,
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
 );
 
@@ -56,14 +58,14 @@ WHERE BlockedTask.task_id = ?;
 
 
 blockTask:
-INSERT INTO BlockedTask(task_id, blockedBy_id)
+INSERT OR IGNORE INTO BlockedTask(task_id, blockedBy_id)
 VALUES (
 ?,
 ?
 );
 
-getBlockTask:
-SELECT * FROM BlockedTask WHERE task_id = ? AND blockedBy_id = ?;
+removeAllBlocks:
+DELETE FROM BlockedTask WHERE task_id = ?;
 
 updateTask:
 UPDATE Task
@@ -87,7 +89,7 @@ getTaskById:
 SELECT * FROM Task
 WHERE id = ?;
 
-getLastId:
+getLastRowInsertId:
 SELECT last_insert_rowid();
 
 saveTask:
@@ -130,9 +132,8 @@ SELECT * FROM Task;
 getAllBlockers:
 SELECT * FROM BlockedTask;
 
-getChildren:
-SELECT * FROM Task
-WHERE parentId = ?;
+-- getAllChildren:
+-- SELECT * FROM Task WHERE parentId = ?;
 
 deleteTask:
 DELETE FROM Task
@@ -176,3 +177,39 @@ VALUES (
     ?,
     ?
 );
+
+areAllChildrenDone:
+SELECT NOT EXISTS (
+    SELECT 1 FROM Task WHERE parentId = ? AND done != 1
+);
+
+updateDoneStatus:
+UPDATE Task SET done = ? WHERE id = ?;
+
+getParentId:
+SELECT parentId FROM Task WHERE id = ?;
+
+updateTaskAndDescendantsHideStatus:
+WITH RECURSIVE descendants(id) AS (
+    SELECT id FROM Task WHERE id = :taskId
+    UNION ALL
+    SELECT t.id FROM Task t
+    INNER JOIN descendants d ON t.parentId = d.id
+)
+UPDATE Task SET hide = :hide WHERE id IN (SELECT id FROM descendants);
+
+resetSkippedTasks:
+UPDATE Task SET hide = 0 WHERE hide = 1 AND done = 0;
+
+getNonDoneDailyTasksWithDueDate:
+SELECT * FROM Task WHERE done = 0 AND hide = 0 AND repeatType = ?;
+
+getAllDescendants:
+WITH RECURSIVE descendants(id) AS (
+    SELECT id FROM Task WHERE parentId = :taskId
+    UNION ALL
+    SELECT t.id
+    FROM Task t
+    JOIN descendants d ON t.parentId = d.id
+)
+SELECT id FROM Task WHERE id IN (SELECT id FROM descendants);

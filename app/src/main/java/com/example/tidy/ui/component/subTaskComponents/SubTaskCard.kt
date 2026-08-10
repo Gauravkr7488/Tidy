@@ -51,7 +51,7 @@ import com.tidy.sqldelight.Task
 fun SubTaskCard(
     task: Task,
     children: List<Task>,
-    toggleDoneStatus: (Task) -> Unit,
+    toggleDoneStatus: (Long) -> Unit,
     toggleExpandStatus: (Long) -> Unit,
     deleteTask: (Long, Boolean) -> Unit,
     onEdit: (Task) -> Unit,
@@ -62,6 +62,8 @@ fun SubTaskCard(
     last: Boolean = false,
     list: List<Boolean> = listOf(),
     getChildren: (Long) -> List<Task>,
+    hideScheduleBadge: Boolean = false,
+    diableContextMenu: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -75,44 +77,46 @@ fun SubTaskCard(
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
             if (depth != 0) AddIndentation(last, list)
             TaskCard(
+                hideScheduleBadge = hideScheduleBadge,
                 task = task,
                 onClick = {
                     if (children.isNotEmpty()) {
                         toggleExpandStatus(task.id)
-                    } else toggleDoneStatus(task)
+                    } else toggleDoneStatus(task.id)
                 },
                 contextMenuOptions =
-                    buildList {
-                        add(
-                            TaskContextAction(
-                                label = "Edit",
-                                icon = Icons.Default.Create,
-                                description = "Edit Task",
-                                onClick = { onEdit(task) },
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            ),
-                        )
-                        if (task.parentId == null) {
+                    if (diableContextMenu) emptyList() else
+                        buildList {
                             add(
                                 TaskContextAction(
-                                    label = "Skip",
-                                    icon = Icons.Default.SkipNext,
-                                    description = "Skip Task",
-                                    onClick = { onSkip(task) },
+                                    label = "Edit",
+                                    icon = Icons.Default.Create,
+                                    description = "Edit Task",
+                                    onClick = { onEdit(task) },
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
+                                ),
+                            )
+                            if (task.parentId == null) {
+                                add(
+                                    TaskContextAction(
+                                        label = "Skip",
+                                        icon = Icons.Default.SkipNext,
+                                        description = "Skip Task",
+                                        onClick = { onSkip(task) },
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                )
+                            }
+                            add(
+                                TaskContextAction(
+                                    label = "Delete",
+                                    icon = Icons.Default.Delete,
+                                    description = "Delete Task",
+                                    onClick = { showDeleteDialog = true },
+                                    color = MaterialTheme.colorScheme.error
                                 )
                             )
-                        }
-                        add(
-                            TaskContextAction(
-                                label = "Delete",
-                                icon = Icons.Default.Delete,
-                                description = "Delete Task",
-                                onClick = { showDeleteDialog = true },
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        )
-                    },
+                        },
                 leadingIcons =
                     buildList {
                         if (children.isNotEmpty()) {
@@ -129,9 +133,9 @@ fun SubTaskCard(
                         } else {
                             add(
                                 TaskIconAction(
-                                    icon = if (task.done == 0L) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
+                                    icon = if (!task.done) Icons.Default.CheckBoxOutlineBlank else Icons.Default.CheckBox,
                                     description = "",
-                                    onClick = { toggleDoneStatus(task) },
+                                    onClick = { toggleDoneStatus(task.id) },
                                 )
                             )
                         }
@@ -169,7 +173,9 @@ fun SubTaskCard(
                             getChildren = getChildren,
                             children = getChildren(child.id),
                             toggleExpandStatus = toggleExpandStatus,
-                            expandList = expandList
+                            expandList = expandList,
+                            hideScheduleBadge = true,
+                            diableContextMenu = diableContextMenu
                         )
                     }
                 }

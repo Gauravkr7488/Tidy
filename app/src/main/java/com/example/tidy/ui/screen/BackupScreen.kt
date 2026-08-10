@@ -42,29 +42,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.tidy.BackupOperations
-import com.example.tidy.Utils
-import com.example.tidy.constants.TaskActions
 import com.example.tidy.ui.component.SimpleCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
-import kotlinx.coroutines.launch
+import com.example.tidy.viewModels.BackupViewModel
 
 @Composable
 fun BackupScreen(
-    backupOperations: BackupOperations,
-
-    modifier: Modifier = Modifier
+    backupViewModel: BackupViewModel
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
 
     // --- existing launchers, unchanged ---
     val exportLauncher =
@@ -72,9 +65,7 @@ fun BackupScreen(
             ActivityResultContracts.CreateDocument("application/json")
         ) { uri ->
             uri?.let {
-                coroutineScope.launch {
-                    backupOperations.createBackup(context, it)
-                }
+                backupViewModel.createBackup(it)
             }
         }
 
@@ -83,15 +74,13 @@ fun BackupScreen(
             ActivityResultContracts.OpenDocument()
         ) { uri ->
             uri?.let {
-                coroutineScope.launch {
-                    backupOperations.importBackup(context, it)
-                }
+                backupViewModel.importBackup(it)
             }
         }
 
     // --- new: auto backup folder picker ---
-    var autoBackupPath by remember {
-        mutableStateOf(backupOperations.getAutoBackupPath(context))
+    var backupFolderName by remember {
+        mutableStateOf(backupViewModel.getBackupFolderName(context))
     }
 
     val folderPickerLauncher =
@@ -105,12 +94,12 @@ fun BackupScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION or
                             Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
-                backupOperations.setAutoBackupUri(context, it)
-                autoBackupPath = backupOperations.getAutoBackupPath(context)
+                backupViewModel.setAutoBackupUri(it, context)
+                backupFolderName = backupViewModel.getBackupFolderName(context)
             }
         }
 
-    Scaffold(topBar = { TopAppBar("Backup") }, modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(topBar = { TopAppBar("Backup") }, modifier = Modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -140,7 +129,7 @@ fun BackupScreen(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .size(48.dp),
-                                onClick = { exportLauncher.launch("backup.json") }
+                                onClick = { exportLauncher.launch("tidy_backup.json") }
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Upload,
@@ -195,7 +184,7 @@ fun BackupScreen(
                                 )
                                 Text(
                                     // Shows the picked folder name, or a hint if not set
-                                    text = autoBackupPath ?: "Not set — using internal storage",
+                                    text = backupFolderName ?: "Not set — using internal storage",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     maxLines = 1,
@@ -208,17 +197,8 @@ fun BackupScreen(
                                     .size(48.dp),
                                 onClick = {
                                     folderPickerLauncher.launch(null)
-                                    if (autoBackupPath != null) {
-                                        Utils.cancelAllWorkByAction(
-                                            context = context,
-                                            action = TaskActions.BACKUP
-                                        )
-                                        Utils.scheduleWork(
-                                            context = context,
-                                            scheduleTime = Utils.getAutoBackupTime(),
-                                            action = TaskActions.BACKUP,
-                                            taskId = null
-                                        )
+                                    if (backupFolderName != null) {
+                                        backupViewModel.setAutoBackup()
                                     }
                                 }
                             ) {
