@@ -31,14 +31,11 @@ class ScheduleService(
 
     fun scheduleTask(task: Task): Boolean {
         val scheduleDate: Long? = if (task.repeatType != RepeatTypes.NONE) {
-            val t = getScheduleDate(
+            val t = getNextScheduleDate(
                 frequencyNumber = task.frequencyNumber?.toInt() ?: 1,
                 repeatType = task.repeatType,
                 repeatDays = task.repeatDays.split(",")
             )
-            var k = ""
-            if (t != null) k = Utils.changeDateFormat(t, "dd-MM-yy hh mm a")
-            println("schedule = $k")
             if (task.repeatType == RepeatTypes.MINUTE || task.repeatType == RepeatTypes.HOUR) t else
                 Utils.combineDateAndTimeMillis(t, task.dueDateAndTime)
         } else {
@@ -56,7 +53,7 @@ class ScheduleService(
     }
 
 
-    private fun getScheduleDate(
+    private fun getNextScheduleDate(
         frequencyNumber: Int,
         repeatType: String,
         repeatDays: List<String>,
