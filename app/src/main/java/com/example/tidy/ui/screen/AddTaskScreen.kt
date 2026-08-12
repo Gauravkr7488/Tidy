@@ -300,7 +300,7 @@ fun AddTaskScreen(
                 onDueTimeChange = { dueTime = it },
                 startNow = startNow,
                 repeatAfterDone = repeatAfterDone,
-                onStartNowChange = { startNow = !startNow },
+                onStartNowChange = { startNow = it },
                 onRepeatAfterDoneChange = { repeatAfterDone = !repeatAfterDone }
             )
             PriorityMenu(
@@ -543,7 +543,7 @@ private fun ScheduleMenu(
     onEndDateChange: (Long?) -> Unit,
     onDueDateChange: (Long?) -> Unit,
     onDueTimeChange: (Long?) -> Unit,
-    onStartNowChange: () -> Unit,
+    onStartNowChange: (Boolean) -> Unit,
     onRepeatAfterDoneChange: () -> Unit,
 ) {
     val c = LocalContext.current
@@ -611,7 +611,9 @@ private fun ScheduleMenu(
                                         onDueDateChange(null)
                                         onDueTimeChange(null)
                                         showDropDownMenu = false
-                                        if (startNow) onStartNowChange()
+                                        if (startNow && type == RepeatTypes.NONE) onStartNowChange(
+                                            false
+                                        ) else onStartNowChange(true)
                                         if (showCustomMenu) {
                                             showCustomMenu = false
                                             onFrequencyNumberChange(null)
@@ -627,7 +629,7 @@ private fun ScheduleMenu(
                                     showCustomMenu = true
                                     onRepeatTypeChange(RepeatTypes.DAY)
                                     onRepeatDaysChange(emptyList())
-                                    if (startNow) onStartNowChange()
+                                    if (!startNow) onStartNowChange(true)
                                 }
                             )
                         }
@@ -693,7 +695,7 @@ private fun ScheduleMenu(
                     ) { onDueTimeChange(it) }
 
                     OutlinedMenuItem("Starts Now", onClick = {
-                        onStartNowChange()
+                        onStartNowChange(!startNow)
                     }) {
                         if (startNow) {
                             Icon(
