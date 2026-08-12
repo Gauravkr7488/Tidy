@@ -199,7 +199,7 @@ fun AddTaskScreen(
                                     repeatDays = repeatDays,
                                     description = description,
                                     done = done,
-                                    hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null) false else hide,
+                                    hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null && taskId == 0L) false else hide,
                                     createdAt = System.currentTimeMillis(),
                                     parentId = parentId,
                                     blockStatus = !blockedByTasks.all { it.done },
