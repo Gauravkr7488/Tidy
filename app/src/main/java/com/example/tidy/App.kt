@@ -22,7 +22,6 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.example.tidy.constants.TaskActions
 import com.yourapp.db.AppDatabase
-import java.util.Calendar
 
 class App : Application() {
 
@@ -41,21 +40,10 @@ class App : Application() {
         WorkManager.initialize(this, config)
 
         alarmService.scheduleAlarm(
-            scheduleTime = getNextMidNightMilli(),
+            scheduleTime = Utils.getNextMidNightMilli(),
             action = TaskActions.RESET_DAY,
             taskId = -1
         )
-    }
-
-    private fun getNextMidNightMilli(): Long {
-        val nextMidnight = Calendar.getInstance().apply {
-            add(Calendar.DAY_OF_YEAR, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        return nextMidnight.timeInMillis
     }
 }
 
