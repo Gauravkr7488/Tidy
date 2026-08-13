@@ -54,6 +54,7 @@ class MainActivity : ComponentActivity() {
         }
         createNotificationChannel(this)
         askNotificationPermission()
+        Utils.requestExactAlarmPermission(this)
     }
 
     private fun createNotificationChannel(context: Context) {
