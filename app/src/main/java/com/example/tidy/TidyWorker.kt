@@ -41,7 +41,7 @@ class TidyWorker(
                     Utils.sendNotification(
                         applicationContext,
                         title = "Schedule met",
-                        message = "${task.title} Unarchived hide = ${task.hide}"
+                        message = "${task.title} Unarchived"
                     )
                 }
                 Result.success()
@@ -78,6 +78,12 @@ class TidyWorker(
                     )
                 }
                 taskService.archiveAndRescheduleNonDoneDailyTasksWithDueTime()
+                val alarmService = AlarmService(applicationContext)
+                alarmService.scheduleAlarm(
+                    scheduleTime = Utils.getNextMidNightMilli(),
+                    action = TaskActions.RESET_DAY,
+                    taskId = -1
+                )
                 Result.success()
             }
 
