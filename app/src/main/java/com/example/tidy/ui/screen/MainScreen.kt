@@ -38,16 +38,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.tidy.BackupService
+import com.example.tidy.NoteService
 import com.example.tidy.TaskService
 import com.example.tidy.WorkService
 import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.BottomBar
 import com.example.tidy.viewModels.BackupViewModel
+import com.example.tidy.viewModels.NoteViewModel
 import com.example.tidy.viewModels.SharedViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainScreen(taskService: TaskService) {
+fun MainScreen(taskService: TaskService, noteService: NoteService) {
     val navController = rememberNavController()
     val currentRoute =
         navController.currentBackStackEntryAsState().value?.destination?.route
@@ -59,37 +61,42 @@ fun MainScreen(taskService: TaskService) {
             }
         }
     )
+
+    val noteViewModel = viewModel<NoteViewModel>(
+        factory = viewModelFactory {
+            initializer { NoteViewModel(noteService) }
+        }
+    )
+
     val context = LocalContext.current
     val workService = WorkService(context)
     val backupService = BackupService(taskService, context)
     val backupViewModel = viewModel<BackupViewModel>(
-      factory = viewModelFactory {
-          initializer {
-              BackupViewModel(
-                  backupService = backupService,
-                  workService = workService
-              )
-          }
-      }
+        factory = viewModelFactory {
+            initializer {
+                BackupViewModel(
+                    backupService = backupService,
+                    workService = workService
+                )
+            }
+        }
     )
 
-    val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
-    val pagerState = rememberPagerState(pageCount = { tabs.size })
-    val currentPage = tabs[pagerState.currentPage]
+    // Tab → page index:  0=Home  1=Search  2=Notes  3=Settings
+    val pagerState = rememberPagerState(pageCount = { 4 })
     val scope = rememberCoroutineScope()
 
+    // Back press on any non-home tab returns to Home.
     BackHandler(
-        enabled = !pagerState.isScrollInProgress && pagerState.currentPage in 1..2 // only Menu & Settings
+        enabled = !pagerState.isScrollInProgress && pagerState.currentPage in 1..3
     ) {
-        scope.launch {
-            pagerState.scrollToPage(0)
-        }
+        scope.launch { pagerState.scrollToPage(0) }
     }
 
     Scaffold(
         bottomBar = {
             if (currentRoute == Routes.HOME) {
-                BottomBar(currentPage, pagerState)
+                BottomBar(pagerState)
             }
         }
     ) { innerPadding ->
@@ -105,23 +112,21 @@ fun MainScreen(taskService: TaskService) {
                 Box {
                     HorizontalPager(
                         state = pagerState,
-                        beyondViewportPageCount = 2, // keeps all 3 pages alive
+                        beyondViewportPageCount = 3, // keep all 4 pages alive
                         modifier = Modifier.fillMaxSize()
                     ) { page ->
                         when (page) {
                             0 -> HomeScreen(sharedViewModel, navController)
                             1 -> SearchScreen(sharedViewModel, navController, pagerState)
-                            2 -> SettingsScreen(navController)
+                            2 -> NotesScreen(noteViewModel)
+                            3 -> SettingsScreen(navController)
                         }
                     }
                 }
             }
 
             composable(Routes.ADD_TASK) {
-                AddTaskScreen(
-                    sharedViewModel,
-                    navController
-                )
+                AddTaskScreen(sharedViewModel, navController)
             }
 
             composable(Routes.BACKUP) {

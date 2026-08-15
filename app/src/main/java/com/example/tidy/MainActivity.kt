@@ -48,8 +48,9 @@ class MainActivity : ComponentActivity() {
             val workService = WorkService(this)
             val scheduleService = ScheduleService(alarmService, workService)
             val taskService = TaskService(db = database, scheduleService)
+            val noteService = NoteService(database)
             TidyTheme {
-                MainScreen(taskService)
+                MainScreen(taskService, noteService)
             }
         }
         createNotificationChannel(this)

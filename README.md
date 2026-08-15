@@ -10,8 +10,22 @@ A task management app with all necessary features.
 
 - **Repeating Tasks** — Create tasks that repeat daily, weekly, or monthly.
 - **Nested Subtasks** — Organize work with deeply nested subtasks, no depth limit.
-- **Search** — Quickly find any task with built-in search.
+- **Search** — Quickly find any task with built-in search and filter chips (Repeat, Parents, Archived).
+- **Notes** — A dedicated Notes tab to jot down timestamped notes with a title and free-form body. Notes are ordered by last-updated time and can be edited or deleted at any time.
 - **Backup** — Automatic and manual backups; export your data as a JSON file.
+
+## Navigation
+
+The app uses a four-tab bottom navigation bar:
+
+| Tab | Description |
+|-----|-------------|
+| **Home** | View and manage your active tasks |
+| **Search** | Search and filter all tasks |
+| **Notes** | Create and manage timestamped notes |
+| **Settings** | App settings and backup options |
+
+Pressing the back button from any tab returns you to Home.
 
 [<img alt="Get it on play" src="app/src/main/res/drawable/playstore_1_.png" width="180px">](https://play.google.com/store/apps/details?id=com.Ace777.tidy)
 [<img alt="Get it on fdroid" src="app/src/main/res/drawable/fdroid.png" width="180px">](https://f-droid.org/packages/com.Ace777.tidy)

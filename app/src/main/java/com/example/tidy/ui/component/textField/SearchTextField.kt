@@ -29,6 +29,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.unit.dp
 
 
@@ -64,5 +65,9 @@ fun SearchTextField(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
+            // Prevent this field from capturing focus automatically when the
+            // composable is first placed in the composition (e.g. when all
+            // pager pages are kept alive via beyondViewportPageCount).
+            .focusProperties { canFocus = true }
     )
 }

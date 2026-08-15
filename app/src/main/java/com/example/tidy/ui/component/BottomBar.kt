@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.NoteAlt
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -30,61 +31,75 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.tidy.constants.Routes
 import kotlinx.coroutines.launch
 
+/**
+ * Bottom navigation bar driven entirely by [pagerState].
+ *
+ * Tab → page index mapping:
+ *   0 = Home
+ *   1 = Search
+ *   2 = Notes
+ *   3 = Settings
+ */
 @Composable
-fun BottomBar( currentRoute: String, pagerState: PagerState) {
+fun BottomBar(pagerState: PagerState) {
     val scope = rememberCoroutineScope()
+    val currentPage = pagerState.currentPage
 
     NavigationBar {
         NavigationBarItem(
-            selected = currentRoute == Routes.HOME,
+            selected = currentPage == 0,
             onClick = {
-                if (currentRoute == Routes.HOME) return@NavigationBarItem
-                scope.launch {
-                    pagerState.scrollToPage(0)
-                }
+                if (currentPage != 0) scope.launch { pagerState.scrollToPage(0) }
             },
             icon = {
                 Icon(
                     Icons.Default.Home,
-                    "Home Button",
-                    modifier = Modifier.size(30.dp)
+                    contentDescription = "Home",
+                    modifier = Modifier.size(28.dp)
                 )
             },
             label = { Text("Home") }
         )
         NavigationBarItem(
-            selected = currentRoute == Routes.SEARCH,
+            selected = currentPage == 1,
             onClick = {
-                if (currentRoute == Routes.SEARCH) return@NavigationBarItem
-                scope.launch {
-                    pagerState.scrollToPage(1)
-                }
+                if (currentPage != 1) scope.launch { pagerState.scrollToPage(1) }
             },
             icon = {
                 Icon(
                     Icons.Default.Search,
-                    null,
-                    modifier = Modifier.size(30.dp)
+                    contentDescription = "Search",
+                    modifier = Modifier.size(28.dp)
                 )
             },
             label = { Text("Search") }
         )
         NavigationBarItem(
-            selected = currentRoute == Routes.SETTINGS,
+            selected = currentPage == 2,
             onClick = {
-                if (currentRoute == Routes.SETTINGS) return@NavigationBarItem
-                scope.launch {
-                    pagerState.scrollToPage(2)
-                }
+                if (currentPage != 2) scope.launch { pagerState.scrollToPage(2) }
+            },
+            icon = {
+                Icon(
+                    Icons.Default.NoteAlt,
+                    contentDescription = "Notes",
+                    modifier = Modifier.size(28.dp)
+                )
+            },
+            label = { Text("Notes") }
+        )
+        NavigationBarItem(
+            selected = currentPage == 3,
+            onClick = {
+                if (currentPage != 3) scope.launch { pagerState.scrollToPage(3) }
             },
             icon = {
                 Icon(
                     Icons.Default.Settings,
-                    null,
-                    modifier = Modifier.size(30.dp)
+                    contentDescription = "Settings",
+                    modifier = Modifier.size(28.dp)
                 )
             },
             label = { Text("Settings") }

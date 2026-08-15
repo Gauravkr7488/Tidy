@@ -62,6 +62,10 @@ import com.tidy.sqldelight.Task
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+// The page index for the Search tab in the pager.
+// Keep in sync with the tabs list in MainScreen.
+private const val SEARCH_PAGE_INDEX = 1
+
 @Composable
 fun SearchScreen(
     sharedViewModel: SharedViewModel,
@@ -79,10 +83,18 @@ fun SearchScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
+    // Whenever the settled page is NOT the Search tab, hide the keyboard and
+    // clear focus. This prevents the search field from stealing focus/keyboard
+    // when the user is on a different tab (all pages are kept alive by
+    // beyondViewportPageCount).
     LaunchedEffect(pagerState.settledPage) {
-        keyboardController?.hide()
-        delay(100)
-        focusManager.clearFocus()
+        if (pagerState.settledPage != SEARCH_PAGE_INDEX) {
+            keyboardController?.hide()
+            // Small delay lets the page transition animation finish before
+            // clearing focus, avoiding a visible flash of the keyboard.
+            delay(50)
+            focusManager.clearFocus(force = true)
+        }
     }
     Scaffold(topBar = { TopAppBar("Search") }, modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
