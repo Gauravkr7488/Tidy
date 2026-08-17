@@ -52,7 +52,7 @@ object Utils {
     }
 
     fun convertTimeToMillis(h: Int, m: Int): Long {
-        return Calendar.getInstance(TimeZone.getDefault()).apply {
+        return Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, h)
             set(Calendar.MINUTE, m)
             set(Calendar.SECOND, 0)
@@ -61,7 +61,7 @@ object Utils {
     }
 
     fun getCurrentDateMillis(): Long {
-        return Calendar.getInstance(TimeZone.getDefault()).apply {
+        return Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
@@ -73,7 +73,7 @@ object Utils {
     fun combineDateAndTimeMillis(date: Long?, time: Long?): Long? {
         if (date == null && time == null) return null
         val dateValue = date ?: getCurrentDateMillis()
-        val timeValue = time ?: 0L
+        val timeValue = time ?: getCurrentDateMillis()
 
         val dateCalendar = Calendar.getInstance().apply {
             timeInMillis = dateValue
@@ -88,10 +88,7 @@ object Utils {
         }
 
         return dateCalendar.apply {
-            set(
-                Calendar.HOUR_OF_DAY,
-                timeCalendar.get(Calendar.HOUR_OF_DAY)
-            )
+            set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
             set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
             set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND))
         }.timeInMillis
@@ -234,4 +231,14 @@ object Utils {
         return task.repeatType != emptyTask.repeatType || task.dueDateAndTime != emptyTask.dueDateAndTime || task.priority != emptyTask.priority
     }
 
+    fun getNextMidNightMilli(): Long {
+        val nextMidnight = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return nextMidnight.timeInMillis
+    }
 }

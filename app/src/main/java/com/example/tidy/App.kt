@@ -22,8 +22,6 @@ import androidx.work.Configuration
 import androidx.work.WorkManager
 import com.example.tidy.constants.TaskActions
 import com.yourapp.db.AppDatabase
-import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 class App : Application() {
 
@@ -41,23 +39,11 @@ class App : Application() {
             .build()
         WorkManager.initialize(this, config)
 
-        scheduleService.schedulePeriodicWork(
+        alarmService.scheduleAlarm(
+            scheduleTime = Utils.getNextMidNightMilli(),
             action = TaskActions.RESET_DAY,
-            intervalInMilli = TimeUnit.HOURS.toMillis(24),
-            label = "dailyReset",
-            initialDelayInMilli = calculateInitialDelay()
+            taskId = -1
         )
-    }
-    private fun calculateInitialDelay(): Long {
-        val now = Calendar.getInstance()
-        val nextMidnight = Calendar.getInstance().apply {
-            add(Calendar.DAY_OF_YEAR, 1)
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        return nextMidnight.timeInMillis - now.timeInMillis
     }
 }
 

@@ -38,7 +38,7 @@ class TaskService(
     suspend fun archiveAndRescheduleNonDoneDailyTasksWithDueTime() {
         val tasks = getNonDoneDailyTasksWithDueDate()
         tasks.forEach {
-            updateTask(it.copy(hide = true))
+            updateTask(it.copy(hide = true, done = true))
             scheduleService.scheduleTask(it)
         }
     }

@@ -36,7 +36,7 @@ class TidyWorker(
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
                 val task = taskService.getTask(taskId)
-                if (task.done || task.hide) {
+                if (task.done) {
                     taskService.saveTask(task.copy(done = false, hide = false))
                     Utils.sendNotification(
                         applicationContext,
@@ -78,6 +78,12 @@ class TidyWorker(
                     )
                 }
                 taskService.archiveAndRescheduleNonDoneDailyTasksWithDueTime()
+                val alarmService = AlarmService(applicationContext)
+                alarmService.scheduleAlarm(
+                    scheduleTime = Utils.getNextMidNightMilli(),
+                    action = TaskActions.RESET_DAY,
+                    taskId = -1
+                )
                 Result.success()
             }
 
