@@ -17,6 +17,7 @@
 package com.example.tidy
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.work.CoroutineWorker
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
@@ -38,11 +39,15 @@ class TidyWorker(
                 val task = taskService.getTask(taskId)
                 if (task.done) {
                     taskService.saveTask(task.copy(done = false, hide = false))
-                    Utils.sendNotification(
-                        applicationContext,
-                        title = "Schedule met",
-                        message = "${task.title} Unarchived"
-                    )
+                    if (task.repeatType == RepeatTypes.DAY){
+                        setDailyUnarchivedCount()
+                    }else{
+                        Utils.sendNotification(
+                            applicationContext,
+                            title = "Schedule met",
+                            message = "${task.title} Unarchived"
+                        )
+                    }
                 }
                 Result.success()
             }
@@ -80,15 +85,41 @@ class TidyWorker(
                 taskService.archiveAndRescheduleNonDoneDailyTasksWithDueTime()
                 val alarmService = AlarmService(applicationContext)
                 alarmService.scheduleAlarm(
-                    scheduleTime = Utils.getNextMidNightMilli(),
+                    scheduleTime = Utils.getNextMidNightMilli() + 10000, // delay for daily unarchival count update
                     action = TaskActions.RESET_DAY,
                     taskId = -1
                 )
+                val dailyCount = getAndResetDailyUnarchivedCount()
+                if (dailyCount > 0L) {
+                    Utils.sendNotification(
+                        context = applicationContext,
+                        title = "Daily tasks Unarchived",
+                        message = "$dailyCount tasks unarchived"
+                    )
+                }
                 Result.success()
             }
 
             else -> Result.failure()
         }
+    }
+    @Synchronized
+    private fun setDailyUnarchivedCount() {
+        val prefs = applicationContext.getSharedPreferences("count_prefs", Context.MODE_PRIVATE)
+        val x = prefs.getLong("count_daily_unarchive", 0)
+        val y = x + 1
+        prefs.edit {
+            putLong("count_daily_unarchive", y)
+        }
+    }
+
+    private fun getAndResetDailyUnarchivedCount(): Long {
+        val prefs = applicationContext.getSharedPreferences("count_prefs", Context.MODE_PRIVATE)
+        val count = prefs.getLong("count_daily_unarchive", 0)
+        prefs.edit {
+            putLong("count_daily_unarchive", 0)
+        }
+        return count
     }
 }
 
