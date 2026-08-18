@@ -39,6 +39,8 @@ class TidyWorker(
                 val task = taskService.getTask(taskId)
                 if (task.done) {
                     taskService.saveTask(task.copy(done = false, hide = false))
+                    taskService.updateTaskAndDescendantsHideStatus(task.id, false)
+                    taskService.updateTaskAndDescendantsDoneStatus(task.id, false)
                     if (task.repeatType == RepeatTypes.DAY){
                         setDailyUnarchivedCount()
                     }else{
