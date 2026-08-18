@@ -103,6 +103,16 @@ class SharedViewModel(
         }
     }
 
+    fun toggleDoneTaskAndDescendants(taskId: Long, done: Boolean) {
+        viewModelScope.launch {
+            updateBlockedTasksStatus(
+                taskId,
+                done
+            )
+            taskService.updateTaskAndDescendantsDoneStatus(taskId, done)
+        }
+    }
+
     suspend fun updateBlockedTasksStatus(taskId: Long, updatedBlockStatus: Boolean) {
         val blockedTasks = getBlockedTasks(taskId)
         blockedTasks.forEach {
@@ -229,7 +239,6 @@ class SharedViewModel(
 
     fun getDescendantList(task: Task): List<Task> {
         val tasks = tasks.value
-        if (task.parentId == null) return emptyList()
         val children: MutableList<Task> = mutableListOf()
         tasks.forEach {
             if (it.parentId == task.id) {
@@ -262,7 +271,7 @@ class SharedViewModel(
         }
     }
 
-    fun syncTaskAndDescendantsHideStatus(task: Task){
+    fun syncTaskAndDescendantsHideStatus(task: Task) {
         viewModelScope.launch {
             taskService.updateTaskAndDescendantsHideStatus(task.id, task.hide)
         }

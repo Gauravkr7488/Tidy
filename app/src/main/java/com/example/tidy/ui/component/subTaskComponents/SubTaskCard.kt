@@ -29,6 +29,8 @@ import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.RemoveDone
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -64,6 +66,7 @@ fun SubTaskCard(
     getChildren: (Long) -> List<Task>,
     hideScheduleBadge: Boolean = false,
     diableContextMenu: Boolean = false,
+    toggleDoneTaskAndDescendants: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -103,6 +106,15 @@ fun SubTaskCard(
                                         icon = Icons.Default.SkipNext,
                                         description = "Skip Task",
                                         onClick = { onSkip(task) },
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                )
+                                add(
+                                    TaskContextAction(
+                                        label = if (!task.done) "Mark Done" else "Mark undone",
+                                        icon = if (!task.done) Icons.Default.DoneAll else Icons.Default.RemoveDone,
+                                        description = if (!task.done) "Mark Done" else "Mark undone",
+                                        onClick = { toggleDoneTaskAndDescendants() },
                                         color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 )
@@ -175,7 +187,7 @@ fun SubTaskCard(
                             toggleExpandStatus = toggleExpandStatus,
                             expandList = expandList,
                             hideScheduleBadge = true,
-                            diableContextMenu = diableContextMenu
+                            diableContextMenu = diableContextMenu,
                         )
                     }
                 }
