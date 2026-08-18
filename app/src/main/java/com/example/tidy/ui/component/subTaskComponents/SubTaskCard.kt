@@ -113,7 +113,7 @@ fun SubTaskCard(
                             if (children.isNotEmpty()){
                                 add(
                                     TaskContextAction(
-                                        label = if (!task.done) "Mark Done" else "Mark undone",
+                                        label = if (!task.done) "Done" else "Undone",
                                         icon = if (!task.done) Icons.Default.DoneAll else Icons.Default.RemoveDone,
                                         description = if (!task.done) "Mark Done" else "Mark undone",
                                         onClick = { toggleDoneTaskAndDescendants(task.id) },
