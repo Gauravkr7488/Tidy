@@ -148,6 +148,11 @@ open class DbOperation(
             db.taskQueries.updateTaskAndDescendantsHideStatus(taskId = taskId, hide = hide)
         }
 
+    suspend fun updateTaskAndDescendantsDoneStatus(taskId: Long, done: Boolean) =
+        withContext(Dispatchers.IO) {
+            db.taskQueries.updateTaskAndDescendantsDoneStatus(taskId = taskId, done = done)
+        }
+
     suspend fun resetSkippedTasks() = withContext(Dispatchers.IO) {
         db.taskQueries.resetSkippedTasks().value
     }
@@ -173,4 +178,5 @@ open class DbOperation(
             }
         }
     }
+
 }

@@ -462,7 +462,8 @@ fun ParentMenu(
                         onSkip = {},
                         expandList = expandList.toSet(),
                         getChildren = getChildren,
-                        diableContextMenu = true
+                        diableContextMenu = true,
+                        toggleDoneTaskAndDescendants = {}
                     )
                 }
             }
