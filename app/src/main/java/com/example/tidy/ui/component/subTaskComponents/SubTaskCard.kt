@@ -66,7 +66,7 @@ fun SubTaskCard(
     getChildren: (Long) -> List<Task>,
     hideScheduleBadge: Boolean = false,
     diableContextMenu: Boolean = false,
-    toggleDoneTaskAndDescendants: () -> Unit = {},
+    toggleDoneTaskAndDescendants: (Long) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -109,12 +109,14 @@ fun SubTaskCard(
                                         color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 )
+                            }
+                            if (children.isNotEmpty()){
                                 add(
                                     TaskContextAction(
                                         label = if (!task.done) "Mark Done" else "Mark undone",
                                         icon = if (!task.done) Icons.Default.DoneAll else Icons.Default.RemoveDone,
                                         description = if (!task.done) "Mark Done" else "Mark undone",
-                                        onClick = { toggleDoneTaskAndDescendants() },
+                                        onClick = { toggleDoneTaskAndDescendants(task.id) },
                                         color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 )
@@ -188,6 +190,7 @@ fun SubTaskCard(
                             expandList = expandList,
                             hideScheduleBadge = true,
                             diableContextMenu = diableContextMenu,
+                            toggleDoneTaskAndDescendants = toggleDoneTaskAndDescendants
                         )
                     }
                 }
