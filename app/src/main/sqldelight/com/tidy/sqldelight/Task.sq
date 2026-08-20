@@ -214,7 +214,7 @@ WITH RECURSIVE descendants(id) AS (
 UPDATE Task SET done = :done WHERE id IN (SELECT id FROM descendants);
 
 resetSkippedTasks:
-UPDATE Task SET hide = 0 WHERE hide = 1 AND done = 0;
+UPDATE Task SET hide = 0 AND skipStatus = 0 WHERE hide = 1 AND skipStatus = 1;
 
 getNonDoneDailyTasksWithDueDate:
 SELECT * FROM Task WHERE done = 0 AND hide = 0  AND dueDateAndTime != NULL AND repeatType = ? ;
