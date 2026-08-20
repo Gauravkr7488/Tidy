@@ -194,10 +194,10 @@ fun AddTaskScreen(
                                 )
                                 val task = Task(
                                     id = taskId,
-                                    title = taskTitle,
+                                    title = taskTitle.trim(),
                                     repeatType = repeatType,
                                     repeatDays = repeatDays,
-                                    description = description,
+                                    description = description.trim(),
                                     done = done,
                                     hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null && taskId == 0L) false else hide,
                                     createdAt = System.currentTimeMillis(),
