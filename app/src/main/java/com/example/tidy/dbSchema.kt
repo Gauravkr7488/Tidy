@@ -35,5 +35,6 @@ data class TaskBackupDto(
     var frequencyNumber: String? = null,
     var endDate: Long? = null,
     var repeatAfterDone: Boolean = false,
+    var skipStatus: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
 )
