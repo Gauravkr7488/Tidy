@@ -37,19 +37,17 @@ class TidyWorker(
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
                 val task = taskService.getTask(taskId)
-                if (task.done) {
-                    taskService.saveTask(task.copy(done = false, hide = false))
-                    taskService.updateTaskAndDescendantsHideStatus(task.id, false)
-                    taskService.updateTaskAndDescendantsDoneStatus(task.id, false)
-                    if (task.repeatType == RepeatTypes.DAY){
-                        setDailyUnarchivedCount()
-                    }else{
-                        Utils.sendNotification(
-                            applicationContext,
-                            title = "Schedule met",
-                            message = "${task.title} Unarchived"
-                        )
-                    }
+                taskService.saveTask(task.copy(done = false, hide = false))
+                taskService.updateTaskAndDescendantsHideStatus(task.id, false)
+                taskService.updateTaskAndDescendantsDoneStatus(task.id, false)
+                if (task.repeatType == RepeatTypes.DAY) {
+                    setDailyUnarchivedCount()
+                } else {
+                    Utils.sendNotification(
+                        applicationContext,
+                        title = "Schedule met",
+                        message = "${task.title} Unarchived"
+                    )
                 }
                 Result.success()
             }
@@ -105,6 +103,7 @@ class TidyWorker(
             else -> Result.failure()
         }
     }
+
     @Synchronized
     private fun setDailyUnarchivedCount() {
         val prefs = applicationContext.getSharedPreferences("count_prefs", Context.MODE_PRIVATE)
