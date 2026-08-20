@@ -46,6 +46,7 @@ open class DbOperation(
             frequencyNumber = task.frequencyNumber,
             endDate = task.endDate,
             repeatAfterDone = task.repeatAfterDone,
+            skipStatus = task.skipStatus,
         )
     }
 
@@ -81,6 +82,7 @@ open class DbOperation(
             dueDateAndTime = task.dueDateAndTime,
             frequencyNumber = task.frequencyNumber,
             endDate = task.endDate,
+            skipStatus = task.skipStatus,
             repeatAfterDone = task.repeatAfterDone,
         ).value
     }
@@ -104,6 +106,7 @@ open class DbOperation(
             dueDateAndTime = task.dueDateAndTime,
             frequencyNumber = task.frequencyNumber,
             endDate = task.endDate,
+            skipStatus = task.skipStatus,
             repeatAfterDone = task.repeatAfterDone,
         )
     }
