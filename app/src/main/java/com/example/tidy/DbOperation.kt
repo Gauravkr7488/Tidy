@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 open class DbOperation(
-    private val db: AppDatabase
+    val db: AppDatabase
 ) {
     suspend fun saveTaskWithId(task: Task) = withContext(Dispatchers.IO) {
         db.taskQueries.saveTaskWithId(
