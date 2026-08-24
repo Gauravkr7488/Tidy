@@ -69,4 +69,12 @@ class TaskService(
             }
         }
     }
+
+    suspend fun deleteTasks(tasks: List<Task>) = withContext(Dispatchers.IO) {
+        db.transaction {
+            tasks.forEach {
+                tq.deleteTask(it.id)
+            }
+        }
+    }
 }

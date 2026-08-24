@@ -55,7 +55,7 @@ fun SubTaskCard(
     children: List<Task>,
     toggleDoneStatus: (Long) -> Unit,
     toggleExpandStatus: (Long) -> Unit,
-    deleteTask: (Long, Boolean) -> Unit,
+    deleteTask: (Task, Boolean) -> Unit,
     onEdit: (Task) -> Unit,
     onSkip: (Task) -> Unit,
     modifier: Modifier = Modifier,
@@ -162,7 +162,7 @@ fun SubTaskCard(
             TaskDeleteDialog(
                 task = task,
                 onDismiss = { showDeleteDialog = !showDeleteDialog },
-                onDeleteClick = { deleteTask(task.id, it) },
+                onDeleteClick = { deleteTask(task, it) },
                 children = getChildren(task.id)
             )
         }
