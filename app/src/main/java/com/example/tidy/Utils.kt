@@ -123,6 +123,7 @@ object Utils {
             frequencyNumber = null,
             endDate = null,
             repeatAfterDone = false,
+            skipStatus = false,
         )
     }
 
@@ -143,7 +144,8 @@ object Utils {
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
             endDate = endDate,
-            repeatAfterDone = repeatAfterDone
+            repeatAfterDone = repeatAfterDone,
+            skipStatus = skipStatus
         )
     }
 
@@ -163,6 +165,7 @@ object Utils {
             dueDateAndTime = dueDateAndTime,
             frequencyNumber = frequencyNumber,
             endDate = endDate,
+            skipStatus = skipStatus,
             repeatAfterDone = repeatAfterDone,
         )
     }

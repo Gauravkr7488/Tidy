@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
 open class DbOperation(
-    private val db: AppDatabase
+    val db: AppDatabase
 ) {
     suspend fun saveTaskWithId(task: Task) = withContext(Dispatchers.IO) {
         db.taskQueries.saveTaskWithId(
@@ -46,6 +46,7 @@ open class DbOperation(
             frequencyNumber = task.frequencyNumber,
             endDate = task.endDate,
             repeatAfterDone = task.repeatAfterDone,
+            skipStatus = task.skipStatus,
         )
     }
 
@@ -81,6 +82,7 @@ open class DbOperation(
             dueDateAndTime = task.dueDateAndTime,
             frequencyNumber = task.frequencyNumber,
             endDate = task.endDate,
+            skipStatus = task.skipStatus,
             repeatAfterDone = task.repeatAfterDone,
         ).value
     }
@@ -104,6 +106,7 @@ open class DbOperation(
             dueDateAndTime = task.dueDateAndTime,
             frequencyNumber = task.frequencyNumber,
             endDate = task.endDate,
+            skipStatus = task.skipStatus,
             repeatAfterDone = task.repeatAfterDone,
         )
     }
@@ -148,6 +151,11 @@ open class DbOperation(
             db.taskQueries.updateTaskAndDescendantsHideStatus(taskId = taskId, hide = hide)
         }
 
+    suspend fun updateTaskAndDescendantsDoneStatus(taskId: Long, done: Boolean) =
+        withContext(Dispatchers.IO) {
+            db.taskQueries.updateTaskAndDescendantsDoneStatus(taskId = taskId, done = done)
+        }
+
     suspend fun resetSkippedTasks() = withContext(Dispatchers.IO) {
         db.taskQueries.resetSkippedTasks().value
     }
@@ -164,13 +172,5 @@ open class DbOperation(
     val tq = db.taskQueries
     suspend fun getAllDescendants(taskId: Long) = withContext(Dispatchers.IO) {
         return@withContext tq.getAllDescendants(taskId).executeAsList()
-    }
-
-    suspend fun deleteTasks(taskIds: List<Long>) = withContext(Dispatchers.IO) {
-        db.transaction {
-            taskIds.forEach {
-                tq.deleteTask(it)
-            }
-        }
     }
 }

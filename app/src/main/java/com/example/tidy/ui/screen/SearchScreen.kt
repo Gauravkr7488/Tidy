@@ -177,7 +177,7 @@ fun SearchScreen(
                     task = deleteTask,
                     children = tasks.filter { it.parentId == deleteTask.id },
                     onDismiss = { showDeleteTaskDialog = false }
-                ) { sharedViewModel.deleteTask(deleteTask.id, it) }
+                ) { sharedViewModel.deleteTask(deleteTask, it) }
             }
         }
     }

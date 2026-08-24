@@ -40,7 +40,7 @@ class App : Application() {
         WorkManager.initialize(this, config)
 
         alarmService.scheduleAlarm(
-            scheduleTime = Utils.getNextMidNightMilli(),
+            scheduleTime = Utils.getNextMidNightMilli() + 10000, // delay for daily unarchival count update
             action = TaskActions.RESET_DAY,
             taskId = -1
         )

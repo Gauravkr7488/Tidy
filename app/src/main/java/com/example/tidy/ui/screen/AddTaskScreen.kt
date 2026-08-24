@@ -132,6 +132,7 @@ fun AddTaskScreen(
     var done: Boolean by remember { mutableStateOf(false) }
     var startNow by remember { mutableStateOf(false) }
     var repeatAfterDone by remember { mutableStateOf(false) }
+    var skipStatus by remember { mutableStateOf(false) }
     var priority: Long? by remember { mutableStateOf(null) }
     var dueDate: Long? by remember { mutableStateOf(null) }
     var dueTime: Long? by remember { mutableStateOf(null) }
@@ -158,6 +159,7 @@ fun AddTaskScreen(
             frequencyNumber = task.frequencyNumber
             endDate = task.endDate
             repeatAfterDone = task.repeatAfterDone
+            skipStatus = task.skipStatus
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -194,10 +196,10 @@ fun AddTaskScreen(
                                 )
                                 val task = Task(
                                     id = taskId,
-                                    title = taskTitle,
+                                    title = taskTitle.trim(),
                                     repeatType = repeatType,
                                     repeatDays = repeatDays,
-                                    description = description,
+                                    description = description.trim(),
                                     done = done,
                                     hide = if (startNow || repeatType == RepeatTypes.NONE && dueTimeAndDate == null && taskId == 0L) false else hide,
                                     createdAt = System.currentTimeMillis(),
@@ -208,6 +210,7 @@ fun AddTaskScreen(
                                     frequencyNumber = frequencyNumber,
                                     endDate = endDate,
                                     repeatAfterDone = repeatAfterDone,
+                                    skipStatus = skipStatus,
                                 )
                                 val savedTaskId = sharedViewModel.saveTask(task)
                                 sharedViewModel.deleteAllBlocks(savedTaskId)
@@ -462,7 +465,8 @@ fun ParentMenu(
                         onSkip = {},
                         expandList = expandList.toSet(),
                         getChildren = getChildren,
-                        diableContextMenu = true
+                        diableContextMenu = true,
+                        toggleDoneTaskAndDescendants = {}
                     )
                 }
             }

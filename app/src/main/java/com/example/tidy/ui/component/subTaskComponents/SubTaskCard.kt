@@ -29,6 +29,8 @@ import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DoneAll
+import androidx.compose.material.icons.filled.RemoveDone
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -53,7 +55,7 @@ fun SubTaskCard(
     children: List<Task>,
     toggleDoneStatus: (Long) -> Unit,
     toggleExpandStatus: (Long) -> Unit,
-    deleteTask: (Long, Boolean) -> Unit,
+    deleteTask: (Task, Boolean) -> Unit,
     onEdit: (Task) -> Unit,
     onSkip: (Task) -> Unit,
     modifier: Modifier = Modifier,
@@ -64,6 +66,7 @@ fun SubTaskCard(
     getChildren: (Long) -> List<Task>,
     hideScheduleBadge: Boolean = false,
     diableContextMenu: Boolean = false,
+    toggleDoneTaskAndDescendants: (Long) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -103,6 +106,17 @@ fun SubTaskCard(
                                         icon = Icons.Default.SkipNext,
                                         description = "Skip Task",
                                         onClick = { onSkip(task) },
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                )
+                            }
+                            if (children.isNotEmpty()){
+                                add(
+                                    TaskContextAction(
+                                        label = if (!task.done) "Done" else "Undone",
+                                        icon = if (!task.done) Icons.Default.DoneAll else Icons.Default.RemoveDone,
+                                        description = if (!task.done) "Mark Done" else "Mark undone",
+                                        onClick = { toggleDoneTaskAndDescendants(task.id) },
                                         color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 )
@@ -148,7 +162,7 @@ fun SubTaskCard(
             TaskDeleteDialog(
                 task = task,
                 onDismiss = { showDeleteDialog = !showDeleteDialog },
-                onDeleteClick = { deleteTask(task.id, it) },
+                onDeleteClick = { deleteTask(task, it) },
                 children = getChildren(task.id)
             )
         }
@@ -175,7 +189,8 @@ fun SubTaskCard(
                             toggleExpandStatus = toggleExpandStatus,
                             expandList = expandList,
                             hideScheduleBadge = true,
-                            diableContextMenu = diableContextMenu
+                            diableContextMenu = diableContextMenu,
+                            toggleDoneTaskAndDescendants = toggleDoneTaskAndDescendants
                         )
                     }
                 }
