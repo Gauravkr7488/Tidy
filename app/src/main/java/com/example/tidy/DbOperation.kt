@@ -173,13 +173,4 @@ open class DbOperation(
     suspend fun getAllDescendants(taskId: Long) = withContext(Dispatchers.IO) {
         return@withContext tq.getAllDescendants(taskId).executeAsList()
     }
-
-    suspend fun deleteTasks(taskIds: List<Long>) = withContext(Dispatchers.IO) {
-        db.transaction {
-            taskIds.forEach {
-                tq.deleteTask(it)
-            }
-        }
-    }
-
 }

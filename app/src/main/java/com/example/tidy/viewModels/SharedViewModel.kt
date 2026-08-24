@@ -125,23 +125,18 @@ class SharedViewModel(
         }
     }
 
-    fun deleteTask(id: Long, deleteSubtasks: Boolean) {
+    fun deleteTask(task: Task, deleteSubtasks: Boolean) {
         viewModelScope.launch {
-            deleteTaskAsync(id, deleteSubtasks)
+            val tasksToBeDeleted = mutableListOf<Task>()
+            tasksToBeDeleted.add(task)
+            if (deleteSubtasks) {
+                val subtasks = getDescendantList(task)
+                tasksToBeDeleted.addAll(subtasks)
+            }
+            taskService.deleteTasks(tasksToBeDeleted)
+            updateBlockedTasksStatus(task.id, false)
+            taskService.updateParentsDoneStatus(task.parentId)
         }
-    }
-
-    private suspend fun deleteTaskAsync(id: Long, deleteSubtasks: Boolean) {
-        val task = taskService.getTask(id)
-        val children = tasks.value.filter { it.parentId == id }
-        if (deleteSubtasks) {
-            val childrenIds = children.map { it.id }
-            taskService.deleteTasks(childrenIds)
-        }
-        val parentId = task.parentId
-        updateBlockedTasksStatus(task.id, false)
-        taskService.deleteTask(task.id)
-        taskService.updateParentsDoneStatus(parentId)
     }
 
     suspend fun getTask(taskId: Long): Task? {
