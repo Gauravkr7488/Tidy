@@ -5,7 +5,7 @@
 
     <style name="Theme.MySplashScreen" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/design_default_color_background</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/icon</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/tidy_vector_new_final_round</item>
         <item name="postSplashScreenTheme">@style/Theme.Tidy</item>
     </style>
 

@@ -188,7 +188,7 @@ object Utils {
         )
 
         val builder = NotificationCompat.Builder(context, "default_channel_id")
-            .setSmallIcon(R.mipmap.ic_launcher)   // your icon
+            .setSmallIcon(R.drawable.notification_icon)   // your icon
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
