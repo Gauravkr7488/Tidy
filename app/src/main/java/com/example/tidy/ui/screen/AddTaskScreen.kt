@@ -139,6 +139,7 @@ fun AddTaskScreen(
     var endDate: Long? by remember { mutableStateOf(null) }
     var currentTask: Task? by remember { mutableStateOf(null) }
     val createMoreStaus = sharedViewModel.createMoreStatus.collectAsState()
+    var newParent: Task? by remember { mutableStateOf(null) }
     LaunchedEffect(Unit) {
         taskId = sharedViewModel.taskId
         val task = sharedViewModel.getTask(taskId = taskId)
@@ -194,6 +195,10 @@ fun AddTaskScreen(
                                     dueDate,
                                     dueTime
                                 )
+                                newParent?.let {
+                                    parentId =
+                                        sharedViewModel.saveTask(it)
+                                }
                                 val task = Task(
                                     id = taskId,
                                     title = taskTitle.trim(),
@@ -315,7 +320,13 @@ fun AddTaskScreen(
                 availableParentsList = if (currentTask != null) sharedViewModel.getAvailableParentList(
                     currentTask!!
                 ) - taskChildren.toSet() else sharedViewModel.tasks.collectAsState().value - taskChildren.toSet(),
-                onParentAdd = { parentId = it.id },
+                onParentAdd = {
+                    if (it.id != 0L) {
+                        parentId = it.id
+                    } else {
+                        newParent = it
+                    }
+                },
                 onParentRemove = { parentId = null },
                 getChildren = { sharedViewModel.getChildren(it) }
             )
