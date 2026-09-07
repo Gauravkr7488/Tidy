@@ -20,13 +20,12 @@ package com.example.tidy.ui.component.taskComponents
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Block
@@ -48,14 +47,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.tidy.constants.RepeatTypes
+import com.example.tidy.ui.component.Badge
 import com.tidy.sqldelight.Task
 
 @Composable
@@ -68,6 +65,7 @@ fun TaskCard(
     trailingIconButtons: List<TaskIconAction> = emptyList(),
     contextMenuOptions: List<TaskContextAction> = emptyList(),
     hideScheduleBadge: Boolean = false,
+    badges: @Composable ColumnScope.() -> Unit = {},
 ) {
     var tapOffset by remember { mutableStateOf(Offset.Zero) }
     var showMenu by remember { mutableStateOf(false) }
@@ -172,6 +170,7 @@ fun TaskCard(
                         contentDescription = "Blocked"
                     )
                 }
+                badges()
             }
             trailingIconButtons.forEach { (icon, description, onCLick, tint, modifier) ->
                 IconButton(
@@ -191,28 +190,6 @@ fun TaskCard(
             tapOffset = tapOffset,
             onDismiss = { showMenu = !showMenu },
             options = contextMenuOptions
-        )
-    }
-}
-
-@Composable
-fun Badge(text: String, imageVector: ImageVector, contentDescription: String) {
-    Row(
-        modifier = Modifier.width(80.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Icon(
-            imageVector = imageVector,
-            contentDescription = contentDescription,
-            modifier = Modifier.size(12.dp),
-            tint = MaterialTheme.colorScheme.onSecondaryContainer
-        )
-        Text(
-            text = text,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSecondaryContainer
         )
     }
 }

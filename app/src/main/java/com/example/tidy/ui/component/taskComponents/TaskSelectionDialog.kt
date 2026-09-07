@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.tidy.Utils
+import com.example.tidy.ui.component.Badge
 import com.example.tidy.ui.component.SearchTasksTidy
 import com.example.tidy.ui.component.dialog.SimpleDialog
 import com.tidy.sqldelight.Task
@@ -105,13 +106,11 @@ fun TaskSelectionDialog(
                             query = ""
                         },
                         children = emptyList(),
-                        trailingIconButtons = buildList {
-                            add(
-                                TaskIconAction(
-                                    icon = Icons.Default.Create,
-                                    description = "create new",
-                                    onClick = {},
-                                )
+                        badges = {
+                            Badge(
+                                text = "Create",
+                                imageVector = Icons.Default.Create,
+                                contentDescription = "Create new task"
                             )
                         }
                     )
