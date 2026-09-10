@@ -45,7 +45,7 @@ fun SearchTasksTidy(
     var query by remember { mutableStateOf("") }
     var includeFilters: List<String> by remember { mutableStateOf(emptyList()) }
     var excludeFilters: List<String> by remember { mutableStateOf(emptyList()) }
-    val filterList = listOf("Repeat", "Parents", "Archived")
+    val filterList = listOf("Repeat", "Parents", "Archived", "Skipped")
     val filteredTasks = tasks.filter { task ->
         val matchesQuery = query.isBlank() ||
                 task.title.contains(query, ignoreCase = true) ||
@@ -56,6 +56,7 @@ fun SearchTasksTidy(
                         "Repeat" -> task.repeatType != RepeatTypes.NONE
                         "Parents" -> task.parentId == null
                         "Archived" -> task.hide
+                        "Skipped" -> task.skipStatus
                         else -> false
                     }
                 }
@@ -64,6 +65,7 @@ fun SearchTasksTidy(
                 "Repeat" -> task.repeatType != RepeatTypes.NONE
                 "Parents" -> task.parentId == null
                 "Archived" -> task.hide
+                "Skipped" -> task.skipStatus
                 else -> false
             }
         }
