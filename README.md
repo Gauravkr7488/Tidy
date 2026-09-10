@@ -8,10 +8,10 @@ A task management app with all necessary features.
 
 ## Features
 
-- **Repeating Tasks** — Create tasks that repeat daily, weekly, or monthly.
+- **Repeating Tasks** — Create tasks that repeat daily, weekly or with custom interval.
 - **Nested Subtasks** — Organize work with deeply nested subtasks, no depth limit.
 - **Search** — Quickly find any task with built-in search.
-- **Backup** — Automatic and manual backups; export your data as a JSON file.
+- **Backup** — Automatic and manual backups, export your data as a JSON file.
 
 [<img alt="Get it on play" src="app/src/main/res/drawable/playstore_1_.png" width="180px">](https://play.google.com/store/apps/details?id=com.Ace777.tidy)
 [<img alt="Get it on fdroid" src="app/src/main/res/drawable/fdroid.png" width="180px">](https://f-droid.org/packages/com.Ace777.tidy)
