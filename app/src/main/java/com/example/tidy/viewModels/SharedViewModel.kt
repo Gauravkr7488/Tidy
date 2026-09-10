@@ -270,4 +270,10 @@ class SharedViewModel(
             taskService.updateTaskAndDescendantsHideStatus(task.id, task.hide)
         }
     }
+
+    fun onArchive(task: Task) {
+        viewModelScope.launch {
+            taskService.updateTask(task.copy(hide = true))
+        }
+    }
 }
