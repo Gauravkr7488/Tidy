@@ -477,6 +477,7 @@ fun ParentMenu(
                         expandList = expandList.toSet(),
                         getChildren = getChildren,
                         diableContextMenu = true,
+                        onArchive = {},
                         toggleDoneTaskAndDescendants = {}
                     )
                 }

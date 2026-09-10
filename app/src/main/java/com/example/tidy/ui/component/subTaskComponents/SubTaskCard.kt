@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.ChevronRight
@@ -58,6 +59,7 @@ fun SubTaskCard(
     deleteTask: (Task, Boolean) -> Unit,
     onEdit: (Task) -> Unit,
     onSkip: (Task) -> Unit,
+    onArchive: (Task) -> Unit,
     modifier: Modifier = Modifier,
     expandList: Set<Long>,
     depth: Int = 0,
@@ -96,6 +98,15 @@ fun SubTaskCard(
                                     icon = Icons.Default.Create,
                                     description = "Edit Task",
                                     onClick = { onEdit(task) },
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                ),
+                            )
+                            add(
+                                TaskContextAction(
+                                    label = "Archive",
+                                    icon = Icons.Default.Archive,
+                                    description = "Archive Task",
+                                    onClick = { onArchive(task) },
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 ),
                             )
@@ -190,6 +201,7 @@ fun SubTaskCard(
                             expandList = expandList,
                             hideScheduleBadge = true,
                             diableContextMenu = diableContextMenu,
+                            onArchive = onArchive,
                             toggleDoneTaskAndDescendants = toggleDoneTaskAndDescendants
                         )
                     }
