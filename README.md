@@ -28,6 +28,11 @@ A task management app with all necessary features.
 This project is licensed under the [GNU General Public License v3.0](LICENSE).  
 You are free to use, modify, and distribute this software under the same terms.
 
+## Contributing
+
+This project is not currently accepting external contributions or pull requests. Please do not open PRs — they will be closed without review.
+If you find a bug, feel free to open an issue, and I'll take a look when I can.
+
 ## Inspiration
 
 Inspired by [Grit](https://github.com/shub39/Grit) and [Tasks](https://github.com/tasks/tasks).
