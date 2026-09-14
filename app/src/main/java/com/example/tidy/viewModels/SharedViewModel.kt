@@ -153,6 +153,9 @@ class SharedViewModel(
         if (task.parentId == null) return task
         val emptyTask = Utils.getEmptyTask()
         val parentTask = taskService.getTask(task.parentId)
+        if (parentTask.done != task.done) {
+            syncParentAndChildDoneStats(parentTask)
+        }
         return task.copy(
             hide = parentTask.hide,
             repeatType = emptyTask.repeatType,
@@ -163,6 +166,21 @@ class SharedViewModel(
             endDate = emptyTask.endDate,
             repeatAfterDone = emptyTask.repeatAfterDone
         )
+    }
+
+    private suspend fun syncParentAndChildDoneStats(parentTask: Task) {
+        if (parentTask.done) {
+            val updatedParent = parentTask.copy(done = false)
+            saveTask(updatedParent)
+            val ancestors = getAncestorList(parentTask)
+            ancestors.forEach { saveTask(it) }
+        } else {
+            val siblings = getChildren(parentTask.id)
+            if (siblings.isEmpty()) {
+                val updatedParent = parentTask.copy(done = true)
+                saveTask(updatedParent)
+            }
+        }
     }
 
     fun removeSubTask(
