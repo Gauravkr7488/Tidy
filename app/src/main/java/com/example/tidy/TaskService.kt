@@ -39,7 +39,8 @@ class TaskService(
     }
 
     suspend fun archiveAndRescheduleNonDoneDailyTasksWithDueTime() {
-        val tasks = getNonDoneDailyTasksWithDueDate()
+        val tasks =
+            getTasksByRepeatType(RepeatTypes.DAY).filter { !it.done && it.dueDateAndTime != null }
         tasks.forEach {
             updateTask(it.copy(hide = true, done = true))
             scheduleService.scheduleTask(it)
