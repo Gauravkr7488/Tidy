@@ -18,7 +18,6 @@ package com.example.tidy
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import com.example.tidy.constants.RepeatTypes
 import com.tidy.sqldelight.BlockedTask
 import com.tidy.sqldelight.Task
 import com.yourapp.db.AppDatabase
@@ -161,8 +160,8 @@ open class DbOperation(
         db.taskQueries.resetSkippedTasks().value
     }
 
-    suspend fun getNonDoneDailyTasksWithDueDate() = withContext(Dispatchers.IO) {
-        return@withContext db.taskQueries.getNonDoneDailyTasksWithDueDate(RepeatTypes.DAY)
+    suspend fun getTasksByRepeatType(repeatType: String) = withContext(Dispatchers.IO) {
+        return@withContext db.taskQueries.getTasksByRepeatType(repeatType)
             .executeAsList()
     }
 
