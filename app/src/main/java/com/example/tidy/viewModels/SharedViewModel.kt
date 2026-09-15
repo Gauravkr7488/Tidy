@@ -177,12 +177,12 @@ class SharedViewModel(
             val updatedParent = parentTask.copy(done = false)
             saveTask(updatedParent)
             val ancestors = getAncestorList(parentTask)
-            ancestors.forEach { saveTask(it) }
+            ancestors.forEach { taskService.saveTask(it) }
         } else {
             val siblings = getChildren(parentTask.id)
             if (siblings.isEmpty()) {
                 val updatedParent = parentTask.copy(done = true)
-                saveTask(updatedParent)
+                taskService.saveTask(updatedParent)
             }
         }
     }
