@@ -30,7 +30,7 @@ CREATE TABLE Task (
     blockStatus INTEGER AS Boolean NOT NULL DEFAULT 0,
     priority INTEGER,
     dueDateAndTime INTEGER,
-    frequencyNumber TEXT,
+    frequencyNumber TEXT, -- This should be number but being a text does no harm, atleast for now
     endDate INTEGER,
     repeatAfterDone INTEGER AS Boolean NOT NULL DEFAULT 0,
     skipStatus INTEGER AS Boolean NOT NULL DEFAULT 0,
