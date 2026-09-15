@@ -151,11 +151,15 @@ class SharedViewModel(
 
     private suspend fun syncTaskWithParent(task: Task): Task {
         if (task.parentId == null) return task
-        val emptyTask = Utils.getEmptyTask()
         val parentTask = taskService.getTask(task.parentId)
         if (parentTask.done != task.done) {
-            syncParentAndChildDoneStats(parentTask)
+            resolveDoneStat(parentTask)
         }
+        if (parentTask.hide != task.hide) {
+            val l = getDescendantList(task)
+            l.forEach { taskService.saveTask(it.copy(hide = parentTask.hide)) }
+        }
+        val emptyTask = Utils.getEmptyTask()
         return task.copy(
             hide = parentTask.hide,
             repeatType = emptyTask.repeatType,
@@ -168,17 +172,17 @@ class SharedViewModel(
         )
     }
 
-    private suspend fun syncParentAndChildDoneStats(parentTask: Task) {
+    private suspend fun resolveDoneStat(parentTask: Task) {
         if (parentTask.done) {
             val updatedParent = parentTask.copy(done = false)
             saveTask(updatedParent)
             val ancestors = getAncestorList(parentTask)
-            ancestors.forEach { saveTask(it) }
+            ancestors.forEach { taskService.saveTask(it) }
         } else {
             val siblings = getChildren(parentTask.id)
             if (siblings.isEmpty()) {
                 val updatedParent = parentTask.copy(done = true)
-                saveTask(updatedParent)
+                taskService.saveTask(updatedParent)
             }
         }
     }

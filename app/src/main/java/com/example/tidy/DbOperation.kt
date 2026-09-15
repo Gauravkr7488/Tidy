@@ -136,7 +136,8 @@ open class DbOperation(
         db.transaction {
             var currentId = parentId
             while (currentId != null) {
-                val allChildrenDone = db.taskQueries.areAllChildrenDone(currentId).executeAsOne()
+                val children = db.taskQueries.getAllChildren(currentId).executeAsList()
+                val allChildrenDone = if (children.isNotEmpty()) children.all { it.done } else false
                 db.taskQueries.updateDoneStatus(
                     id = currentId,
                     done = allChildrenDone
