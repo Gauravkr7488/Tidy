@@ -55,12 +55,11 @@ class TidyWorker(
             TaskActions.BACKUP -> {
                 val backupService = BackupService(taskService, applicationContext)
                 backupService.exportSilently()
-                val workService = WorkService(applicationContext)
-                workService.cancelAllWorkByAction(action) // to prevent duplications
-                workService.scheduleWork(
+                val alarmService = AlarmService(applicationContext)
+                alarmService.scheduleAlarm(
                     scheduleTime = Utils.getAutoBackupTime(),
-                    action = action,
-                    taskId = null
+                    action = TaskActions.BACKUP,
+                    taskId = -1
                 )
                 Result.success()
             }
