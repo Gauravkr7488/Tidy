@@ -56,6 +56,7 @@ class TidyWorker(
                 val backupService = BackupService(taskService, applicationContext)
                 backupService.exportSilently()
                 val workService = WorkService(applicationContext)
+                workService.cancelAllWorkByAction(action) // to prevent duplications
                 workService.scheduleWork(
                     scheduleTime = Utils.getAutoBackupTime(),
                     action = action,
