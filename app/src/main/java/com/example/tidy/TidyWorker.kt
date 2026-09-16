@@ -32,7 +32,8 @@ class TidyWorker(
 ) :
     CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        return when (val action = inputData.getString("action")) {
+        @Suppress("MoveVariableDeclarationIntoWhen") val action: String? = inputData.getString("action")
+        return when (action) {
             TaskActions.UNARCHIVE -> {
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
