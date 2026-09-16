@@ -7,18 +7,17 @@ import com.tidy.sqldelight.Task
 import java.util.Calendar
 
 class ScheduleService(
-    private val alarmService: AlarmService,
-    private val workService: WorkService
+    private val alarmService: AlarmService
 ) {
 
-    fun schedulePeriodicWork(action: String, intervalInMilli: Long, label: String, initialDelayInMilli: Long) {
-        workService.schedulePeriodicWork(
-            action = action,
-            intervalInMilli = intervalInMilli,
-            label = label,
-            initialDelayInMilli = initialDelayInMilli
-        )
-    }
+//    fun schedulePeriodicWork(action: String, intervalInMilli: Long, label: String, initialDelayInMilli: Long) {
+//        workService.schedulePeriodicWork(
+//            action = action,
+//            intervalInMilli = intervalInMilli,
+//            label = label,
+//            initialDelayInMilli = initialDelayInMilli
+//        )
+//    }
 
     fun cancelSchedule(taskId: Long) {
         alarmService.cancelAlarm(taskId)

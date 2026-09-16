@@ -13,6 +13,11 @@ class BootReceiver : BroadcastReceiver() {
                 taskId = null,
                 action = TaskActions.RESET_ALARMS
             )
+            Utils.scheduleImmediateWork(
+                context = context,
+                taskId = null,
+                action = TaskActions.BACKUP
+            )
         }
     }
 }

@@ -31,8 +31,7 @@ class App : Application() {
         database = createDatabase(this)
 
         val alarmService = AlarmService(this)
-        val workService = WorkService(this)
-        val scheduleService = ScheduleService(alarmService, workService)
+        val scheduleService = ScheduleService(alarmService)
         val taskService = TaskService(database, scheduleService)
         val config = Configuration.Builder()
             .setWorkerFactory(TidyWorkerFactory(taskService))

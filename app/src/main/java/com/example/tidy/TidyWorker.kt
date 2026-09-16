@@ -32,7 +32,8 @@ class TidyWorker(
 ) :
     CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        return when (val action = inputData.getString("action")) {
+        @Suppress("MoveVariableDeclarationIntoWhen") val action: String? = inputData.getString("action")
+        return when (action) {
             TaskActions.UNARCHIVE -> {
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
@@ -55,11 +56,11 @@ class TidyWorker(
             TaskActions.BACKUP -> {
                 val backupService = BackupService(taskService, applicationContext)
                 backupService.exportSilently()
-                val workService = WorkService(applicationContext)
-                workService.scheduleWork(
+                val alarmService = AlarmService(applicationContext)
+                alarmService.scheduleAlarm(
                     scheduleTime = Utils.getAutoBackupTime(),
-                    action = action,
-                    taskId = null
+                    action = TaskActions.BACKUP,
+                    taskId = -1
                 )
                 Result.success()
             }
