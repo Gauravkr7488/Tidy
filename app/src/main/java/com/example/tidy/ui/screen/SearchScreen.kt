@@ -90,7 +90,7 @@ fun SearchScreen(
         focusManager.clearFocus()
     }
     LaunchedEffect(eventTrigger) {
-        if (pagerState.currentPage == 1 && eventTrigger){
+        if (eventTrigger) {
             focusRequester.requestFocus()
             keyboardController?.show()
             toggle()
@@ -101,6 +101,8 @@ fun SearchScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
+            // do not add keyboard close here it will have no benefits
+            // will only add issues
         ) {
             SearchTasksTidy(
                 tasks,

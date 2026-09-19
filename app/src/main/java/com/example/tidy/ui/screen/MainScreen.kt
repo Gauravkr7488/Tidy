@@ -94,7 +94,10 @@ fun MainScreen(taskService: TaskService) {
     Scaffold(
         bottomBar = {
             if (currentRoute == Routes.HOME) {
-                BottomBar(currentPage, pagerState, onClick = { eventTrigger = true })
+                BottomBar(currentPage, pagerState, onClick = {
+                    @Suppress("AssignedValueIsNeverRead")
+                    eventTrigger = true
+                })
             }
         }
     ) { innerPadding ->
