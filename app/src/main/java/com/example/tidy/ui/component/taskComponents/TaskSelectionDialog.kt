@@ -61,10 +61,9 @@ fun TaskSelectionDialog(
         var filteredTasks: List<Task> by remember { mutableStateOf(emptyList()) }
         SearchTasksTidy(
             tasks,
-            onQueryChange = { query = it }
-        ) {
-            filteredTasks = it
-        }
+            onQueryChange = { query = it },
+            onFilteredTasksChanged = { filteredTasks = it },
+        )
 
         LazyColumn(
             state = listState,
