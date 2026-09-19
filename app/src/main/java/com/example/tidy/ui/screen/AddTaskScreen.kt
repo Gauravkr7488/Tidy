@@ -311,10 +311,10 @@ fun AddTaskScreen(
                 onDueTimeChange = { dueTime = it },
                 startNow = startNow,
                 repeatAfterDone = repeatAfterDone,
-                onStartNowChange = { startNow = it },
+                onStartNowChange = { startNow = !startNow },
                 onRepeatAfterDoneChange = { repeatAfterDone = !repeatAfterDone },
                 ringAlarm = ringAlarm,
-                onRingAlarmChange = { ringAlarm = it }
+                onRingAlarmChange = { ringAlarm = !ringAlarm }
             )
             PriorityMenu(
                 priorityValue = priority,
@@ -565,9 +565,9 @@ private fun ScheduleMenu(
     onEndDateChange: (Long?) -> Unit,
     onDueDateChange: (Long?) -> Unit,
     onDueTimeChange: (Long?) -> Unit,
-    onStartNowChange: (Boolean) -> Unit,
+    onStartNowChange: () -> Unit,
     onRepeatAfterDoneChange: () -> Unit,
-    onRingAlarmChange: (Boolean) -> Unit
+    onRingAlarmChange: () -> Unit
 ) {
     val c = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
@@ -634,9 +634,7 @@ private fun ScheduleMenu(
                                         onDueDateChange(null)
                                         onDueTimeChange(null)
                                         showDropDownMenu = false
-                                        if (startNow && type == RepeatTypes.NONE) onStartNowChange(
-                                            false
-                                        ) else onStartNowChange(true)
+                                        if (startNow && type == RepeatTypes.NONE) onStartNowChange()
                                         if (showCustomMenu) {
                                             showCustomMenu = false
                                             onFrequencyNumberChange(null)
@@ -652,7 +650,7 @@ private fun ScheduleMenu(
                                     showCustomMenu = true
                                     onRepeatTypeChange(RepeatTypes.DAY)
                                     onRepeatDaysChange(emptyList())
-                                    if (!startNow) onStartNowChange(true)
+                                    if (!startNow) onStartNowChange()
                                 }
                             )
                         }
@@ -718,7 +716,7 @@ private fun ScheduleMenu(
                     ) { onDueTimeChange(it) }
 
                     OutlinedMenuItem("Starts Now", onClick = {
-                        onStartNowChange(!startNow)
+                        onStartNowChange()
                     }) {
                         if (startNow) {
                             Icon(
@@ -735,7 +733,7 @@ private fun ScheduleMenu(
                 }
                 if (dueTime != null) {
                     OutlinedMenuItem("Ring Alarm", onClick = {
-                        onRingAlarmChange(!ringAlarm)
+                        onRingAlarmChange()
                     }) {
                         if (ringAlarm) {
                             Icon(
