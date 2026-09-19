@@ -27,7 +27,11 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -63,20 +67,21 @@ fun MainScreen(taskService: TaskService) {
     val workService = WorkService(context)
     val backupService = BackupService(taskService, context)
     val backupViewModel = viewModel<BackupViewModel>(
-      factory = viewModelFactory {
-          initializer {
-              BackupViewModel(
-                  backupService = backupService,
-                  workService = workService
-              )
-          }
-      }
+        factory = viewModelFactory {
+            initializer {
+                BackupViewModel(
+                    backupService = backupService,
+                    workService = workService
+                )
+            }
+        }
     )
 
     val tabs = listOf(Routes.HOME, Routes.SEARCH, Routes.SETTINGS)
     val pagerState = rememberPagerState(pageCount = { tabs.size })
     val currentPage = tabs[pagerState.currentPage]
     val scope = rememberCoroutineScope()
+    var eventTrigger by remember { mutableStateOf(false) }
 
     BackHandler(
         enabled = !pagerState.isScrollInProgress && pagerState.currentPage in 1..2 // only Menu & Settings
@@ -89,7 +94,7 @@ fun MainScreen(taskService: TaskService) {
     Scaffold(
         bottomBar = {
             if (currentRoute == Routes.HOME) {
-                BottomBar(currentPage, pagerState)
+                BottomBar(currentPage, pagerState, onClick = { eventTrigger = !eventTrigger })
             }
         }
     ) { innerPadding ->
@@ -110,7 +115,7 @@ fun MainScreen(taskService: TaskService) {
                     ) { page ->
                         when (page) {
                             0 -> HomeScreen(sharedViewModel, navController)
-                            1 -> SearchScreen(sharedViewModel, navController, pagerState)
+                            1 -> SearchScreen(sharedViewModel, navController, pagerState, eventTrigger)
                             2 -> SettingsScreen(navController)
                         }
                     }

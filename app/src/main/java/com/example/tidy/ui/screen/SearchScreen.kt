@@ -67,6 +67,7 @@ fun SearchScreen(
     sharedViewModel: SharedViewModel,
     navController: NavController,
     pagerState: PagerState,
+    eventTrigger: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val taskState = sharedViewModel.tasks.collectAsState()
@@ -83,6 +84,9 @@ fun SearchScreen(
         keyboardController?.hide()
         delay(100)
         focusManager.clearFocus()
+    }
+    LaunchedEffect(eventTrigger) {
+        println("working")
     }
     Scaffold(topBar = { TopAppBar("Search") }, modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
