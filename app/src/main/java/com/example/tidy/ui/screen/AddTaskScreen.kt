@@ -131,6 +131,7 @@ fun AddTaskScreen(
     var hide: Boolean by remember { mutableStateOf(true) }
     var done: Boolean by remember { mutableStateOf(false) }
     var startNow by remember { mutableStateOf(false) }
+    var ringAlarm by remember { mutableStateOf(false) }
     var repeatAfterDone by remember { mutableStateOf(false) }
     var skipStatus by remember { mutableStateOf(false) }
     var priority: Long? by remember { mutableStateOf(null) }
@@ -309,7 +310,9 @@ fun AddTaskScreen(
                 startNow = startNow,
                 repeatAfterDone = repeatAfterDone,
                 onStartNowChange = { startNow = it },
-                onRepeatAfterDoneChange = { repeatAfterDone = !repeatAfterDone }
+                onRepeatAfterDoneChange = { repeatAfterDone = !repeatAfterDone },
+                ringAlarm = ringAlarm,
+                onRingAlarmChange = { ringAlarm = it }
             )
             PriorityMenu(
                 priorityValue = priority,
@@ -553,6 +556,7 @@ private fun ScheduleMenu(
     dueTime: Long?,
     startNow: Boolean,
     repeatAfterDone: Boolean,
+    ringAlarm: Boolean,
     onRepeatTypeChange: (String) -> Unit,
     onRepeatDaysChange: (List<String>) -> Unit,
     onFrequencyNumberChange: (String?) -> Unit,
@@ -561,6 +565,7 @@ private fun ScheduleMenu(
     onDueTimeChange: (Long?) -> Unit,
     onStartNowChange: (Boolean) -> Unit,
     onRepeatAfterDoneChange: () -> Unit,
+    onRingAlarmChange: (Boolean) -> Unit
 ) {
     val c = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
@@ -714,6 +719,23 @@ private fun ScheduleMenu(
                         onStartNowChange(!startNow)
                     }) {
                         if (startNow) {
+                            Icon(
+                                imageVector = Icons.Default.CheckBox,
+                                contentDescription = null
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.CheckBoxOutlineBlank,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                }
+                if (dueTime != null) {
+                    OutlinedMenuItem("Ring Alarm", onClick = {
+                        onRingAlarmChange(!ringAlarm)
+                    }) {
+                        if (ringAlarm) {
                             Icon(
                                 imageVector = Icons.Default.CheckBox,
                                 contentDescription = null
