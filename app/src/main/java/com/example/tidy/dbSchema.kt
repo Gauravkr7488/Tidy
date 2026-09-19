@@ -37,4 +37,5 @@ data class TaskBackupDto(
     var repeatAfterDone: Boolean = false,
     var skipStatus: Boolean = false,
     var createdAt: Long = System.currentTimeMillis(),
+    var ringAlarm: Boolean = false,
 )

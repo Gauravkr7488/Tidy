@@ -45,7 +45,7 @@ class ScheduleService(
             alarmService.scheduleAlarm(
                 taskId = task.id,
                 scheduleTime = scheduleDate,
-                action = TaskActions.UNARCHIVE
+                action = if (task.ringAlarm) TaskActions.ALARM_CLOCK else TaskActions.UNARCHIVE
             )
         }
         return false
