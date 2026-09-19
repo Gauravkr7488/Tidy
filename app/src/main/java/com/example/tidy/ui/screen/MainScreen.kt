@@ -94,7 +94,7 @@ fun MainScreen(taskService: TaskService) {
     Scaffold(
         bottomBar = {
             if (currentRoute == Routes.HOME) {
-                BottomBar(currentPage, pagerState, onClick = { eventTrigger = !eventTrigger })
+                BottomBar(currentPage, pagerState, onClick = { eventTrigger = true })
             }
         }
     ) { innerPadding ->
@@ -115,7 +115,13 @@ fun MainScreen(taskService: TaskService) {
                     ) { page ->
                         when (page) {
                             0 -> HomeScreen(sharedViewModel, navController)
-                            1 -> SearchScreen(sharedViewModel, navController, pagerState, eventTrigger)
+                            1 -> SearchScreen(
+                                sharedViewModel,
+                                navController,
+                                pagerState,
+                                eventTrigger,
+                                toggle = { eventTrigger = false })
+
                             2 -> SettingsScreen(navController)
                         }
                     }
