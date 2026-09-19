@@ -124,6 +124,7 @@ object Utils {
             endDate = null,
             repeatAfterDone = false,
             skipStatus = false,
+            ringAlarm = false,
         )
     }
 
@@ -145,7 +146,8 @@ object Utils {
             frequencyNumber = frequencyNumber,
             endDate = endDate,
             repeatAfterDone = repeatAfterDone,
-            skipStatus = skipStatus
+            skipStatus = skipStatus,
+            ringAlarm = ringAlarm
         )
     }
 
@@ -167,6 +169,7 @@ object Utils {
             endDate = endDate,
             skipStatus = skipStatus,
             repeatAfterDone = repeatAfterDone,
+            ringAlarm = ringAlarm,
         )
     }
 

@@ -162,6 +162,7 @@ fun AddTaskScreen(
             endDate = task.endDate
             repeatAfterDone = task.repeatAfterDone
             skipStatus = task.skipStatus
+            ringAlarm = task.ringAlarm
             createdAt =
                 Utils.changeDateFormat(pattern = "MMM dd, yyyy hh:mm a", date = task.createdAt)
         }
@@ -217,6 +218,7 @@ fun AddTaskScreen(
                                     endDate = endDate,
                                     repeatAfterDone = repeatAfterDone,
                                     skipStatus = skipStatus,
+                                    ringAlarm = ringAlarm,
                                 )
                                 val savedTaskId = sharedViewModel.saveTask(task)
                                 sharedViewModel.deleteAllBlocks(savedTaskId)

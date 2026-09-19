@@ -34,6 +34,7 @@ CREATE TABLE Task (
     endDate INTEGER,
     repeatAfterDone INTEGER AS Boolean NOT NULL DEFAULT 0,
     skipStatus INTEGER AS Boolean NOT NULL DEFAULT 0,
+    ringAlarm INTEGER AS Boolean NOT NULL DEFAULT 0,
     FOREIGN KEY (parentId) REFERENCES Task(id) ON DELETE SET NULL
 );
 
