@@ -12,7 +12,9 @@ class AlarmReceiver : BroadcastReceiver() {
         val taskId = intent.getLongExtra(Options.TASK_ID, -1)
         val action = intent.action ?: return
         if (action == TaskActions.ALARM_CLOCK) {
-            ContextCompat.startForegroundService(context, Intent(context, AlarmClockService::class.java))
+            val taskName = intent.getStringExtra(Options.TASK_NAME)
+            val serviceIntent = Intent(context, AlarmClockService::class.java).putExtra(Options.TASK_NAME, taskName)
+            ContextCompat.startForegroundService(context, serviceIntent)
         } else {
             val workService = WorkService(context)
             workService.scheduleImmediateWork(taskId, action)
