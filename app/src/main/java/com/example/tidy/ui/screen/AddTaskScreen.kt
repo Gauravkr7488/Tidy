@@ -314,7 +314,7 @@ fun AddTaskScreen(
                 onStartNowChange = { startNow = it },
                 onRepeatAfterDoneChange = { repeatAfterDone = !repeatAfterDone },
                 ringAlarm = ringAlarm,
-                onRingAlarmChange = { ringAlarm = it }
+                onRingAlarmChange = { ringAlarm = !ringAlarm }
             )
             PriorityMenu(
                 priorityValue = priority,
@@ -567,7 +567,7 @@ private fun ScheduleMenu(
     onDueTimeChange: (Long?) -> Unit,
     onStartNowChange: (Boolean) -> Unit,
     onRepeatAfterDoneChange: () -> Unit,
-    onRingAlarmChange: (Boolean) -> Unit
+    onRingAlarmChange: () -> Unit
 ) {
     val c = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
@@ -735,7 +735,7 @@ private fun ScheduleMenu(
                 }
                 if (dueTime != null) {
                     OutlinedMenuItem("Ring Alarm", onClick = {
-                        onRingAlarmChange(!ringAlarm)
+                        onRingAlarmChange()
                     }) {
                         if (ringAlarm) {
                             Icon(
