@@ -37,7 +37,7 @@ class AlarmClockService : Service() {
 
         val stopIntent = PendingIntent.getService(
             this, 1,
-            Intent(this, AlarmService::class.java).setAction(ACTION_STOP),
+            Intent(this, AlarmClockService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE
         )
 
