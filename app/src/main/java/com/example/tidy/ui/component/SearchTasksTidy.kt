@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -92,6 +95,24 @@ fun SearchTasksTidy(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        if (includeFilters.isNotEmpty() || excludeFilters.isNotEmpty()) {
+            item {
+                FilterChip(
+                    label = { Text("Reset") },
+                    trailingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Cancel,
+                            contentDescription = null
+                        )
+                    },
+                    selected = false,
+                    onClick = {
+                        includeFilters = emptyList()
+                        excludeFilters = emptyList()
+                    }
+                )
+            }
+        }
         filterList.forEach { filter ->
             item {
                 FilterChip(
