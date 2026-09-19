@@ -46,6 +46,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
@@ -67,6 +69,8 @@ fun SearchScreen(
     sharedViewModel: SharedViewModel,
     navController: NavController,
     pagerState: PagerState,
+    eventTrigger: Boolean,
+    toggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val taskState = sharedViewModel.tasks.collectAsState()
@@ -78,24 +82,34 @@ fun SearchScreen(
     var filteredTasks: List<Task> by remember { mutableStateOf(emptyList()) }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(pagerState.settledPage) {
         keyboardController?.hide()
         delay(100)
         focusManager.clearFocus()
     }
+    LaunchedEffect(eventTrigger) {
+        if (eventTrigger) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
+            toggle()
+        }
+    }
     Scaffold(topBar = { TopAppBar("Search") }, modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = innerPadding.calculateTopPadding())
+            // do not add keyboard close here it will have no benefits
+            // will only add issues
         ) {
             SearchTasksTidy(
                 tasks,
-                onQueryChange = { query = it }
-            ) {
-                filteredTasks = it
-            }
+                onQueryChange = { query = it },
+                modifier = Modifier.focusRequester(focusRequester),
+                onFilteredTasksChanged = { filteredTasks = it }
+            )
             if (filteredTasks.isEmpty()) {
                 EmptySearchState(query = query)
             } else {

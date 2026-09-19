@@ -43,7 +43,8 @@ import com.tidy.sqldelight.Task
 fun SearchTasksTidy(
     tasks: List<Task>,
     onQueryChange: (String) -> Unit,
-    onFilteredTasksChanged: (List<Task>) -> Unit
+    onFilteredTasksChanged: (List<Task>) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var query by remember { mutableStateOf("") }
     var includeFilters: List<String> by remember { mutableStateOf(emptyList()) }
@@ -84,7 +85,7 @@ fun SearchTasksTidy(
     SearchTextField(
         query = query,
         placeHolder = "Search tasks",
-        modifier = Modifier.padding(vertical = 8.dp)
+        modifier = modifier.padding(vertical = 8.dp)
     ) {
         @Suppress("AssignedValueIsNeverRead")
         query = it

@@ -34,7 +34,7 @@ import com.example.tidy.constants.Routes
 import kotlinx.coroutines.launch
 
 @Composable
-fun BottomBar( currentRoute: String, pagerState: PagerState) {
+fun BottomBar( currentRoute: String, pagerState: PagerState, onClick: () -> Unit) {
     val scope = rememberCoroutineScope()
 
     NavigationBar {
@@ -58,7 +58,10 @@ fun BottomBar( currentRoute: String, pagerState: PagerState) {
         NavigationBarItem(
             selected = currentRoute == Routes.SEARCH,
             onClick = {
-                if (currentRoute == Routes.SEARCH) return@NavigationBarItem
+                if (currentRoute == Routes.SEARCH){
+                    onClick()
+                    return@NavigationBarItem
+                }
                 scope.launch {
                     pagerState.scrollToPage(1)
                 }
