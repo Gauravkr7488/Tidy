@@ -9,11 +9,12 @@ import android.os.Build
 import com.example.tidy.constants.Options
 
 class AlarmService(private val context: Context) {
-    fun scheduleAlarm(scheduleTime: Long, action: String, taskId: Long) {
+    fun scheduleAlarm(scheduleTime: Long, action: String, taskId: Long, taskName: String = "") {
         val alarmManager = context.getSystemService(ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             this.action = action
             putExtra(Options.TASK_ID, taskId)
+            putExtra(Options.TASK_NAME, taskName)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(

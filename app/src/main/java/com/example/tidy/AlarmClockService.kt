@@ -19,6 +19,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.Ace777.tidy.R
+import com.example.tidy.constants.Options
 
 class AlarmClockService : Service() {
     private var player: MediaPlayer? = null
@@ -33,6 +34,9 @@ class AlarmClockService : Service() {
             stopSelf()   // onDestroy stops sound and vibration
             return START_NOT_STICKY
         }
+
+        val taskName = intent?.getStringExtra(Options.TASK_NAME) ?: "Alarm"
+
         createChannel()
 
         val stopIntent = PendingIntent.getService(
@@ -43,7 +47,7 @@ class AlarmClockService : Service() {
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.notification_icon)
-            .setContentTitle("Alarm")
+            .setContentTitle(taskName)
             .setContentText("Tap to open")
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_MAX)
