@@ -89,8 +89,10 @@ fun SearchScreen(
         focusManager.clearFocus()
     }
     LaunchedEffect(eventTrigger) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
+        if (pagerState.currentPage == 1){
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
     Scaffold(topBar = { TopAppBar("Search") }, modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
