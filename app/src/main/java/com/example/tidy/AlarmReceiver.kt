@@ -17,9 +17,8 @@ class AlarmReceiver : BroadcastReceiver() {
                 .putExtra(Options.TASK_NAME, taskName)
                 .putExtra(Options.TASK_ID, taskId)
             ContextCompat.startForegroundService(context, serviceIntent)
-        } else {
-            val workService = WorkService(context)
-            workService.scheduleImmediateWork(taskId, action)
         }
+        val workService = WorkService(context)
+        workService.scheduleImmediateWork(taskId, action)
     }
 }
