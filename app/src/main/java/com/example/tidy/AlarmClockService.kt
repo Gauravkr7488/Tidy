@@ -30,16 +30,14 @@ class AlarmClockService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     private var taskName = "Task"
     private val autoStop = Runnable {
-        val missed = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.notification_icon)
-            .setContentTitle("Missed alarm")
-            .setContentText(taskName)
-            .setAutoCancel(true)
-            .build()
-        getSystemService(NotificationManager::class.java).notify(NOTIF_ID + 1, missed)
+        Utils.sendNotification(
+            context = this,
+            title = "Missed Alarm",
+            message = "Schedule for $taskName met",
+            notificationId = NOTIF_ID + 1
+        )
         stopSelf()
     }
-//    private val autoStop = Runnable { stopSelf() }
 
     override fun onBind(intent: Intent?): IBinder? = null
 

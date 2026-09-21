@@ -179,8 +179,14 @@ object Utils {
         return c.timeInMillis
     }
 
-    fun sendNotification(context: Context, title: String, message: String) {
-        val notificationId = NotificationIdProvider.nextId()
+    fun sendNotification(
+        context: Context,
+        title: String,
+        message: String,
+        notificationId: Int? = null
+    ) {
+
+        val notificationId = notificationId ?: NotificationIdProvider.nextId()
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
