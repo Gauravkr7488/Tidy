@@ -11,7 +11,9 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -25,18 +27,30 @@ class AlarmClockService : Service() {
     private var player: MediaPlayer? = null
     private var vibrator: Vibrator? = null
 
+    private val handler = Handler(Looper.getMainLooper())
+    private var taskName = "Task"
+    private val autoStop = Runnable {
+        Utils.sendNotification(
+            context = this,
+            title = "Missed Alarm",
+            message = "Schedule for $taskName met",
+            notificationId = NOTIF_ID + 1
+        )
+        stopSelf()
+    }
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     @RequiresApi(Build.VERSION_CODES.O)
-    @SuppressLint( "LaunchActivityFromNotification")
+    @SuppressLint("LaunchActivityFromNotification")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
             stopSelf()   // onDestroy stops sound and vibration
             return START_NOT_STICKY
         }
 
-        val taskName = intent?.getStringExtra(Options.TASK_NAME) ?: "Alarm"
-        val taskId = intent?.getLongExtra(Options.TASK_ID,-1)
+        taskName = intent?.getStringExtra(Options.TASK_NAME) ?: "Alarm"
+        val taskId = intent?.getLongExtra(Options.TASK_ID, -1)
 
         createChannel()
 
@@ -76,6 +90,8 @@ class AlarmClockService : Service() {
 
         ServiceCompat.startForeground(this, NOTIF_ID, notification, serviceType)
         startRinging()
+        handler.removeCallbacks(autoStop)                    // reset if already scheduled
+        handler.postDelayed(autoStop, RING_DURATION_MS) // stop after 5 min
         return START_NOT_STICKY
     }
 
@@ -112,6 +128,7 @@ class AlarmClockService : Service() {
     }
 
     override fun onDestroy() {
+        handler.removeCallbacks(autoStop)
         player?.run { stop(); release() }
         player = null
         vibrator?.cancel()
@@ -123,10 +140,12 @@ class AlarmClockService : Service() {
         val channel = NotificationChannel(CHANNEL_ID, "Alarms", NotificationManager.IMPORTANCE_HIGH)
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
+
     companion object {
         const val CHANNEL_ID = "alarm_channel"
-        const val NOTIF_ID = 1
+        const val NOTIF_ID = 1000 // to prevent clash with other channel
         const val ACTION_STOP = "com.tidy.ACTION_STOP_ALARM"
         const val ACTION_OPEN_ALARM = "com.tidy.ACTION_OPEN_ALARM"
+        const val RING_DURATION_MS = 5 * 60 * 1000L
     }
 }
