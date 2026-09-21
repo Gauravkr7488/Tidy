@@ -21,6 +21,7 @@ import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -28,18 +29,34 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.tidy.constants.Options
+import com.example.tidy.ui.component.dialog.TidyDialog
 import com.example.tidy.ui.screen.MainScreen
 import com.example.tidy.ui.theme.TidyTheme
+import com.tidy.sqldelight.Task
 import com.yourapp.db.AppDatabase
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var database: AppDatabase
+    private var alarmTaskId: Long by mutableLongStateOf(-1)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
+
+        handleIntent(intent)
+
         val app = application as App
         database = app.database
         enableEdgeToEdge()
@@ -49,11 +66,61 @@ class MainActivity : ComponentActivity() {
             val taskService = TaskService(db = database, scheduleService)
             TidyTheme {
                 MainScreen(taskService)
+
+                if (alarmTaskId != -1L) {
+                    ShowTaskDialog(taskService)
+                }
             }
         }
         createNotificationChannel(this)
         askNotificationPermission()
         Utils.requestExactAlarmPermission(this)
+    }
+
+    @Composable
+    private fun ShowTaskDialog(taskService: TaskService) {
+        val scope = rememberCoroutineScope()
+        var task: Task = Utils.getEmptyTask()
+        LaunchedEffect(Unit) {
+            task = taskService.getTask(alarmTaskId)
+        }
+        TidyDialog(
+            title = "Schedule Met",
+            onDismissRequest = {},
+            buttons = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            dismissAlarm()
+                            taskService.saveTask(task.copy(done = true, hide = false))
+                        }
+                    }
+                ) {
+                    Text("Mark Done")
+                }
+
+                TextButton(
+                    onClick = {
+                        dismissAlarm()
+                    }
+                ) {
+                    Text("Dismiss")
+                }
+            }
+        ) {
+            Text("${task.title} schedule met")
+        }
+    }
+
+    private fun dismissAlarm() {
+        stopService(Intent(this, AlarmClockService::class.java))  // onDestroy stops sound + vibration
+        intent.action = null   // so a rotation doesn't bring the dialog back
+        alarmTaskId = -1
+    }
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == AlarmClockService.ACTION_OPEN_ALARM) {
+            alarmTaskId = intent.getLongExtra(Options.TASK_ID, -1)
+        }
     }
 
     private fun createNotificationChannel(context: Context) {

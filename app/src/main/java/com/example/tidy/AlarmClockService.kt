@@ -36,8 +36,19 @@ class AlarmClockService : Service() {
         }
 
         val taskName = intent?.getStringExtra(Options.TASK_NAME) ?: "Alarm"
+        val taskId = intent?.getLongExtra(Options.TASK_ID,-1)
 
         createChannel()
+
+        val openIntent = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, MainActivity::class.java).apply {
+                action = ACTION_OPEN_ALARM
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                putExtra(Options.TASK_ID, taskId)
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val stopIntent = PendingIntent.getService(
             this, 1,
@@ -51,7 +62,7 @@ class AlarmClockService : Service() {
             .setContentText("Tap to open")
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setContentIntent(stopIntent)             // tap body = dismiss
+            .setContentIntent(openIntent)
             .setDeleteIntent(stopIntent)
             .addAction(0, "Dismiss", stopIntent)
             .setOngoing(true)
@@ -116,5 +127,6 @@ class AlarmClockService : Service() {
         const val CHANNEL_ID = "alarm_channel"
         const val NOTIF_ID = 1
         const val ACTION_STOP = "com.tidy.ACTION_STOP_ALARM"
+        const val ACTION_OPEN_ALARM = "com.tidy.ACTION_OPEN_ALARM"
     }
 }
