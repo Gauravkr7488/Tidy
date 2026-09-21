@@ -145,7 +145,7 @@ class AlarmClockService : Service() {
 
     companion object {
         const val CHANNEL_ID = "alarm_channel"
-        const val NOTIF_ID = 1
+        const val NOTIF_ID = 1000 // to prevent clash with other channel
         const val ACTION_STOP = "com.tidy.ACTION_STOP_ALARM"
         const val ACTION_OPEN_ALARM = "com.tidy.ACTION_OPEN_ALARM"
         const val RING_DURATION_MS = 5 * 60 * 1000L
