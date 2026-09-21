@@ -31,6 +31,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -67,44 +68,48 @@ class MainActivity : ComponentActivity() {
                 MainScreen(taskService)
 
                 if (alarmTaskId != -1L) {
-                    val scope = rememberCoroutineScope()
-                    var task: Task = Utils.getEmptyTask()
-                    LaunchedEffect(Unit) {
-                        task = taskService.getTask(alarmTaskId)
-
-                    }
-                    TidyDialog(
-                        title = "Schedule Met",
-                        onDismissRequest = {},
-                        buttons = {
-                            TextButton(
-                                onClick = {
-                                    scope.launch {
-                                        dismissAlarm()
-                                        taskService.saveTask(task.copy(done = true, hide = false))
-                                    }
-                                }
-                            ) {
-                                Text("Mark Done")
-                            }
-
-                            TextButton(
-                                onClick = {
-                                    dismissAlarm()
-                                }
-                            ) {
-                                Text("Dismiss")
-                            }
-                        }
-                    ) {
-                        Text("${task.title} schedule met")
-                    }
+                    ShowTaskDialog(taskService)
                 }
             }
         }
         createNotificationChannel(this)
         askNotificationPermission()
         Utils.requestExactAlarmPermission(this)
+    }
+
+    @Composable
+    private fun ShowTaskDialog(taskService: TaskService) {
+        val scope = rememberCoroutineScope()
+        var task: Task = Utils.getEmptyTask()
+        LaunchedEffect(Unit) {
+            task = taskService.getTask(alarmTaskId)
+        }
+        TidyDialog(
+            title = "Schedule Met",
+            onDismissRequest = {},
+            buttons = {
+                TextButton(
+                    onClick = {
+                        scope.launch {
+                            dismissAlarm()
+                            taskService.saveTask(task.copy(done = true, hide = false))
+                        }
+                    }
+                ) {
+                    Text("Mark Done")
+                }
+
+                TextButton(
+                    onClick = {
+                        dismissAlarm()
+                    }
+                ) {
+                    Text("Dismiss")
+                }
+            }
+        ) {
+            Text("${task.title} schedule met")
+        }
     }
 
     private fun dismissAlarm() {
