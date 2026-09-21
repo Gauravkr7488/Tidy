@@ -34,6 +34,16 @@ class TidyWorker(
     override suspend fun doWork(): Result {
         @Suppress("MoveVariableDeclarationIntoWhen") val action: String? = inputData.getString("action")
         return when (action) {
+            TaskActions.ALARM_CLOCK -> {
+                val taskId = inputData.getLong("task_id", -1L)
+                if (taskId == -1L) return Result.failure()
+                val task = taskService.getTask(taskId)
+                taskService.saveTask(task.copy(done = false, hide = false))
+                taskService.updateTaskAndDescendantsHideStatus(task.id, false)
+                taskService.updateTaskAndDescendantsDoneStatus(task.id, false)
+                Result.success()
+            }
+
             TaskActions.UNARCHIVE -> {
                 val taskId = inputData.getLong("task_id", -1L)
                 if (taskId == -1L) return Result.failure()
