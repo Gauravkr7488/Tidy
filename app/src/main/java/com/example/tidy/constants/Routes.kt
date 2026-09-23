@@ -23,8 +23,9 @@ object Routes {
     const val ADD_TASK = "add_task"
     const val BACKUP = "backup_screen"
 
-    const val NOTE = "note_screen"
-    const val MENU = "menu_screen"
+//    const val NOTE = "note_screen"
+//    const val MENU = "menu_screen"
     const val SEARCH = "search_screen"
-    const val  ARCHIVE = "archive_screen"
+//    const val  ARCHIVE = "archive_screen"
+    const val NOTIFICATION_AND_SOUND = "notification_and_sound"
 }

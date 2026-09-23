@@ -141,6 +141,10 @@ fun MainScreen(taskService: TaskService) {
             composable(Routes.BACKUP) {
                 BackupScreen(backupViewModel)
             }
+
+            composable(Routes.NOTIFICATION_AND_SOUND) {
+                NotificationAndSoundScreen()
+            }
         }
     }
 }
