@@ -17,7 +17,6 @@
 package com.example.tidy.ui.screen
 
 import android.content.Intent
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -35,19 +34,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.tidy.AlarmPrefs
 import com.example.tidy.ui.component.SimpleCard
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
 fun NotificationAndSoundScreen() {
     val context = LocalContext.current
-    val music = null
-    var musicUri: Uri? = null
+    var alarmToneTitle by remember { mutableStateOf(AlarmPrefs.getAlarmToneTitle(context)) }
     val musicPicker =
         rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocument()
@@ -56,7 +59,8 @@ fun NotificationAndSoundScreen() {
                 context.contentResolver.takePersistableUriPermission(
                     uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
-                musicUri = it
+                alarmToneTitle = AlarmPrefs.getFileName(context, uri)
+                AlarmPrefs.setAlarmTone(context, uri, alarmToneTitle)
             }
         }
 
@@ -81,7 +85,7 @@ fun NotificationAndSoundScreen() {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Alarm Ring Tone")
                         Text(
-                            text = music ?: "Not set — using internal storage",
+                            text = alarmToneTitle,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,

@@ -9,7 +9,6 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.media.RingtoneManager
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -100,7 +99,7 @@ class AlarmClockService : Service() {
     private fun startRinging() {
         if (player != null) return
 
-        val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        val uri = AlarmPrefs.getAlarmToneUri(this)
         player = MediaPlayer().apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
