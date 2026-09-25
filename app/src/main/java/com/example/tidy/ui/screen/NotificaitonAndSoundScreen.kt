@@ -16,6 +16,10 @@
  */
 package com.example.tidy.ui.screen
 
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +28,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tidy.ui.component.SimpleCard
@@ -41,7 +45,21 @@ import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
 fun NotificationAndSoundScreen() {
+    val context = LocalContext.current
     val music = null
+    var musicUri: Uri? = null
+    val musicPicker =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            uri?.let {
+                context.contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+                musicUri = it
+            }
+        }
+
     Scaffold(
         topBar = { TopAppBar("Notifications and Sound") },
         modifier = Modifier.fillMaxSize()
@@ -76,7 +94,7 @@ fun NotificationAndSoundScreen() {
                             .padding(8.dp)
                             .size(48.dp),
                         onClick = {
-
+                            musicPicker.launch(arrayOf("audio/*"))
                         }
                     ) {
                         Icon(
