@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.Ace777.tidy.R
 import com.example.tidy.SettingOption
+import com.example.tidy.constants.Routes
 import com.example.tidy.ui.component.topAppBar.TopAppBar
 
 @Composable
@@ -55,8 +56,12 @@ fun SettingsScreen(
     val settingOptions = listOf(
         SettingOption(
             title = stringResource(R.string.Backup),
-            route = "backup_screen"
+            route = Routes.BACKUP
         ),
+        SettingOption(
+            title = "Notifications and Sound",
+            route = Routes.NOTIFICATION_AND_SOUND
+        )
     )
     Scaffold(
         topBar = { TopAppBar("Settings") },
@@ -77,35 +82,42 @@ fun SettingsScreen(
                     items = settingOptions,
                     key = { it.title }
                 ) { item ->
-
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { navController.navigate(item.route) }
-                                .padding(20.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = item.title,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = null
-                            )
-                        }
-                    }
+                    SettingsCard(item.title) { navController.navigate(item.route) }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SettingsCard(
+    title: String,
+    onCLick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCLick() }
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null
+            )
         }
     }
 }
