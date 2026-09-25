@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
@@ -110,7 +111,11 @@ class AlarmClockService : Service() {
             setDataSource(this@AlarmClockService, uri)
             isLooping = true
             prepare()
+            setVolume(MIN_VOLUME, MIN_VOLUME)
             start()
+            rampStart = SystemClock.elapsedRealtime()
+            handler.removeCallbacks(rampStep)
+            handler.post(rampStep)
         }
 
         vibrator = if (Build.VERSION.SDK_INT >= 31)
@@ -128,6 +133,7 @@ class AlarmClockService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacks(autoStop)
+        handler.removeCallbacks(rampStep)
         player?.run { stop(); release() }
         player = null
         vibrator?.cancel()
@@ -140,11 +146,26 @@ class AlarmClockService : Service() {
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
 
+    private var rampStart = 0L
+    private val rampStep = object : Runnable {
+        override fun run() {
+            val t = ((SystemClock.elapsedRealtime() - rampStart) / RAMP_DURATION_MS.toFloat())
+                .coerceIn(0f, 1f)
+            val v = MIN_VOLUME + (1f - MIN_VOLUME) * t * t   // gentle start, faster finish
+            player?.setVolume(v, v)
+            if (t < 1f) handler.postDelayed(this, RAMP_INTERVAL_MS)
+        }
+    }
+
     companion object {
         const val CHANNEL_ID = "alarm_channel"
         const val NOTIF_ID = 1000 // to prevent clash with other channel
         const val ACTION_STOP = "com.tidy.ACTION_STOP_ALARM"
         const val ACTION_OPEN_ALARM = "com.tidy.ACTION_OPEN_ALARM"
         const val RING_DURATION_MS = 5 * 60 * 1000L
+
+        const val RAMP_DURATION_MS = 30_000L   // reach full volume after 30 s
+        const val RAMP_INTERVAL_MS = 250L      // update 4 times a second
+        const val MIN_VOLUME = 0.05f           // never fully silent
     }
 }
