@@ -671,11 +671,13 @@ private fun ScheduleMenu(
                 }
 
                 if (repeatType == RepeatTypes.WEEK) {
+                    onRepeatDaysChange(listOf(WeekDays.SUN))
                     WeekDayRow(
                         selectedDays = repeatDays
                     ) { onRepeatDaysChange(it) }
                 }
                 if (repeatType == RepeatTypes.MONTH) {
+                    onRepeatDaysChange(listOf("01"))
                     MonthRow(
                         selectedDates = repeatDays
                     ) { onRepeatDaysChange(it) }
